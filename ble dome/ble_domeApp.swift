@@ -37,7 +37,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate{
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state == .poweredOn{
             isBluetoothON = true
-            print("BLE powered on \n \(isBluetoothON)")
+            print("BLE powered on")
         }
         else {
             isBluetoothON = false
