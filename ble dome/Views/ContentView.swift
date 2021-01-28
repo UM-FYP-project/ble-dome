@@ -9,34 +9,29 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var ble = BLE()
-    @State var button_state = false
+    @State var connect_button_state = false
     var body: some View {
-        VStack{
-            Spacer()
-            if button_state == false{
+        NavigationView {
+            if ble.isBluetoothON{
                 Button(action: {
-                self.ble.scan_devices()
-                    button_state = true
-                }) {
-                    Text("Scan")
-                        .font(.title2)
-                }
-                .frame(width:UIScreen.main.bounds.width - 20, height:30)
-                
+                            self.connect_button_state = true
+                        }) {
+                            Text("Connect BLE Device")
+                                .font(.title)
+                        }.frame(width: UIScreen.main.bounds.width - 20, height: 30, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+                .navigationTitle("Deivce Connection")
             }
             else{
-                Button(action: {
-                    self.ble.stopscan_device()
-                    button_state = false
-                }) {
-                    Text("Stop Scanning")
-                        .font(.title2)
-                }
+                Text("Please Turn on Bluetooth")
+                    .font(.title)
+                    .navigationTitle("Deivce Connection")
             }
         }
-        .frame(width: UIScreen.main.bounds.width - 20, height: UIScreen.main.bounds.height - 60)
+        .sheet(isPresented: $connect_button_state) {
+            BLEconnectsheet()
         }
     }
+}
 
 
 struct ContentView_Previews: PreviewProvider {
