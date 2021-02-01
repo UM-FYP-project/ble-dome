@@ -12,6 +12,7 @@ import CoreBluetooth
 struct ble_domeApp: App {
     var body: some Scene {
         WindowGroup {
+            //BLEScanner()
             ContentView()
         }
     }
@@ -23,26 +24,28 @@ struct Peripheral: Identifiable {
     let name : String
     let rssi : Int
     let Peripherasl : CBPeripheral
-    let SerivceID : String
+    //let SerivceID : String
 }
 
 class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate{
-    var centralManager:CBCentralManager!
+    private var centralManager:CBCentralManager!
     var connectedPeripheral: CBPeripheral?
     var connectedPeripheral_record: String?
+    //var Service_UUID = CBUUID(string: kBLEService_UUID)
     @Published var isBluetoothON : Bool = false
     @Published var isBluetoothOFF : Bool = false
-    @Published var isunauthorized : Bool = false
+    @Published var isDisconnected : Bool = true
     @Published var bleconnection : Int = 0
     @Published var peripherals = [Peripheral]()
-    //@Published var peripherals = [CBPeripheral]()
     @Published var peripheral_count : Int = 0
     
-    override init() {
+     override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
         centralManager.delegate = self
         print("BLE init")
+        isDisconnected = true
+        bleconnection = 0
     }
     // Bluetooth State
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
@@ -52,13 +55,11 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             print("BLE powered on")
             scan_devices()
         }
-        else if central.state == .unauthorized{
-            isunauthorized = true
-            print("BLE is unauthorized")
-        }
         else {
             isBluetoothON = false
             isBluetoothOFF = true
+            isDisconnected = true
+            bleconnection = 0
         }
         
     }
@@ -72,28 +73,24 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     // Stop discoving device
     func stopscan_device() {
         self.centralManager.stopScan()
+        print("*****************************")
         print("Scan Stopped")
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         var peripheralName : String!
         var discoveredPeripheral : CBPeripheral!
-        var peripheraluuid : String!
+        //var peripheraluuid : String!
         if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
            peripheralName = name
         }
         else{
             peripheralName = "Unkown"
         }
-        if let uuid = advertisementData[CBAdvertisementDataServiceDataKey] as? String {
-            peripheraluuid = uuid
-        }
-        else{
-            peripheraluuid = "N/A"
-        }
         discoveredPeripheral = peripheral
         if !(peripheralName == "Unkown"){
-            let newPeripheral = Peripheral(id: peripherals.count, name: peripheralName, rssi: RSSI.intValue, Peripherasl: discoveredPeripheral, SerivceID: peripheraluuid)
+            let newPeripheral = Peripheral(id: peripherals.count, name: peripheralName, rssi: RSSI.intValue, Peripherasl:
+                                            discoveredPeripheral)
             print(newPeripheral)
             peripherals.append(newPeripheral)
         }
@@ -111,7 +108,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         print("*****************************")
         print("\(peripheral) Disconnect")
         centralManager.cancelPeripheralConnection(peripheral)
-        bleconnection = 3
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
@@ -119,7 +115,10 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         print("Device Connected")
         peripheral.delegate = self
         peripheral.discoverServices(nil)
+        stopscan_device()
         bleconnection = 2
+        isDisconnected = false
+        centralManager.stopScan()
     }
     
     
@@ -128,6 +127,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             print("*****************************")
             print("Failed to  Connect")
             bleconnection = 0
+            isDisconnected = true
             return
         }
     }
@@ -136,13 +136,58 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         if error != nil {
             print("*****************************")
             print("Failed to  Disconnect")
-            bleconnection = 1
+            bleconnection = 2
+            isDisconnected = false
             return
         }
         else{
             print("*****************************")
             print("Device Disconnected")
             bleconnection = 0
+            isDisconnected = true
+        }
+    }
+    
+    // Call after connecting to peripheral
+    func discoverServices(peripheral: CBPeripheral) {
+        peripheral.discoverServices(nil)
+    }
+    // Call after discovering services
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        if error != nil{
+            print("Error Service \(error!.localizedDescription)! ")
+        }
+        guard let services = peripheral.services else {
+            return
+        }
+        for service in services {
+            peripheral.discoverCharacteristics(nil, for: service)
+        }
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        if error != nil{
+            print("Error Service \(error!.localizedDescription)! ")
+        }
+        guard let characteristics = service.characteristics else {
+               return
+        }
+        for characteristic in characteristics {
+            peripheral.readValue(for: characteristic)
+            peripheral.setNotifyValue(true, for: characteristic)
+        }
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: Error?) {
+        if error != nil{
+            print("Error debugDescription \(error.debugDescription)!")
+        }
+        if characteristic.descriptors != nil{
+            for descript in characteristic.descriptors!{
+                let mDescript = descript as CBDescriptor?
+                print("DidDiscoverDescriptorCharacterisitic \(mDescript?.description ?? "")")
+            }
+            
         }
     }
 }
