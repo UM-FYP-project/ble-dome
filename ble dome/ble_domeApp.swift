@@ -21,44 +21,48 @@ struct ble_domeApp: App {
 struct Peripheral: Identifiable {
     let id : Int
     let name : String
-    let rssi : Int
+    var rssi : Int
     let Peripherasl : CBPeripheral
-    let SerivceID : String
+    let State : Int
 }
 
 class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate{
     var centralManager:CBCentralManager!
     var connectedPeripheral: CBPeripheral?
     var connectedPeripheral_record: String?
+    @Published var isInit : Bool = false
     @Published var isBluetoothON : Bool = false
-    @Published var isBluetoothOFF : Bool = false
-    @Published var isunauthorized : Bool = false
-    @Published var bleconnection : Int = 0
     @Published var peripherals = [Peripheral]()
-    //@Published var peripherals = [CBPeripheral]()
-    @Published var peripheral_count : Int = 0
+    @Published var isScanned : Bool = false
+    @Published var wasScanned : Bool = false
     
-    override init() {
-        super.init()
-        centralManager = CBCentralManager(delegate: self, queue: nil)
-        centralManager.delegate = self
+//    override init() {
+//        super.init()
+//        centralManager = CBCentralManager(delegate: self, queue: nil)
+//        centralManager.delegate = self
+//        print("BLE init")
+//    }
+    
+    //Bluetooth init
+    func initBLE(){
+        self.centralManager = CBCentralManager(delegate: self, queue: nil)
         print("BLE init")
+        isInit = true
+        wasScanned = false
+        peripherals.removeAll()
     }
+    
     // Bluetooth State
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         if central.state == .poweredOn{
-            isBluetoothOFF = false
             isBluetoothON = true
             print("BLE powered on")
-            scan_devices()
-        }
-        else if central.state == .unauthorized{
-            isunauthorized = true
-            print("BLE is unauthorized")
         }
         else {
             isBluetoothON = false
-            isBluetoothOFF = true
+            isScanned = false
+            wasScanned = false
+            isInit = false
         }
         
     }
@@ -66,36 +70,34 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     func scan_devices(){
         peripherals.removeAll()
         centralManager.scanForPeripherals(withServices: nil, options: nil)
+        isScanned = true
+        wasScanned = true
         print("Scanning")
     }
     
     // Stop discoving device
     func stopscan_device() {
         self.centralManager.stopScan()
+        isScanned = false
         print("Scan Stopped")
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        var peripheralName : String!
+        //var peripheralName : String!
         var discoveredPeripheral : CBPeripheral!
-        var peripheraluuid : String!
-        if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String {
-           peripheralName = name
-        }
-        else{
-            peripheralName = "Unkown"
-        }
-        if let uuid = advertisementData[CBAdvertisementDataServiceDataKey] as? String {
-            peripheraluuid = uuid
-        }
-        else{
-            peripheraluuid = "N/A"
-        }
+        //var peripheraluuid : String!
         discoveredPeripheral = peripheral
-        if !(peripheralName == "Unkown"){
-            let newPeripheral = Peripheral(id: peripherals.count, name: peripheralName, rssi: RSSI.intValue, Peripherasl: discoveredPeripheral, SerivceID: peripheraluuid)
-            print(newPeripheral)
-            peripherals.append(newPeripheral)
+        if let name = peripheral.name{
+            if peripherals.filter({$0.name == name}).count < 1 {
+                let newPeripheral = Peripheral(id: peripherals.count, name: name, rssi: RSSI.intValue, Peripherasl: discoveredPeripheral, State: 0)
+                print(newPeripheral)
+                peripherals.append(newPeripheral)
+            }
+            else {
+                if let index = peripherals.firstIndex(where: {$0.name == name}){
+                    peripherals[index].rssi = RSSI.intValue
+                }
+            }
         }
     }
     
@@ -103,7 +105,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         print("*****************************")
         print("Connect to Peripheral:\(peripheral)")
         centralManager.connect(peripheral, options: nil)
-        bleconnection = 1
         centralManager.stopScan()
      }
     
@@ -111,7 +112,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         print("*****************************")
         print("\(peripheral) Disconnect")
         centralManager.cancelPeripheralConnection(peripheral)
-        bleconnection = 3
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
@@ -119,7 +119,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         print("Device Connected")
         peripheral.delegate = self
         peripheral.discoverServices(nil)
-        bleconnection = 2
     }
     
     
@@ -127,7 +126,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         if error != nil{
             print("*****************************")
             print("Failed to  Connect")
-            bleconnection = 0
             return
         }
     }
@@ -136,13 +134,11 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         if error != nil {
             print("*****************************")
             print("Failed to  Disconnect")
-            bleconnection = 1
             return
         }
         else{
             print("*****************************")
             print("Device Disconnected")
-            bleconnection = 0
         }
     }
 }
