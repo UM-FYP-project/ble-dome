@@ -25,12 +25,11 @@ struct BLEScanner: View {
             }.frame(width: geometry.size.width, height: geometry.size.height)
         }
         .onAppear(perform: {
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
                 if ble.isBluetoothON{
                     scanButton_str = "Stop Scanning"
                     ble.scan_devices()
                 }
-                
             }
         })
     }
