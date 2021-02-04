@@ -11,6 +11,7 @@ struct peripheralrow: View {
     var peripheral : Peripheral
     @EnvironmentObject var ble:BLE
     @State var connectButton_str:String = "Tap to Connect"
+    @State var longpressed:Bool = false
     var body: some View {
         HStack{
             VStack(alignment: .leading){
@@ -18,7 +19,7 @@ struct peripheralrow: View {
                     .bold()
                     .font(.title2)
                 Text("Rssi: \(peripheral.rssi)")
-                Text("Serive: \(peripheral.Serive)")
+                Text("Serive: \(peripheral.Service)")
             }
             Spacer()
             if peripheral.State == 0{
@@ -44,6 +45,9 @@ struct peripheralrow: View {
                     .multilineTextAlignment(.trailing)
             }
         }
+        .onAppear(perform: {
+            longpressed = false
+        })
         .onTapGesture {
             if peripheral.State == 0{
                 print("Connect to \(peripheral.name)")
@@ -54,12 +58,16 @@ struct peripheralrow: View {
                 ble.disconnect(peripheral: peripheral.Peripherasl)
             }
         }
-        .onLongPressGesture(minimumDuration: 1.0) {
+        .onLongPressGesture(minimumDuration: 2.0) {
             if peripheral.State == 0{
                 print("Connect to \(peripheral.name)")
                 ble.connect(peripheral: peripheral.Peripherasl)
             }
+            longpressed = true
         }
+        .sheet(isPresented: $longpressed, content: {
+            PeripheralDetail()
+        })
     }
 }
 

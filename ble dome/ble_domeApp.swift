@@ -22,9 +22,17 @@ struct Peripheral: Identifiable {
     let id : Int
     let name : String
     var rssi : Int
-    let Serive : String
+    let Service : String
     let Peripherasl : CBPeripheral
     var State : Int
+}
+
+struct Peripheral_characteristics: Identifiable{
+    let id : Int
+    let name : String
+    let Services_UUID : CBUUID
+    let Characteristic_UUID : CBUUID
+    var value : UInt8?
 }
 
 class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate{
@@ -69,7 +77,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     }
     //Discover device
     func scan_devices(){
-        peripherals.removeAll()
         centralManager.scanForPeripherals(withServices: nil, options: nil)
         isScanned = true
         wasScanned = true
@@ -89,11 +96,17 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         discoveredPeripheral = peripheral
         if let name = peripheral.name{
             if peripherals.filter({$0.name == name}).count < 1 {
-                if let UUID = advertisementData["kCBAdvDataServiceUUIDs"] as? Array<Any> {
-                    let newPeripheral = Peripheral(id: peripherals.count, name: name, rssi: RSSI.intValue, Serive: "\(UUID)", Peripherasl: discoveredPeripheral, State: 0)
-                    print("\(name) \(UUID) \(RSSI.intValue)")
-                    peripherals.append(newPeripheral)
+//                if let UUID = advertisementData["kCBAdvDataServiceUUIDs"] as? Array<Any> {
+//                    let newPeripheral = Peripheral(id: peripherals.count, name: name, rssi: RSSI.intValue, Serive: "\(UUID)", Peripherasl: discoveredPeripheral, State: 0)
+//                    print("\(name) \(UUID) \(RSSI.intValue)")
+//                    peripherals.append(newPeripheral)
+//                }
+                guard let UUID =  advertisementData["kCBAdvDataServiceUUIDs"] as? Array<Any> else {
+                    return
                 }
+                let newPeripheral = Peripheral(id: peripherals.count, name: name, rssi: RSSI.intValue, Service: "\(UUID)", Peripherasl: discoveredPeripheral, State: 0)
+                print("\(name) \(UUID) \(RSSI.intValue)")
+                peripherals.append(newPeripheral)
             }
             else {
                 if let index = peripherals.firstIndex(where: {$0.name == name}){
@@ -124,7 +137,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         print("*****************************")
-        print("Device Connected")
+        print("\(peripheral) Connected")
         peripheral.delegate = self
         peripheral.discoverServices(nil)
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
@@ -137,7 +150,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         if error != nil{
             print("*****************************")
-            print("Failed to  Connect")
+            print("\(peripheral) Failed to Connect")
             if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
                 peripherals[index].State = 0
             }
@@ -148,7 +161,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         if error != nil {
             print("*****************************")
-            print("Failed to  Disconnect")
+            print("\(peripheral) Failed to  Disconnect")
             if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
                 peripherals[index].State = 2
             }
@@ -156,12 +169,73 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         }
         else{
             print("*****************************")
-            print("Device Disconnected")
+            print("\(peripheral) Device Disconnected")
             if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
                 peripherals[index].State = 0
             }
         }
     }
     
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        print("********\(peripheral.name!) Discover Services*******")
+        if error != nil{
+            print("Error discovering services \(error!.localizedDescription)")
+        }
+        guard let services = peripheral.services else {
+            return
+        }
+        for service in services {
+            print("Discovered Services: \(service.uuid)")
+            peripheral.discoverCharacteristics(nil, for: service)
+        }
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        print("********\(peripheral.name!) Discover Characteristics********")
+        if error != nil{
+            print("Error discovering Characteristics \(error!.localizedDescription)")
+        }
+        guard let characteristics = service.characteristics else {
+            return
+        }
+        print("Found \(characteristics.count) characteristics")
+        for characteristic in characteristics {
+            peripheral.readValue(for: characteristic)
+            peripheral.setNotifyValue(true, for: characteristic)
+            print(characteristic)
+        }
+    }
+    
+//    func peripheral(_ peripheral: CBPeripheral, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: Error?) {
+//        if error != nil{
+//            print("\(error.debugDescription) of \(peripheral.name)")
+//        }
+//        guard let descriptors = characteristic.descriptors else {
+//            return
+//
+//        }
+//        if let userDescriptionDescriptor = descriptors.first(where: {
+//                return $0.uuid.uuidString == CBUUIDCharacteristicUserDescriptionString
+//            }) {
+//                // Read user description for characteristic
+//                peripheral.readValue(for: userDescriptionDescriptor)
+//            }
+//    }
+//
+    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        print("********\(peripheral.name!) Update Notification State********")
+        if error != nil{
+            print("\(error!.localizedDescription) ")
+        }
+        print("\(characteristic.uuid) : \(characteristic.isNotifying)")
+    }
+
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        print("********\(peripheral.name!) Update Value********")
+        if error != nil{
+            print("\(error!.localizedDescription) ")
+        }
+        print("\(characteristic.uuid) : \(characteristic.value)")
+    }
     
 }

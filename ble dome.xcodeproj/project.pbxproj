@@ -11,6 +11,7 @@
 		9552406625CA9AB100EA1011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406325CA9AB100EA1011 /* ContentView.swift */; };
 		9552406725CA9AB100EA1011 /* BLEScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406025CA9AB000EA1011 /* BLEScanner.swift */; };
 		9552406A25CA9AB600EA1011 /* PeripheralRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406925CA9AB600EA1011 /* PeripheralRow.swift */; };
+		9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552407525CC54B100EA1011 /* PeripheralDetail.swift */; };
 		95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */; };
 		95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368B825BF2F700026EC88 /* Assets.xcassets */; };
 		95B368BC25BF2F700026EC88 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368BB25BF2F700026EC88 /* Preview Assets.xcassets */; };
@@ -21,6 +22,7 @@
 		9552406225CA9AB100EA1011 /* BLEScannerList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEScannerList.swift; sourceTree = "<group>"; };
 		9552406325CA9AB100EA1011 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9552406925CA9AB600EA1011 /* PeripheralRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralRow.swift; sourceTree = "<group>"; };
+		9552407525CC54B100EA1011 /* PeripheralDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralDetail.swift; sourceTree = "<group>"; };
 		95B368B125BF2F6D0026EC88 /* ble dome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ble dome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ble_domeApp.swift; sourceTree = "<group>"; };
 		95B368B825BF2F700026EC88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -54,6 +56,7 @@
 				9552406025CA9AB000EA1011 /* BLEScanner.swift */,
 				9552406225CA9AB100EA1011 /* BLEScannerList.swift */,
 				9552406925CA9AB600EA1011 /* PeripheralRow.swift */,
+				9552407525CC54B100EA1011 /* PeripheralDetail.swift */,
 			);
 			path = BLE;
 			sourceTree = "<group>";
@@ -163,6 +166,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */,
 				9552406A25CA9AB600EA1011 /* PeripheralRow.swift in Sources */,
 				9552406725CA9AB100EA1011 /* BLEScanner.swift in Sources */,
 				9552406425CA9AB100EA1011 /* BLEScannerList.swift in Sources */,
