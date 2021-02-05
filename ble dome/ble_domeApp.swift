@@ -27,11 +27,13 @@ struct Peripheral: Identifiable {
     var State : Int
 }
 
-struct Peripheral_characteristics: Identifiable{
+struct Peripheral_characteristic: Identifiable{
     let id : Int
     let name : String
     let Services_UUID : CBUUID
-    let Characteristic_UUID : CBUUID
+    let Characteristic_UUID : CBUUID?
+    let properties : String
+    var iswritable : Bool
     var value : UInt8?
 }
 
@@ -42,6 +44,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     @Published var isInit : Bool = false
     @Published var isBluetoothON : Bool = false
     @Published var peripherals = [Peripheral]()
+    @Published var Peripheral_characteristics = [Peripheral_characteristic]()
     @Published var isScanned : Bool = false
     @Published var wasScanned : Bool = false
     
@@ -96,11 +99,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         discoveredPeripheral = peripheral
         if let name = peripheral.name{
             if peripherals.filter({$0.name == name}).count < 1 {
-//                if let UUID = advertisementData["kCBAdvDataServiceUUIDs"] as? Array<Any> {
-//                    let newPeripheral = Peripheral(id: peripherals.count, name: name, rssi: RSSI.intValue, Serive: "\(UUID)", Peripherasl: discoveredPeripheral, State: 0)
-//                    print("\(name) \(UUID) \(RSSI.intValue)")
-//                    peripherals.append(newPeripheral)
-//                }
                 guard let UUID =  advertisementData["kCBAdvDataServiceUUIDs"] as? Array<Any> else {
                     return
                 }
@@ -179,7 +177,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         print("********\(peripheral.name!) Discover Services*******")
         if error != nil{
-            print("Error discovering services \(error!.localizedDescription)")
+            print("\(peripheral.name!): Error discovering services \(error!.localizedDescription)")
         }
         guard let services = peripheral.services else {
             return
@@ -193,49 +191,68 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         print("********\(peripheral.name!) Discover Characteristics********")
         if error != nil{
-            print("Error discovering Characteristics \(error!.localizedDescription)")
+            print("\(service.uuid): Error discovering Characteristics \(error!.localizedDescription)")
         }
         guard let characteristics = service.characteristics else {
             return
         }
-        print("Found \(characteristics.count) characteristics")
         for characteristic in characteristics {
             peripheral.readValue(for: characteristic)
             peripheral.setNotifyValue(true, for: characteristic)
-            print(characteristic)
+            let properties = Characteristic_Properties(properties: characteristic.properties)
+            
+            print("\(peripheral.name!) : \(service.uuid): \(characteristic.uuid) | \(characteristic.value) | \(properties.0) | isWritable: \(properties.1) | isNotifying: \(characteristic.isNotifying)")
         }
     }
     
-//    func peripheral(_ peripheral: CBPeripheral, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: Error?) {
-//        if error != nil{
-//            print("\(error.debugDescription) of \(peripheral.name)")
-//        }
-//        guard let descriptors = characteristic.descriptors else {
-//            return
-//
-//        }
-//        if let userDescriptionDescriptor = descriptors.first(where: {
-//                return $0.uuid.uuidString == CBUUIDCharacteristicUserDescriptionString
-//            }) {
-//                // Read user description for characteristic
-//                peripheral.readValue(for: userDescriptionDescriptor)
-//            }
-//    }
-//
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         print("********\(peripheral.name!) Update Notification State********")
         if error != nil{
-            print("\(error!.localizedDescription) ")
+            print("\(characteristic.uuid) : \(error!.localizedDescription) ")
         }
-        print("\(characteristic.uuid) : \(characteristic.isNotifying)")
+        print("\(peripheral.name!): \(characteristic.uuid) | isNotifying: \(characteristic.isNotifying)")
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         print("********\(peripheral.name!) Update Value********")
         if error != nil{
-            print("\(error!.localizedDescription) ")
+            print("\(characteristic.uuid): \(error!.localizedDescription) ")
         }
-        print("\(characteristic.uuid) : \(characteristic.value)")
+        print("\(peripheral.name!) : \(characteristic.uuid) | \(characteristic.value)")
     }
     
+    func Characteristic_Properties (properties: CBCharacteristicProperties) -> (String, Bool) {
+        var Properties_str = [String]()
+        let properties_digis:UInt8 = UInt8(properties.rawValue) % 0x10
+        let properties_tens:UInt8 = UInt8(properties.rawValue) / 0x10
+        var iswritable = false
+        switch properties_digis{
+        case 0x01:
+            Properties_str.append("Broadcast")
+        case 0x02:
+            Properties_str.append("Read")
+        case 0x04:
+            Properties_str.append("WriteWithoutResponse")
+            iswritable = true
+        case 0x08:
+            Properties_str.append("Write")
+            iswritable = true
+        default:
+            break
+        }
+        switch properties_tens{
+        case 0x01:
+            Properties_str.append("Notify")
+        case 0x02:
+            Properties_str.append("Indicate")
+        case 0x04:
+            Properties_str.append("AuthenticatedSignedWrites")
+        case 0x08:
+            Properties_str.append("ExtendedProperties")
+        default:
+            break
+        }
+        let joined = Properties_str.joined(separator: ", ")
+        return (joined, iswritable)
+    }
 }
