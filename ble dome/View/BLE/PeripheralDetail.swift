@@ -9,45 +9,57 @@ import SwiftUI
 
 struct PeripheralDetail: View {
     @EnvironmentObject var ble:BLE
+    @State var WrtieValue: Bool = false
     var body: some View {
-        VStack{
-            Text("Peripheral Services")
-                .font(.largeTitle)
-                .multilineTextAlignment(/*@START_MENU_TOKEN@*/.leading/*@END_MENU_TOKEN@*/)
-            ForEach(ble.Peripheral_Services.indices){ (index) in
-                VStack{
-                    Text("Service")
-                        .multilineTextAlignment(/*@START_MENU_TOKEN@*/.leading/*@END_MENU_TOKEN@*/)
-                    Text("UUID: \(ble.Peripheral_Services[index])")
-                        .multilineTextAlignment(/*@START_MENU_TOKEN@*/.leading/*@END_MENU_TOKEN@*/)
+        GeometryReader{ geometry in
+            NavigationView {
+                List {
+                    ForEach(0..<ble.Peripheral_Services.count){ (Index) in
+                        VStack(alignment: .leading){
+                            Text("Service")
+                                .bold()
+                            Text("\(ble.Peripheral_Services[Index])")
+                        }
+                        .listStyle(InsetGroupedListStyle())
+                        ForEach(0..<ble.Peripheral_characteristics.count){ (index) in
+                            let characteristic = ble.Peripheral_characteristics[index]
+                            if ble.Peripheral_Services[Index] == characteristic.Services_UUID{
+                                HStack{
+                                    VStack(alignment: .leading){
+                                        Text("Characteristic")
+                                            .bold()
+                                        Text("\(characteristic.Characteristic_UUID)")
+                                        Text(characteristic.properties)
+                                        Text("Value: \(characteristic.valueStr)")
+                                    }
+                                    Spacer()
+                                    VStack{
+                                        if characteristic.isNotify{
+                                            Text("Notifying")
+                                                .multilineTextAlignment(.trailing)
+                                        }
+                                        Spacer()
+                                        HStack{
+                                            if characteristic.properties.contains("Read"){
+                                                Button(action: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/{}/*@END_MENU_TOKEN@*/) {
+                                                    Text("Read")
+                                                        .multilineTextAlignment(.trailing)
+                                                }
+                                            }
+                                            if characteristic.iswritable{
+                                                Button(action: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/{}/*@END_MENU_TOKEN@*/) {
+                                                    Text("Write")
+                                                        .multilineTextAlignment(.trailing)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                .frame(width:UIScreen.main.bounds.width , alignment:.leading)
-                List(ble.Peripheral_characteristics){ characteristic in
-                    characteristicRow(characteristic: characteristic)
-                }
-            }
-        }
-    }
-}
-
-struct characteristicRow: View {
-    @EnvironmentObject var ble:BLE
-    var characteristic:Peripheral_characteristic
-    var body: some View {
-        VStack{
-            if characteristic.Characteristic_UUID != nil{
-                Text("\(characteristic.Characteristic_UUID!)")
-                HStack{
-                    Text("Characteristic ")
-                    Text(characteristic.properties)
-                }
-                HStack{
-                    Text("Value: ")
-                    Text("\(characteristic.valueStr ?? "")")
-                }
-            }
-            if characteristic.iswritable {
-                TextField(/*@START_MENU_TOKEN@*/"Placeholder"/*@END_MENU_TOKEN@*/, text: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Value@*/.constant("")/*@END_MENU_TOKEN@*/)
+                .navigationTitle(Text("Peripheral Detail"))
             }
         }
     }
@@ -55,6 +67,6 @@ struct characteristicRow: View {
 
 //struct PeripheralDetail_Previews: PreviewProvider {
 //    static var previews: some View {
-//        PeripheralDetail(, characteristic: <#Peripheral_characteristic#>)
+//        PeripheralDetail()
 //    }
 //}

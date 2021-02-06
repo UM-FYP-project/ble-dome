@@ -31,8 +31,9 @@ struct Peripheral_characteristic: Identifiable{
     let id : Int
     let name : String
     let Services_UUID : CBUUID
-    let Characteristic_UUID : CBUUID?
+    let Characteristic_UUID : CBUUID
     let properties : String
+    var isNotify : Bool
     var iswritable : Bool
     var value = [UInt8]()
     var valueStr : String
@@ -49,13 +50,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     @Published var Peripheral_Services = [CBUUID]()
     @Published var isScanned : Bool = false
     @Published var wasScanned : Bool = false
-    
-//    override init() {
-//        super.init()
-//        centralManager = CBCentralManager(delegate: self, queue: nil)
-//        centralManager.delegate = self
-//        print("BLE init")
-//    }
     
     //Bluetooth init
     func initBLE(){
@@ -162,6 +156,8 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 0
         }
+        Peripheral_characteristics.removeAll()
+        Peripheral_Services.removeAll()
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
@@ -172,8 +168,9 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         guard let services = peripheral.services else {
             return
         }
+        print("\(peripheral.name!) Found \(services.count) Serivce")
         for service in services {
-            print("Discovered Services: \(service.uuid)")
+            print("Discovered Services: \(service.uuid) | \(service.description)")
             Peripheral_Services.append(service.uuid)
             peripheral.discoverCharacteristics(nil, for: service)
         }
@@ -187,26 +184,25 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         guard let characteristics = service.characteristics else {
             return
         }
+       print("\(peripheral.name!) Found \(characteristics.count) characteristics in \(service.uuid)")
+//        var index = 1
         for characteristic in characteristics {
             peripheral.readValue(for: characteristic)
             peripheral.setNotifyValue(true, for: characteristic)
             let properties = Characteristic_Properties(properties: characteristic.properties)
             print("\(peripheral.name!) : \(service.uuid): \(characteristic.uuid) | \(characteristic.value) | \(properties.0) | isWritable: \(properties.1) | isNotifying: \(characteristic.isNotifying)")
-//            guard let value = characteristic.value else {
-//                return
-//            }
             if let value = characteristic.value{
                 if let name = peripheral.name{
                     let byteValue = [UInt8](value)
-                    let newCharacteristic = Peripheral_characteristic(id: Peripheral_characteristics.count, name: name, Services_UUID: service.uuid, Characteristic_UUID: characteristic.uuid, properties: properties.0, iswritable: properties.1, value: byteValue, valueStr: value.hexEncodedString())
-                    print(newCharacteristic)
+                    let newCharacteristic = Peripheral_characteristic(id: Peripheral_characteristics.count, name: name, Services_UUID: service.uuid, Characteristic_UUID: characteristic.uuid, properties: properties.0, isNotify: characteristic.isNotifying, iswritable: properties.1, value: byteValue, valueStr: value.hexEncodedString())
+                    //print(newCharacteristic)
                     Peripheral_characteristics.append(newCharacteristic)
                 }
             }
             else{
                 if let name = peripheral.name{
-                    let newCharacteristic = Peripheral_characteristic(id: Peripheral_characteristics.count, name: name, Services_UUID: service.uuid, Characteristic_UUID: characteristic.uuid, properties: properties.0, iswritable: properties.1, value: [], valueStr: "nil")
-                    print(newCharacteristic)
+                    let newCharacteristic = Peripheral_characteristic(id: Peripheral_characteristics.count, name: name, Services_UUID: service.uuid, Characteristic_UUID: characteristic.uuid, properties: properties.0, isNotify: characteristic.isNotifying, iswritable: properties.1, value: [], valueStr: "nil")
+                    //print(newCharacteristic)
                     Peripheral_characteristics.append(newCharacteristic)
                 }
             }
@@ -218,19 +214,31 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         if error != nil{
             print("\(characteristic.uuid) : \(error!.localizedDescription) ")
         }
-        print("\(peripheral.name!): \(characteristic.uuid) | isNotifying: \(characteristic.isNotifying)")
+        if let index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == characteristic.service.uuid && $0.Characteristic_UUID == characteristic.uuid}){
+            Peripheral_characteristics[index].isNotify = characteristic.isNotifying
+        }
+        print("\(peripheral.name!): \(characteristic.service.uuid) : \(characteristic.uuid) | isNotifying: \(characteristic.isNotifying)")
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        //print("********\(peripheral.name!) Update Value********")
+        print("********\(peripheral.name!) Update Value********")
         if error != nil{
             print("\(characteristic.uuid): \(error!.localizedDescription) ")
         }
         guard let value = characteristic.value else {
             return
         }
-        //let byteValue = [UInt8](value)
-        //print("\(peripheral.name!) : \(characteristic.uuid) | \(value.hexEncodedString())")
+        let byteValue = [UInt8](value)
+        if let index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == characteristic.service.uuid && $0.Characteristic_UUID == characteristic.uuid}){
+            Peripheral_characteristics[index].value = byteValue
+            Peripheral_characteristics[index].valueStr = value.hexEncodedString()
+        }
+        print("\(peripheral.name!) : \(characteristic.service.uuid) : \(characteristic.uuid) | \(value.hexEncodedString())")
+    }
+    
+    
+    func readValue(Characteristic: CBCharacteristic, peripheral: CBPeripheral){
+        peripheral.readValue(for:Characteristic)
     }
     
     func Characteristic_Properties (properties: CBCharacteristicProperties) -> (String, Bool) {

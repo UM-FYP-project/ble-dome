@@ -58,7 +58,7 @@ struct peripheralrow: View {
                 ble.disconnect(peripheral: peripheral.Peripherasl)
             }
         }
-        .onLongPressGesture(minimumDuration: 2.0) {
+        .onLongPressGesture(minimumDuration: 1.0) {
             if peripheral.State == 0{
                 print("Connect to \(peripheral.name)")
                 ble.connect(peripheral: peripheral.Peripherasl)
@@ -66,7 +66,9 @@ struct peripheralrow: View {
             longpressed = true
         }
         .sheet(isPresented: $longpressed, content: {
-            PeripheralDetail()
+            if peripheral.State == 2 {
+                PeripheralDetail()
+            }
         })
     }
 }
