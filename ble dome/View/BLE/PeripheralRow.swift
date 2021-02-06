@@ -22,28 +22,7 @@ struct peripheralrow: View {
                 Text("Serive: \(peripheral.Service)")
             }
             Spacer()
-            if peripheral.State == 0{
-                Text("Tap to connect")
-                    .font(.title2)
-                    .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
-                    .multilineTextAlignment(.trailing)
-            }
-            else if peripheral.State == 1{
-                Text("Connecting")
-                    .font(.title2)
-                    .multilineTextAlignment(.trailing)
-            }
-            else if peripheral.State == 2{
-                Text("Tap to Disconnect")
-                    .font(.title2)
-                    .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
-                    .multilineTextAlignment(.trailing)
-            }
-            else {
-                Text("Disconnecting")
-                    .font(.title2)
-                    .multilineTextAlignment(.trailing)
-            }
+            BLEConnect_button_text(peripheral: peripheral)
         }
         .onAppear(perform: {
             longpressed = false
@@ -51,25 +30,57 @@ struct peripheralrow: View {
         .onTapGesture {
             if peripheral.State == 0{
                 print("Connect to \(peripheral.name)")
-                ble.connect(peripheral: peripheral.Peripherasl)
+                ble.connect(peripheral: peripheral.Peripheral)
             }
             else if peripheral.State == 2{
                 print("Disconnect to \(peripheral.name)")
-                ble.disconnect(peripheral: peripheral.Peripherasl)
+                ble.disconnect(peripheral: peripheral.Peripheral)
             }
         }
         .onLongPressGesture(minimumDuration: 1.0) {
             if peripheral.State == 0{
                 print("Connect to \(peripheral.name)")
-                ble.connect(peripheral: peripheral.Peripherasl)
+                ble.connect(peripheral: peripheral.Peripheral)
             }
             longpressed = true
         }
         .sheet(isPresented: $longpressed, content: {
-            if peripheral.State == 2 {
-                PeripheralDetail()
+            NavigationView {
+                List{
+                    PeripheralDetail(peripheral: peripheral).environmentObject(ble)
+                }
+                .navigationTitle(Text("Peripheral Detail"))
             }
         })
+    }
+}
+
+struct BLEConnect_button_text: View {
+    @EnvironmentObject var ble:BLE
+    var peripheral : Peripheral
+    var body: some View {
+        if peripheral.State == 0{
+            Text("Tap to connect")
+                .font(.title2)
+                .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                .multilineTextAlignment(.trailing)
+        }
+        else if peripheral.State == 1{
+            Text("Connecting")
+                .font(.title2)
+                .multilineTextAlignment(.trailing)
+        }
+        else if peripheral.State == 2{
+            Text("Tap to Disconnect")
+                .font(.title2)
+                .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                .multilineTextAlignment(.trailing)
+        }
+        else {
+            Text("Disconnecting")
+                .font(.title2)
+                .multilineTextAlignment(.trailing)
+        }
     }
 }
 
