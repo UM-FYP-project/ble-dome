@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9528A16A25D03DA500B51649 /* DetailTabView.swift */; };
 		9552406425CA9AB100EA1011 /* BLEScannerList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406225CA9AB100EA1011 /* BLEScannerList.swift */; };
 		9552406625CA9AB100EA1011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406325CA9AB100EA1011 /* ContentView.swift */; };
 		9552406725CA9AB100EA1011 /* BLEScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406025CA9AB000EA1011 /* BLEScanner.swift */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9528A16A25D03DA500B51649 /* DetailTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailTabView.swift; sourceTree = "<group>"; };
 		9552406025CA9AB000EA1011 /* BLEScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEScanner.swift; sourceTree = "<group>"; };
 		9552406225CA9AB100EA1011 /* BLEScannerList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEScannerList.swift; sourceTree = "<group>"; };
 		9552406325CA9AB100EA1011 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -57,6 +59,7 @@
 				9552406225CA9AB100EA1011 /* BLEScannerList.swift */,
 				9552406925CA9AB600EA1011 /* PeripheralRow.swift */,
 				9552407525CC54B100EA1011 /* PeripheralDetail.swift */,
+				9528A16A25D03DA500B51649 /* DetailTabView.swift */,
 			);
 			path = BLE;
 			sourceTree = "<group>";
@@ -166,6 +169,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */,
 				9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */,
 				9552406A25CA9AB600EA1011 /* PeripheralRow.swift in Sources */,
 				9552406725CA9AB100EA1011 /* BLEScanner.swift in Sources */,

@@ -10,25 +10,23 @@ import SwiftUI
 struct BLEScanner: View {
     @EnvironmentObject var ble:BLE
     var body: some View {
-        GeometryReader{ geometry in
-            NavigationView {
-                BLEScannerList().environmentObject(ble)
-                    .navigationTitle("Device Scanner")
-                    .navigationBarItems(trailing:
-                                            Button(action: {scanButton()}) {
-                                                if !ble.isScanned{
-                                                    Text("Scan")
-                                                        .font(.title2)
-                                                        .frame(width: 150,  alignment: .trailing)
-                                                }
-                                                else{
-                                                    Text("Stop Scanning")
-                                                        .font(.title2)
-                                                        .frame(width: 150,  alignment: .trailing)
-                                                }
-                                            }
-                    )
-            }.frame(width: geometry.size.width, height: geometry.size.height)
+        NavigationView {
+            BLEScannerList().environmentObject(ble)
+                .navigationTitle("Device Scanner")
+                .navigationBarItems(
+                    trailing:
+                        Button(action: {scanButton()}) {
+                            if !ble.isScanned{
+                                Text("Scan")
+                                    .font(.title2)
+                                    .frame(width: 150,  alignment: .trailing)
+                            }
+                            else{
+                                Text("Stop Scanning")
+                                    .font(.title2)
+                                    .frame(width: 150,  alignment: .trailing)
+                            }
+                        })
         }
         .onAppear(perform: {
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {

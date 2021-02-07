@@ -37,6 +37,7 @@ struct Peripheral_characteristic: Identifiable{
     var iswritable : Bool
     var value = [UInt8]()
     var valueStr : String
+    var WritevalueStr : String
     var Characteristic: CBCharacteristic
 }
 
@@ -84,6 +85,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     }
     //Discover device
     func scan_devices(){
+        peripherals.removeAll()
         centralManager.scanForPeripherals(withServices: nil, options: nil)
         isScanned = true
         wasScanned = true
@@ -119,7 +121,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     }
     
     func connect(peripheral: CBPeripheral) {
-        print("*****************************")
         print("Connect to Peripheral:\(peripheral.name!)")
         centralManager.connect(peripheral, options: nil)
         stopscan_device()
@@ -129,7 +130,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
      }
     
     func disconnect(peripheral: CBPeripheral){
-        print("*****************************")
         print("\(peripheral.name!) Disconnect")
         centralManager.cancelPeripheralConnection(peripheral)
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
@@ -137,8 +137,12 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         }
     }
     
+    func cancelConnection(peripheral: CBPeripheral){
+        print("Cancel Connect to Peripheral:\(peripheral.name!)")
+        centralManager.cancelPeripheralConnection(peripheral)
+    }
+    
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        print("*****************************")
         print("\(peripheral.name!) Connected")
         peripheral.delegate = self
         peripheral.discoverServices(nil)
@@ -149,7 +153,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         if error != nil{
-            print("*****************************")
             print("\(peripheral.name!) Failed to Connect")
             if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
                 peripherals[index].State = 0
@@ -160,7 +163,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        print("*****************************")
         print("\(peripheral.name!) Device Disconnected")
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 0
@@ -204,14 +206,14 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             if let value = characteristic.value{
                 if let name = peripheral.name{
                     let byteValue = [UInt8](value)
-                    let newCharacteristic = Peripheral_characteristic(id: Peripheral_characteristics.count, name: name, Services_UUID: service.uuid, Characteristic_UUID: characteristic.uuid, properties: properties.0, isNotify: characteristic.isNotifying, iswritable: properties.1, value: byteValue, valueStr: value.hexEncodedString(), Characteristic: characteristic)
+                    let newCharacteristic = Peripheral_characteristic(id: Peripheral_characteristics.count, name: name, Services_UUID: service.uuid, Characteristic_UUID: characteristic.uuid, properties: properties.0, isNotify: characteristic.isNotifying, iswritable: properties.1, value: byteValue, valueStr: value.hexEncodedString(), WritevalueStr: "", Characteristic: characteristic)
                     //print(newCharacteristic)
                     Peripheral_characteristics.append(newCharacteristic)
                 }
             }
             else{
                 if let name = peripheral.name{
-                    let newCharacteristic = Peripheral_characteristic(id: Peripheral_characteristics.count, name: name, Services_UUID: service.uuid, Characteristic_UUID: characteristic.uuid, properties: properties.0, isNotify: characteristic.isNotifying, iswritable: properties.1, value: [], valueStr: "nil", Characteristic: characteristic)
+                    let newCharacteristic = Peripheral_characteristic(id: Peripheral_characteristics.count, name: name, Services_UUID: service.uuid, Characteristic_UUID: characteristic.uuid, properties: properties.0, isNotify: characteristic.isNotifying, iswritable: properties.1, value: [], valueStr: "", WritevalueStr: "", Characteristic: characteristic)
                     //print(newCharacteristic)
                     Peripheral_characteristics.append(newCharacteristic)
                 }
@@ -231,7 +233,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        print("********\(peripheral.name!) Update Value********")
+        //print("********\(peripheral.name!) Update Value********")
         if error != nil{
             print("\(peripheral.name!) : \(characteristic.service.uuid) : \(characteristic.uuid): \(error!.localizedDescription) ")
         }
@@ -243,7 +245,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             Peripheral_characteristics[index].value = byteValue
             Peripheral_characteristics[index].valueStr = value.hexEncodedString()
         }
-        print("\(peripheral.name!) : \(characteristic.service.uuid) : \(characteristic.uuid) | \(value.hexEncodedString())")
+        //print("\(peripheral.name!) : \(characteristic.service.uuid) : \(characteristic.uuid) | \(value.hexEncodedString())")
     }
     
     func readValue(characteristic: CBCharacteristic, peripheral: CBPeripheral){
@@ -258,7 +260,18 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func writeValue(value: Data, characteristic: CBCharacteristic, peripheral: CBPeripheral){
         peripheral.writeValue(value, for: characteristic, type: .withResponse)
-        
+        if let index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == characteristic.service.uuid && $0.Characteristic_UUID == characteristic.uuid}){
+            Peripheral_characteristics[index].WritevalueStr = value.hexEncodedString()
+        }
+        print("\(peripheral.name!) : Serivce: \(characteristic.service.uuid) : Characteristic :\(characteristic.uuid) wrote Value: \(value.hexEncodedString()) ")
+    }
+    
+    func writeValue_withoutResponse(value: Data, characteristic: CBCharacteristic, peripheral: CBPeripheral){
+        peripheral.writeValue(value, for: characteristic, type: .withoutResponse)
+        if let index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == characteristic.service.uuid && $0.Characteristic_UUID == characteristic.uuid}){
+            Peripheral_characteristics[index].WritevalueStr = value.hexEncodedString()
+        }
+        print("\(peripheral.name!) : Serivce: \(characteristic.service.uuid) : Characteristic :\(characteristic.uuid) wrote_withoutResponse Value: \(value.hexEncodedString()) ")
     }
 
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
@@ -307,5 +320,18 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
 extension Data {
     func hexEncodedString() -> String {
         return map { String(format: "%02hhx", $0) }.joined()
+    }
+}
+
+extension StringProtocol {
+    var hexaData: Data { .init(hexa) }
+    var hexaBytes: [UInt8] { .init(hexa) }
+    private var hexa: UnfoldSequence<UInt8, Index> {
+        sequence(state: startIndex) { startIndex in
+            guard startIndex < self.endIndex else { return nil }
+            let endIndex = self.index(startIndex, offsetBy: 2, limitedBy: self.endIndex) ?? self.endIndex
+            defer { startIndex = endIndex }
+            return UInt8(self[startIndex..<endIndex], radix: 16)
+        }
     }
 }
