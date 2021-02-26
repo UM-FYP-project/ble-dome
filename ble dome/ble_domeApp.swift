@@ -48,6 +48,7 @@ struct Peripheral_Service: Identifiable{
     var Services : CBService
 }
 
+
 class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate{
     var centralManager:CBCentralManager!
     var connectedPeripheral: CBPeripheral?
@@ -202,7 +203,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             peripheral.readValue(for: characteristic)
             peripheral.setNotifyValue(true, for: characteristic)
             let properties = Characteristic_Properties(properties: characteristic.properties)
-            print("\(peripheral.name!) : \(service.uuid): \(characteristic.uuid) | \(characteristic.value) | \(properties.0) | isWritable: \(properties.1) | isNotifying: \(characteristic.isNotifying)")
+            print("\(peripheral.name!) : \(service.uuid): \(characteristic.uuid) | \(String(describing: characteristic.value)) | \(properties.0) | isWritable: \(properties.1) | isNotifying: \(characteristic.isNotifying)")
             if let value = characteristic.value{
                 if let name = peripheral.name{
                     let byteValue = [UInt8](value)
@@ -233,7 +234,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        //print("********\(peripheral.name!) Update Value********")
+        print("********\(peripheral.name!) Update Value********")
         if error != nil{
             print("\(peripheral.name!) : \(characteristic.service.uuid) : \(characteristic.uuid): \(error!.localizedDescription) ")
         }
@@ -245,7 +246,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             Peripheral_characteristics[index].value = byteValue
             Peripheral_characteristics[index].valueStr = value.hexEncodedString()
         }
-        //print("\(peripheral.name!) : \(characteristic.service.uuid) : \(characteristic.uuid) | \(value.hexEncodedString())")
+        print("\(peripheral.name!) : \(characteristic.service.uuid) : \(characteristic.uuid) | \(value.hexEncodedString())")
     }
     
     func readValue(characteristic: CBCharacteristic, peripheral: CBPeripheral){
@@ -254,13 +255,13 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         guard let value = characteristic.value else {
             return
         }
-        let byteValue = [UInt8](value)
+        //let byteValue = [UInt8](value)
         print("\(peripheral.name!) : \(characteristic.service.uuid) : \(characteristic.uuid) | \(value.hexEncodedString())")
     }
     
     func writeValue(value: Data, characteristic: CBCharacteristic, peripheral: CBPeripheral){
         peripheral.writeValue(value, for: characteristic, type: .withResponse)
-        if let index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == characteristic.service.uuid && $0.Characteristic_UUID == characteristic.uuid}){
+        if let index = Peripheral_characteristics.firstIndex(where: {$0.name == peripheral.name! && $0.Services_UUID == characteristic.service.uuid && $0.Characteristic_UUID == characteristic.uuid}){
             Peripheral_characteristics[index].WritevalueStr = value.hexEncodedString()
         }
         print("\(peripheral.name!) : Serivce: \(characteristic.service.uuid) : Characteristic :\(characteristic.uuid) wrote Value: \(value.hexEncodedString()) ")
@@ -268,7 +269,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func writeValue_withoutResponse(value: Data, characteristic: CBCharacteristic, peripheral: CBPeripheral){
         peripheral.writeValue(value, for: characteristic, type: .withoutResponse)
-        if let index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == characteristic.service.uuid && $0.Characteristic_UUID == characteristic.uuid}){
+        if let index = Peripheral_characteristics.firstIndex(where: {$0.name == peripheral.name! && $0.Services_UUID == characteristic.service.uuid && $0.Characteristic_UUID == characteristic.uuid}){
             Peripheral_characteristics[index].WritevalueStr = value.hexEncodedString()
         }
         print("\(peripheral.name!) : Serivce: \(characteristic.service.uuid) : Characteristic :\(characteristic.uuid) wrote_withoutResponse Value: \(value.hexEncodedString()) ")
@@ -315,6 +316,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         let joined = Properties_str.joined(separator: ", ")
         return (joined, iswritable)
     }
+    
 }
 
 extension Data {
@@ -335,3 +337,4 @@ extension StringProtocol {
         }
     }
 }
+

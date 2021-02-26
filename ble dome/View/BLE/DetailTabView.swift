@@ -16,8 +16,16 @@ struct DetailTabView: View {
                 .tabItem {
                     Image(systemName: "list.dash")
                     Text("Detail")
+                }
+            if peripheral.Service.contains("2A68"){
+                ReaderTab()
+                    .tabItem {
+                        Image(systemName: "dot.radiowaves.left.and.right")
+                        Text("Reader")
+                    }
             }
         }
         .navigationBarTitle("\(peripheral.name) Detail")
     }
 }
+

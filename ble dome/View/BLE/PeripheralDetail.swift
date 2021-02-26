@@ -79,14 +79,6 @@ struct CharacteristicProperties: View {
             }
             Spacer()
             HStack(alignment: .bottom){
-                if characteristic.properties.contains("Read"){
-                    Button(action: {
-                        ble.readValue(characteristic: characteristic.Characteristic, peripheral: peripheral.Peripheral)
-                    }) {
-                        Text("Read")
-                            .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
-                    }
-                }
                 if characteristic.iswritable{
                     NavigationLink(
                         destination: WriteValuetoChar(peripheral: peripheral, characteristic: characteristic),
@@ -96,9 +88,23 @@ struct CharacteristicProperties: View {
                         })
                     Text("Write")
                         .foregroundColor(.blue)
+                        .frame(width: 50, height: 30)
+                        .background(RoundedRectangle(cornerRadius: 10)
+                                        .foregroundColor(Color.white.opacity(0.7)).shadow(radius: 1))
                         .onTapGesture(perform: {
                             WriteValueBool = true
                         })
+                }
+                if characteristic.properties.contains("Read"){
+                    Button(action: {
+                        ble.readValue(characteristic: characteristic.Characteristic, peripheral: peripheral.Peripheral)
+                    }) {
+                        Text("Read")
+                            .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                    }
+                    .frame(width: 50, height: 30)
+                    .background(RoundedRectangle(cornerRadius: 10)
+                                    .foregroundColor(Color.white.opacity(0.7)).shadow(radius: 1))
                 }
             }
         }
@@ -108,54 +114,85 @@ struct CharacteristicProperties: View {
     }
 }
 
+
 struct WriteValuetoChar: View {
     @EnvironmentObject var ble:BLE
     @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @State var WrtieValueBox : Bool = false
     @State var WriteValueStr : String = ""
+    @State var WriteWithoutResponse_toggel : Bool = false
+    @State var WriteWithoutResponse : Bool = false
     var peripheral : Peripheral
     var characteristic : Peripheral_characteristic
     var body: some View {
-        VStack(alignment: .center) {
-            Text("Write Value to \(characteristic.Characteristic_UUID)")
-                .bold()
-                .font(.title)
-            Text("Value wrote: \(WriteValueStr)")
-            TextField("Value in Byte without 0x", text: $WriteValueStr)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .frame(width: UIScreen.main.bounds.width - 40)
-            HStack{
-                Spacer()
-                if characteristic.properties.contains("Write"){
-                    Button(action: {
-                        let WriteValue : Data = WriteValueStr.hexaData
-                        ble.writeValue(value: WriteValue, characteristic: characteristic.Characteristic, peripheral: peripheral.Peripheral)
-                        self.presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Text("Write")
+        GeometryReader { geometry in
+            ZStack{
+                VStack(alignment: .center) {
+                    VStack{
+                        Text("Write Value to \(characteristic.Characteristic_UUID)")
+                            .bold()
+                            .font(.headline)
+                        Text("Value wrote: \(WriteValueStr)")
                     }
-                    Spacer()
-                }
-                if characteristic.properties.contains("WriteWithoutResponse"){
-                    Button(action: {
-                        let WriteValue : Data = WriteValueStr.hexaData
-                        ble.writeValue_withoutResponse(value: WriteValue, characteristic: characteristic.Characteristic, peripheral: peripheral.Peripheral)
-                        self.presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Text("Write")
+                    .padding()
+                    TextField("Value in Byte without 0x", text: $WriteValueStr)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .frame(width: UIScreen.main.bounds.width - 60)
+                        Toggle(isOn: $WriteWithoutResponse) {
+                            Text("WithoutResponse")
+                        }
+                        .frame(width: UIScreen.main.bounds.width - 60)
+                        .disabled(!WriteWithoutResponse_toggel)
+                    Divider()
+                    HStack(alignment:.center){
+                        Button(action: {
+                            let WriteValue : Data = WriteValueStr.hexaData
+                            if WriteWithoutResponse {
+                                ble.writeValue_withoutResponse(value: WriteValue, characteristic: characteristic.Characteristic, peripheral: peripheral.Peripheral)
+                            }
+                            else {
+                                ble.writeValue(value: WriteValue, characteristic: characteristic.Characteristic, peripheral: peripheral.Peripheral)
+                            }
+                            self.presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Text("Write")
+                        }
+                        .frame(width: geometry.size.width / 2, alignment: .center)
+                        Divider()
+                        Button(action: {
+                            self.presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Text("close")
+                        }
+                        .frame(width: geometry.size.width / 2, alignment: .center)
                     }
-                    Spacer()
+                    .frame(height: 40)
                 }
-                Button(action: {
-                    self.presentationMode.wrappedValue.dismiss()
-                }) {
-                    Text("close")
-                }
-                Spacer()
+                .frame(width: geometry.size.width - 40, height: 220)
+                .background(RoundedRectangle(cornerRadius: 10)
+                .foregroundColor(Color.white.opacity(0.7)).shadow(radius: 1))
+                .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
             }
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
+            .onAppear(perform: {WriteWithoutResponsetoggle()})
         }
-        .navigationBarHidden(true)
-        .navigationBarBackButtonHidden(true)
+    }
+    
+    func WriteWithoutResponsetoggle() {
+        if characteristic.properties.contains("WriteWithoutResponse"){
+            WriteWithoutResponse_toggel = true
+        }
+        else{
+            WriteWithoutResponse_toggel = false
+        }
     }
 }
 
+//struct PeripheralDetail_Previews: PreviewProvider {
+//    static var previews: some View {
+//        Group {
+//            //WriteValuetoChar()
+//        }
+//    }
+//}
