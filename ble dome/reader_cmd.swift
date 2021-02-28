@@ -10,12 +10,12 @@ import CoreBluetooth
 
 let address : UInt8 = 0xFE
 
-struct Cmd_record: Identifiable{
+struct byte_record: Identifiable{
     let id : Int
-    let Time : Date
+    let Time : Double
     let Time_string : String
     let Defined : Int
-    let Cmd : [UInt8]
+    let Byte : [UInt8]
 }
 
 struct tag_data: Identifiable{
@@ -27,9 +27,12 @@ struct tag_data: Identifiable{
     let State : Int
 }
 
+var Byte_Record = [byte_record]()
+var Tags_data = [tag_data]()
+
 class Reader: ObservableObject{
-    var Cmds_record = [Cmd_record]()
-    var Tags_data = [tag_data]()
+    //var Byte_Record = [byte_record]()
+    //var Tags_data = [tag_data]()
     
     func cmd_reset () -> [UInt8]{
         let cmd : [UInt8] = [0xA0, 0x03, address, 0x70, 0xEF]
@@ -216,15 +219,33 @@ class Reader: ObservableObject{
         return outpower
     }
     
-    func Cmd_Record(defined: Int, cmd:[UInt8]){
+    func feedback_Inventory(feedback:[UInt8]) -> (Int, Int, String){
+        var tagcount = 0
+        var totalTag = 0
+        var Error_String = "nil"
+        if feedback[1] == 0x0C && feedback[3] == 0x80{
+            tagcount = Int(feedback[5] * UInt8(Int(100)) + feedback[6])
+            totalTag = Int(feedback[9] * UInt8(Int(10000)) + feedback[10] * UInt8(Int(1000)) + feedback[11] * UInt8(Int(100)) + feedback[12] )
+        }
+        else if feedback[1] == 0x04 && feedback[3] == 0x80{
+            Error_String = reader_error_code(code: feedback[4])
+        }
+        return (tagcount, totalTag, Error_String)
+    }
+    
+    func Btye_Recorder(defined: Int, byte:[UInt8]){
+        if Byte_Record.count > 30 {
+            Byte_Record.removeAll()
+        }
         let current_time = Date()
+        let millis : Double = current_time.timeIntervalSince1970
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "nl_NL")
         formatter.dateFormat = "(Z'Z')MM-dd_'T'HH:mm:ss.SSS"
         let time_string = formatter.string(from: current_time)
-        let cmd_record = Cmd_record(id: Cmds_record.count, Time: current_time, Time_string: time_string, Defined: defined, Cmd: cmd)
-        Cmds_record.append(cmd_record)
-        print(cmd_record)
+        let record = byte_record(id: Byte_Record.count, Time: millis, Time_string: time_string, Defined: defined, Byte: byte)
+        Byte_Record.append(record)
+        print("T_\(millis)_\(byte)")
     }
 }
 
@@ -241,21 +262,23 @@ extension BLE{
         let connected_state = 2
         let CmdData : Data = Data(cmd)
         print("*****Send Cmd to Reader*****")
-        //print("\(Peripheral_characteristics)")
         if let char_index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == reader_serivce && $0.Characteristic_UUID == reader_write_char}){
             if let peripheral_index = peripherals.firstIndex(where: {$0.name == Peripheral_characteristics[char_index].name && $0.State == connected_state}){
                 writeValue(value: CmdData, characteristic: Peripheral_characteristics[char_index].Characteristic, peripheral: peripherals[peripheral_index].Peripheral)
             }
         }
+        Reader().Btye_Recorder(defined: 1, byte: cmd)
     }
     
     func reader2BLE() -> [UInt8]{
         let reader_serivce : CBUUID = CBUUID(string: "2A68")
         let reader_write_char : CBUUID = CBUUID(string: "726F")
         var feedback = [UInt8]()
+        print("*****Reader Feedback*****")
         if let char_index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == reader_serivce && $0.Characteristic_UUID == reader_write_char}){
             feedback = Peripheral_characteristics[char_index].value
         }
+        Reader().Btye_Recorder(defined: 2, byte: feedback)
         return feedback
     }
 }

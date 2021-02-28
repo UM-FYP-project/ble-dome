@@ -316,7 +316,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         let joined = Properties_str.joined(separator: ", ")
         return (joined, iswritable)
     }
-    
 }
 
 extension Data {
