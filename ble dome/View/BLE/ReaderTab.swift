@@ -140,7 +140,8 @@ struct ReaderSetting: View {
                     }
                 }
             }
-            .position(x: geometry.size.width / 2, y: 320)
+            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+            .position(x: geometry.size.width / 2, y: geometry.size.height / 2 + 10)
             .blur(radius: SelectedBaudrate_picker || SelectedPower_picker ? 2 : 0)
             .overlay(SelectedBaudrate_picker || SelectedPower_picker ? Color.black.opacity(0.6) : nil)
             if SelectedBaudrate_picker == true {
@@ -161,6 +162,9 @@ struct ReaderInventory: View{
     @State var picker = false
     @State var isInventory = false
     @State var Inventory_button_str = "Start"
+    @State var Realtime_Inventory_Toggle = false
+    @State var tagsCount = 0
+    @State var ErrorString = "nil"
     var body: some View {
         GeometryReader { geometry in
             ZStack{
@@ -169,6 +173,11 @@ struct ReaderInventory: View{
                         .bold()
                         .font(.largeTitle)
                         .padding()
+                    Toggle(isOn: $Realtime_Inventory_Toggle) {
+                        Text("Realtime Inventory")
+                            .font(.headline)
+                    }
+                    Divider()
                     HStack{
                         Text("Inventory Speed:")
                             .font(.headline)
@@ -196,14 +205,45 @@ struct ReaderInventory: View{
                         Text("Inventoried:")
                             .font(.headline)
                         Spacer()
-                        Text("Tags")
-                            .font(.headline)
+                        if ErrorString != "nil" {
+                            Text("Error: \(ErrorString)")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                        }
+                        else {
+                            Text("\(tagsCount) Tags")
+                                .font(.headline)
+                        }
                     }
                     .frame(width: geometry.size.width - 20, height: 30, alignment: .center)
                     Divider()
+                    HStack{
+                        Text("Buffer:")
+                            .font(.headline)
+                        Spacer()
+                        Button(action: {
+                            ble.cmd2reader(cmd: reader.cmd_get_inventory_buffer())
+                        }) {
+                            Text("Read")
+                                .bold()
+                        }
+                        .disabled(Realtime_Inventory_Toggle || tagsCount <= 0)
+                        Divider()
+                        Button(action: {
+                            ble.cmd2reader(cmd: reader.cmd_clear_inventory_buffer())
+                            tagsCount = 0
+                        }) {
+                            Text("Clear")
+                                .bold()
+                        }
+                        .disabled(Realtime_Inventory_Toggle || tagsCount <= 0)
+                    }
+                    .frame(width: geometry.size.width - 20, height: 30, alignment: .center)
+                    Divider()
+                    Invetroy_srcoll(geometry: geometry)
                 }
-                .frame(width: geometry.size.width - 20, alignment: .center)
-                .position(x: geometry.size.width / 2, y: 100)
+                .frame(width: geometry.size.width - 20, height: geometry.size.height, alignment: .center)
+                .position(x: geometry.size.width / 2, y: geometry.size.height / 2 + 10)
             }
         }
         .blur(radius: picker  ? 2 : 0)
@@ -216,10 +256,39 @@ struct ReaderInventory: View{
     func EnableInventory(){
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true){ timer in
             ble.cmd2reader(cmd: reader.cmd_inventory(inventory_speed: UInt8(speed[Selected])))
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
+                tagsCount = reader.feedback_Inventory(feedback: ble.reader2BLE()).0
+                ErrorString = reader.feedback_Inventory(feedback: ble.reader2BLE()).1
+            }
             if !isInventory {
                 timer.invalidate()
             }
         }
+    }
+}
+
+struct Invetroy_srcoll: View {
+    var geometry : GeometryProxy
+    var body: some View {
+        HStack{
+            Text("PC")
+                .font(.headline)
+            Divider()
+            Text("EPC")
+                .font(.headline)
+            Spacer()
+            Divider()
+            Text("CRC")
+                .font(.headline)
+            Divider()
+            Text("RSSI")
+                .font(.headline)
+        }
+        .frame(width: geometry.size.width - 20, height: 30, alignment: .center)
+        ScrollView {
+            /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Content@*/Text("Placeholder")/*@END_MENU_TOKEN@*/
+        }
+        .frame(width: geometry.size.width - 20, height: geometry.size.height / 2 - 10)
     }
 }
 
@@ -271,7 +340,7 @@ struct ReaderTab_Previews: PreviewProvider {
         Group {
             ReaderTab()
             //ReaderSetting()
-            //ReaderInventory()
+            ReaderInventory()
         }
     }
 }

@@ -18,24 +18,22 @@ struct byte_record: Identifiable{
     let Byte : [UInt8]
 }
 
-struct tag_data: Identifiable{
+struct tag: Identifiable{
     let id : Int
-    let EPC : UInt8
-    let RSSI : Int
-    let Count : Int
-    let Data : UInt8
-    let State : Int
+    let EPC_Len : UInt8
+    let EPC : [UInt8]
+    var RSSI : Int
+    var Count : Int
+    var Data : [UInt8]
 }
 
 var Byte_Record = [byte_record]()
-var Tags_data = [tag_data]()
 
 class Reader: ObservableObject{
-    //var Byte_Record = [byte_record]()
-    //var Tags_data = [tag_data]()
-    
+    var Tags = [tag]()
     func cmd_reset () -> [UInt8]{
         let cmd : [UInt8] = [0xA0, 0x03, address, 0x70, 0xEF]
+        Tags.removeAll()
         return cmd
     }
 
@@ -114,17 +112,17 @@ class Reader: ObservableObject{
         return cmd
     }
     
-    func cmd_clear_inventory_buffer () -> [UInt8]{
-        let cmd : [UInt8] = [0xA0, 0x03, address, 0x91]
-        return cmd
-    }
+//    func cmd_clear_inventory_buffer () -> [UInt8]{
+//        let cmd : [UInt8] = [0xA0, 0x03, address, 0x91]
+//        return cmd
+//    }
     
     func cmd_inventory_buffer_count () -> [UInt8]{
         let cmd : [UInt8] = [0xA0, 0x03, address, 0x92]
         return cmd
     }
     
-    func cmd_reset_inventory_buffer () -> [UInt8]{
+    func cmd_clear_inventory_buffer () -> [UInt8]{
         let cmd : [UInt8] = [0xA0, 0x03, address, 0x93]
         return cmd
     }
@@ -213,24 +211,51 @@ class Reader: ObservableObject{
     
     func feedback_get_output_power(feedback:[UInt8]) -> Int{
         var outpower : Int = 0
-        if feedback[1] == 0x04 && feedback[3] == 0x77{
-            outpower = Int(feedback[4])
+        if feedback.count > 4 {
+            if feedback[1] == 0x04 && feedback[3] == 0x77{
+                outpower = Int(feedback[4])
+            }
         }
         return outpower
     }
     
-    func feedback_Inventory(feedback:[UInt8]) -> (Int, Int, String){
+    func feedback_Inventory(feedback:[UInt8]) -> (Int, String){
         var tagcount = 0
-        var totalTag = 0
         var Error_String = "nil"
-        if feedback[1] == 0x0C && feedback[3] == 0x80{
-            tagcount = Int(feedback[5] * UInt8(Int(100)) + feedback[6])
-            totalTag = Int(feedback[9] * UInt8(Int(10000)) + feedback[10] * UInt8(Int(1000)) + feedback[11] * UInt8(Int(100)) + feedback[12] )
+        if feedback.count > 5 {
+            if feedback[1] == 0x0C && feedback[3] == 0x80{
+                tagcount = Int(feedback[5] * UInt8(Int(100)) + feedback[6])
+            }
+            else if feedback[1] == 0x04 && feedback[3] == 0x80{
+                Error_String = reader_error_code(code: feedback[4])
+            }
         }
-        else if feedback[1] == 0x04 && feedback[3] == 0x80{
-            Error_String = reader_error_code(code: feedback[4])
+        return (tagcount, Error_String)
+    }
+    
+    func feedback_buffer(feedback:[UInt8]) -> String{
+        var EPC = [UInt8]()
+        var EPC_Len : UInt8 = 0x00
+        var RSSI = 0
+        var Count = 0
+        var Error_String = "nil"
+        if feedback.count > 5 {
+            if feedback[1] != 0x04 && feedback[3] == 0x90{
+                EPC_Len = feedback[6]
+                for index in 1..<Int(EPC_Len) {
+                    EPC.append(feedback[index + 6])
+                }
+                RSSI = reader_rssi(code: feedback[Int(EPC_Len) + 6])
+                Count = Int(feedback[Int(EPC_Len) + 9])
+                let Tag = tag(id: Tags.count, EPC_Len: EPC_Len, EPC: EPC, RSSI: RSSI, Count: Count, Data: [])
+                Tags.append(Tag)
+                print(Tag)
+            }
+            else if feedback[1] == 0x04 && feedback[3] == 0x90 {
+                Error_String = reader_error_code(code: feedback[4])
+            }
         }
-        return (tagcount, totalTag, Error_String)
+        return Error_String
     }
     
     func Btye_Recorder(defined: Int, byte:[UInt8]){

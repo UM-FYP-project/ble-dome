@@ -82,6 +82,7 @@ struct peripheralrow: View {
                     trailing:
                         Button(action: {connectButton(peripheral_name: peripheral.name, ble: ble)}) {
                             BLEConnect_button_text(peripheral_name: peripheral.name)
+                                .frame(width: 180, height: 30, alignment: .trailing)
                         }
                 ),
             isActive: $longpressed,
