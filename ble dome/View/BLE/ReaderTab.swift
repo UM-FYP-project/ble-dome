@@ -21,6 +21,9 @@ struct ReaderTab: View {
                 else if Selected == 1{
                     ReaderInventory().environmentObject(reader)
                 }
+                else if Selected == 4{
+                    Record_Monitor()
+                }
                 Picker(selection: $Selected, label: Text("Reader Picker")) {
                     Text("Setting").tag(0)
                     Text("Inventory").tag(1)
@@ -225,26 +228,8 @@ struct ReaderInventory: View{
                             .font(.headline)
                         Spacer()
                         Button(action: {
-                            var tags_count = tagsCount
-                            var counter = 0
-                            var tag_Record = [[UInt8]]()
-                            ble.cmd2reader(cmd: reader.cmd_get_inventory_buffer())
-                            Timer.scheduledTimer(withTimeInterval: 0.001, repeats: true){ timer in
-                                Buffer_button_str = "Reading"
-                                Buffer_button_Bool = true
-                                let feedback = ble.reader2BLE(record: false)
-                                if tag_Record.filter({$0 == feedback}).count < 1{
-                                    tag_Record.append(feedback)
-                                    reader.Btye_Recorder(defined: 2, byte: feedback)
-                                    reader.feedback_buffer(feedback: feedback)
-                                    tags_count -= 1
-                                }
-                                counter += 1
-                                if (tags_count < 0 || counter > 1000){
-                                    timer.invalidate()
-                                    Buffer_button_str = "Read"
-                                    Buffer_button_Bool = false
-                                }
+                            if !Realtime_Inventory_Toggle{
+                                Invetroy_Buffer_aciton()
                             }
                         }) {
                             Text(Buffer_button_str)
@@ -262,8 +247,7 @@ struct ReaderInventory: View{
                         .disabled(Realtime_Inventory_Toggle || tagsCount <= 0)
                     }
                     .frame(width: geometry.size.width - 20, height: 30, alignment: .center)
-                    Divider()
-                    Invetroy_srcoll(geometry: geometry).environmentObject(reader)
+                    Invetroy_Buffer(geometry: geometry).environmentObject(reader)
                 }
                 .frame(width: geometry.size.width - 20, height: geometry.size.height, alignment: .center)
                 .position(x: geometry.size.width / 2, y: geometry.size.height / 2 + 10)
@@ -288,58 +272,94 @@ struct ReaderInventory: View{
             }
         }
     }
+    
+    func Invetroy_Buffer_aciton(){
+        var tags_count = tagsCount
+        var counter = 0
+        var tag_Record = [[UInt8]]()
+        ble.cmd2reader(cmd: reader.cmd_get_inventory_buffer())
+        Timer.scheduledTimer(withTimeInterval: 0.0005, repeats: true){ timer in
+            Buffer_button_str = "Reading"
+            Buffer_button_Bool = true
+            let feedback = ble.reader2BLE(record: false)
+            if tag_Record.filter({$0 == feedback}).count < 1{
+                tag_Record.append(feedback)
+                reader.Btye_Recorder(defined: 2, byte: feedback)
+                reader.feedback_buffer(feedback: feedback)
+                tags_count -= 1
+            }
+            counter += 1
+            if (tags_count < 0 || counter > 1000){
+                timer.invalidate()
+                Buffer_button_str = "Read"
+                Buffer_button_Bool = false
+            }
+        }
+    }
 }
 
-struct Invetroy_srcoll: View {
+struct Invetroy_Buffer: View {
     @EnvironmentObject var reader:Reader
     var geometry : GeometryProxy
     var body: some View {
-        HStack{
-            Text("ID")
+        VStack(alignment: .center){
+            Text("Buffer List")
                 .font(.headline)
-                .frame(width: 20)
             Divider()
-            Text("PC")
-                .font(.headline)
-                .frame(width: 40)
-            Divider()
-            Text("EPC")
-                .font(.headline)
-            Spacer()
-            Divider()
-            Text("CRC")
-                .font(.headline)
-                .frame(width: 40)
-            Divider()
-            Text("RSSI")
-                .font(.headline)
-        }
-        .frame(width: geometry.size.width - 20, height: 30, alignment: .center)
-        Divider()
-        ScrollView {
-            ForEach(0..<Tags.count, id:\.self){ index in
-                let tag = Tags[index]
-                let PC_str = Data(tag.EPC[0...1]).hexEncodedString()
-                let EPC_str = Data(tag.EPC[2...(Int(tag.EPC_Len) - 5)]).hexEncodedString()
-                let CRC_str = Data(tag.EPC[(Int(tag.EPC_Len) - 2)...(Int(tag.EPC_Len) - 1)]).hexEncodedString()
-                HStack{
-                    Text("\(tag.id + 1)")
-                        .frame(width: 20)
-                    Divider()
-                    Text(PC_str)
-                        .frame(width: 40)
-                    Divider()
-                    Text(EPC_str)
-                    Divider()
-                    Text(CRC_str)
-                        .frame(width: 40)
-                    Divider()
-                    Text("\(tag.RSSI)")
+            List {
+                ForEach(0..<Tags.count, id:\.self){ index in
+                    let tag = Tags[index]
+                    let PC_str = Data(tag.EPC[0...1]).hexEncodedString()
+                    let EPC_str = Data(tag.EPC[2...(Int(tag.EPC_Len) - 5)]).hexEncodedString()
+                    let CRC_str = Data(tag.EPC[(Int(tag.EPC_Len) - 2)...(Int(tag.EPC_Len) - 1)]).hexEncodedString()
+                    HStack{
+                        Text("\(tag.id + 1)")
+                            .frame(width: 20)
+                        Divider()
+                        VStack(alignment: .leading){
+                            Text("EPC:\(EPC_str)")
+                                .font(.headline)
+                            HStack{
+                                Text("PC:\(PC_str)")
+                                Text("CRC:\(CRC_str)")
+                                Text("RSSI:\(tag.RSSI)")
+                            }
+                        }
+                    }
                 }
-                Divider()
             }
+            .padding(.leading, -10)
+            .frame(width: geometry.size.width, height: geometry.size.height / 2 - 10)
         }
-        .frame(width: geometry.size.width - 20, height: geometry.size.height / 2 - 10)
+    }
+}
+
+struct Record_Monitor: View {
+    @EnvironmentObject var reader:Reader
+    var body: some View {
+        GeometryReader{ geometry in
+            VStack(alignment: .center){
+                Text("Monitor")
+                    .bold()
+                    .font(.largeTitle)
+                    .padding()
+                List{
+                    ForEach(0..<Byte_Record.count){ index in
+                        let byte_record = Byte_Record[index]
+                        let byte_str = Data(byte_record.Byte).hexEncodedString()
+                        VStack(alignment: .leading){
+                            Text("\(byte_record.Time)")
+                                .foregroundColor(byte_record.Defined == 1 ? .blue : .red)
+                            Text(byte_str)
+                                .foregroundColor(byte_record.Defined == 1 ? .blue : .red)
+                        }
+                    }
+                }
+                .padding(.leading, -10)
+            }
+            .frame(width: geometry.size.width - 20, height: geometry.size.height - 20)
+            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+        }
     }
 }
 

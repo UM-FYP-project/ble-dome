@@ -10,6 +10,7 @@ import CoreBluetooth
 
 let address : UInt8 = 0xFE
 
+
 struct byte_record: Identifiable{
     let id : Int
     let Time : Double
