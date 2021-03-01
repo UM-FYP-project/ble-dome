@@ -9,16 +9,17 @@ import SwiftUI
 
 struct ReaderTab: View {
     @State var menuButton :Bool = false
+    @State var Reader_disable : Bool = false
     @ObservedObject var reader = Reader()
     @State var Selected = 1
     var body: some View {
         GeometryReader{ geometry in
             ZStack() {
                 if Selected == 0{
-                    ReaderSetting()
+                    ReaderSetting().environmentObject(reader)
                 }
                 else if Selected == 1{
-                    ReaderInventory()
+                    ReaderInventory().environmentObject(reader)
                 }
                 Picker(selection: $Selected, label: Text("Reader Picker")) {
                     Text("Setting").tag(0)
@@ -38,7 +39,7 @@ struct ReaderTab: View {
 
 struct ReaderSetting: View {
     @EnvironmentObject var ble:BLE
-    @ObservedObject var reader = Reader()
+    @EnvironmentObject var reader:Reader
     var Baudrate : [String] = ["9600bps", "19200bps", "38400bps", "115200bps"]
     var Baudrate_cmd : [UInt8] = [0x01, 0x02 , 0x03, 0x04]
     var Outpower : [Int] = [20,21,22,23,24,25,26,27,28,29,30,31,32,33]
@@ -128,7 +129,7 @@ struct ReaderSetting: View {
                                 ble.cmd2reader(cmd:
                                                 reader.cmd_get_output_power())
                                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                                    let reader_feedback = ble.reader2BLE()
+                                    let reader_feedback = ble.reader2BLE(record: true)
                                     Outpower_feedback = reader.feedback_get_output_power(feedback: reader_feedback)
                                 }
                             }) {
@@ -156,12 +157,14 @@ struct ReaderSetting: View {
 
 struct ReaderInventory: View{
     @EnvironmentObject var ble:BLE
-    @ObservedObject var reader = Reader()
+    @EnvironmentObject var reader:Reader
     let speed = Array(1...255)
     @State var Selected = 254
     @State var picker = false
     @State var isInventory = false
     @State var Inventory_button_str = "Start"
+    @State var Buffer_button_str = "Read"
+    @State var Buffer_button_Bool = false
     @State var Realtime_Inventory_Toggle = false
     @State var tagsCount = 0
     @State var ErrorString = "nil"
@@ -222,12 +225,32 @@ struct ReaderInventory: View{
                             .font(.headline)
                         Spacer()
                         Button(action: {
+                            var tags_count = tagsCount
+                            var counter = 0
+                            var tag_Record = [[UInt8]]()
                             ble.cmd2reader(cmd: reader.cmd_get_inventory_buffer())
+                            Timer.scheduledTimer(withTimeInterval: 0.001, repeats: true){ timer in
+                                Buffer_button_str = "Reading"
+                                Buffer_button_Bool = true
+                                let feedback = ble.reader2BLE(record: false)
+                                if tag_Record.filter({$0 == feedback}).count < 1{
+                                    tag_Record.append(feedback)
+                                    reader.Btye_Recorder(defined: 2, byte: feedback)
+                                    reader.feedback_buffer(feedback: feedback)
+                                    tags_count -= 1
+                                }
+                                counter += 1
+                                if (tags_count < 0 || counter > 1000){
+                                    timer.invalidate()
+                                    Buffer_button_str = "Read"
+                                    Buffer_button_Bool = false
+                                }
+                            }
                         }) {
-                            Text("Read")
+                            Text(Buffer_button_str)
                                 .bold()
                         }
-                        .disabled(Realtime_Inventory_Toggle || tagsCount <= 0)
+                        .disabled(Realtime_Inventory_Toggle || tagsCount <= 0 || Buffer_button_Bool)
                         Divider()
                         Button(action: {
                             ble.cmd2reader(cmd: reader.cmd_clear_inventory_buffer())
@@ -240,7 +263,7 @@ struct ReaderInventory: View{
                     }
                     .frame(width: geometry.size.width - 20, height: 30, alignment: .center)
                     Divider()
-                    Invetroy_srcoll(geometry: geometry)
+                    Invetroy_srcoll(geometry: geometry).environmentObject(reader)
                 }
                 .frame(width: geometry.size.width - 20, height: geometry.size.height, alignment: .center)
                 .position(x: geometry.size.width / 2, y: geometry.size.height / 2 + 10)
@@ -257,8 +280,8 @@ struct ReaderInventory: View{
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true){ timer in
             ble.cmd2reader(cmd: reader.cmd_inventory(inventory_speed: UInt8(speed[Selected])))
             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
-                tagsCount = reader.feedback_Inventory(feedback: ble.reader2BLE()).0
-                ErrorString = reader.feedback_Inventory(feedback: ble.reader2BLE()).1
+                tagsCount = reader.feedback_Inventory(feedback: ble.reader2BLE(record: true)).0
+                ErrorString = reader.feedback_Inventory(feedback: ble.reader2BLE(record: false)).1
             }
             if !isInventory {
                 timer.invalidate()
@@ -268,11 +291,17 @@ struct ReaderInventory: View{
 }
 
 struct Invetroy_srcoll: View {
+    @EnvironmentObject var reader:Reader
     var geometry : GeometryProxy
     var body: some View {
         HStack{
+            Text("ID")
+                .font(.headline)
+                .frame(width: 20)
+            Divider()
             Text("PC")
                 .font(.headline)
+                .frame(width: 40)
             Divider()
             Text("EPC")
                 .font(.headline)
@@ -280,13 +309,35 @@ struct Invetroy_srcoll: View {
             Divider()
             Text("CRC")
                 .font(.headline)
+                .frame(width: 40)
             Divider()
             Text("RSSI")
                 .font(.headline)
         }
         .frame(width: geometry.size.width - 20, height: 30, alignment: .center)
+        Divider()
         ScrollView {
-            /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Content@*/Text("Placeholder")/*@END_MENU_TOKEN@*/
+            ForEach(0..<Tags.count, id:\.self){ index in
+                let tag = Tags[index]
+                let PC_str = Data(tag.EPC[0...1]).hexEncodedString()
+                let EPC_str = Data(tag.EPC[2...(Int(tag.EPC_Len) - 5)]).hexEncodedString()
+                let CRC_str = Data(tag.EPC[(Int(tag.EPC_Len) - 2)...(Int(tag.EPC_Len) - 1)]).hexEncodedString()
+                HStack{
+                    Text("\(tag.id + 1)")
+                        .frame(width: 20)
+                    Divider()
+                    Text(PC_str)
+                        .frame(width: 40)
+                    Divider()
+                    Text(EPC_str)
+                    Divider()
+                    Text(CRC_str)
+                        .frame(width: 40)
+                    Divider()
+                    Text("\(tag.RSSI)")
+                }
+                Divider()
+            }
         }
         .frame(width: geometry.size.width - 20, height: geometry.size.height / 2 - 10)
     }
@@ -333,7 +384,6 @@ struct Reader_Picker: View{
         }
     }
 }
-
 
 struct ReaderTab_Previews: PreviewProvider {
     static var previews: some View {

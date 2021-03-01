@@ -22,15 +22,18 @@ struct tag: Identifiable{
     let id : Int
     let EPC_Len : UInt8
     let EPC : [UInt8]
+    let EPC_str : String
     var RSSI : Int
     var Count : Int
     var Data : [UInt8]
 }
 
 var Byte_Record = [byte_record]()
+var Tags = [tag]()
 
-class Reader: ObservableObject{
-    var Tags = [tag]()
+class Reader: NSObject, ObservableObject{
+   // @Published var Tags = [tag]()
+    
     func cmd_reset () -> [UInt8]{
         let cmd : [UInt8] = [0xA0, 0x03, address, 0x70, 0xEF]
         Tags.removeAll()
@@ -112,10 +115,10 @@ class Reader: ObservableObject{
         return cmd
     }
     
-//    func cmd_clear_inventory_buffer () -> [UInt8]{
-//        let cmd : [UInt8] = [0xA0, 0x03, address, 0x91]
-//        return cmd
-//    }
+    func cmd_getandclear_inventory_buffer () -> [UInt8]{
+        let cmd : [UInt8] = [0xA0, 0x03, address, 0x91]
+        return cmd
+    }
     
     func cmd_inventory_buffer_count () -> [UInt8]{
         let cmd : [UInt8] = [0xA0, 0x03, address, 0x92]
@@ -124,6 +127,7 @@ class Reader: ObservableObject{
     
     func cmd_clear_inventory_buffer () -> [UInt8]{
         let cmd : [UInt8] = [0xA0, 0x03, address, 0x93]
+        Tags.removeAll()
         return cmd
     }
 
@@ -183,7 +187,7 @@ class Reader: ObservableObject{
             0x32:-80,0x31:-81,0x30:-82,0x2F:-83,0x2E:-84,0x2D:-85,0x2C:-86,0x2B:-87,0x2A:-88,0x29:-89,
             0x28:-90,0x27:-91,0x26:-92,0x25:-93,0x24:-94,0x23:-95,0x22:-96,0x21:-97,0x20:-98,0x1F:-99
         ]
-        return rssi_code[code]!
+        return rssi_code[code] ?? 0
     }
     
     func reader_freq(freq:Any) -> Any {
@@ -233,7 +237,7 @@ class Reader: ObservableObject{
         return (tagcount, Error_String)
     }
     
-    func feedback_buffer(feedback:[UInt8]) -> String{
+    func feedback_buffer(feedback:[UInt8]){
         var EPC = [UInt8]()
         var EPC_Len : UInt8 = 0x00
         var RSSI = 0
@@ -242,12 +246,11 @@ class Reader: ObservableObject{
         if feedback.count > 5 {
             if feedback[1] != 0x04 && feedback[3] == 0x90{
                 EPC_Len = feedback[6]
-                for index in 1..<Int(EPC_Len) {
-                    EPC.append(feedback[index + 6])
-                }
-                RSSI = reader_rssi(code: feedback[Int(EPC_Len) + 6])
+                EPC.append(contentsOf: feedback[7...(Int(EPC_Len) + 6)])
+                let EPC_str = Data(EPC).hexEncodedString()
+                RSSI = reader_rssi(code: feedback[(Int(EPC_Len) + 7)])
                 Count = Int(feedback[Int(EPC_Len) + 9])
-                let Tag = tag(id: Tags.count, EPC_Len: EPC_Len, EPC: EPC, RSSI: RSSI, Count: Count, Data: [])
+                let Tag = tag(id: Tags.count, EPC_Len: EPC_Len, EPC: EPC, EPC_str: EPC_str, RSSI: RSSI, Count: Count, Data: [])
                 Tags.append(Tag)
                 print(Tag)
             }
@@ -255,7 +258,7 @@ class Reader: ObservableObject{
                 Error_String = reader_error_code(code: feedback[4])
             }
         }
-        return Error_String
+        //return Error_String
     }
     
     func Btye_Recorder(defined: Int, byte:[UInt8]){
@@ -295,15 +298,17 @@ extension BLE{
         Reader().Btye_Recorder(defined: 1, byte: cmd)
     }
     
-    func reader2BLE() -> [UInt8]{
+    func reader2BLE(record: Bool) -> [UInt8]{
         let reader_serivce : CBUUID = CBUUID(string: "2A68")
         let reader_write_char : CBUUID = CBUUID(string: "726F")
         var feedback = [UInt8]()
-        print("*****Reader Feedback*****")
         if let char_index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == reader_serivce && $0.Characteristic_UUID == reader_write_char}){
             feedback = Peripheral_characteristics[char_index].value
         }
-        Reader().Btye_Recorder(defined: 2, byte: feedback)
+        if record{
+            print("*****Reader Feedback*****")
+            Reader().Btye_Recorder(defined: 2, byte: feedback)
+        }
         return feedback
     }
 }

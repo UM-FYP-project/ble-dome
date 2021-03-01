@@ -75,9 +75,10 @@ struct peripheralrow: View {
     @EnvironmentObject var ble:BLE
     @State var connectButton_str:String = "Tap to Connect"
     @State var longpressed:Bool = false
+    @State var peripheral_connected = [String:Bool]()
     var body: some View {
         NavigationLink(
-            destination:DetailTabView(peripheral: peripheral).environmentObject(ble)
+            destination:DetailTabView(peripheral: peripheral, peripheral_connected: $peripheral_connected).environmentObject(ble)
                 .navigationBarItems(
                     trailing:
                         Button(action: {connectButton(peripheral_name: peripheral.name, ble: ble)}) {
@@ -117,12 +118,15 @@ struct peripheralrow: View {
             if let index = ble.peripherals.firstIndex(where: {$0.name == peripheral_name}){
                 let peripheral = ble.peripherals[index]
                 if peripheral.State == 0{
+                    peripheral_connected.updateValue(false, forKey: peripheral.name)
                     ble.connect(peripheral: peripheral.Peripheral)
                 }
                 else if peripheral.State == 1{
+                    peripheral_connected.updateValue(false, forKey: peripheral.name)
                     ble.cancelConnection(peripheral: peripheral.Peripheral)
                 }
                 else if peripheral.State == 2{
+                    peripheral_connected.updateValue(true, forKey: peripheral.name)
                     ble.disconnect(peripheral: peripheral.Peripheral)
                 }
             }
