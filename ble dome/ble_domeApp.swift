@@ -25,6 +25,7 @@ struct Peripheral: Identifiable {
     let Service : String
     let Peripheral : CBPeripheral
     var State : Int
+    var isConnected : Bool
 }
 
 struct Peripheral_characteristic: Identifiable{
@@ -109,7 +110,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
                 guard let UUID =  advertisementData["kCBAdvDataServiceUUIDs"] as? Array<Any> else {
                     return
                 }
-                let newPeripheral = Peripheral(id: peripherals.count, name: name, rssi: RSSI.intValue, Service: "\(UUID)", Peripheral: discoveredPeripheral, State: 0)
+                let newPeripheral = Peripheral(id: peripherals.count, name: name, rssi: RSSI.intValue, Service: "\(UUID)", Peripheral: discoveredPeripheral, State: 0, isConnected: false)
                 print("\(name) \(UUID) \(RSSI.intValue)")
                 peripherals.append(newPeripheral)
             }
@@ -127,6 +128,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         stopscan_device()
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 1
+            peripherals[index].isConnected = false
         }
      }
     
@@ -135,6 +137,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         centralManager.cancelPeripheralConnection(peripheral)
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 3
+            peripherals[index].isConnected = false
         }
     }
     
@@ -149,6 +152,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         peripheral.discoverServices(nil)
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 2
+            peripherals[index].isConnected = true
         }
     }
     
@@ -157,16 +161,17 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             print("\(peripheral.name!) Failed to Connect")
             if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
                 peripherals[index].State = 0
+                peripherals[index].isConnected = false
             }
             return
         }
     }
     
-    
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         print("\(peripheral.name!) Device Disconnected")
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 0
+            peripherals[index].isConnected = false
         }
         Peripheral_characteristics.removeAll()
         Peripheral_Services.removeAll()
@@ -198,7 +203,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             return
         }
        print("\(peripheral.name!) Found \(characteristics.count) characteristics in \(service.uuid)")
-//        var index = 1
         for characteristic in characteristics {
             peripheral.readValue(for: characteristic)
             peripheral.setNotifyValue(true, for: characteristic)
@@ -255,7 +259,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         guard let value = characteristic.value else {
             return
         }
-        //let byteValue = [UInt8](value)
         print("\(peripheral.name!) : \(characteristic.service.uuid) : \(characteristic.uuid) | \(value.hexEncodedString())")
     }
     
