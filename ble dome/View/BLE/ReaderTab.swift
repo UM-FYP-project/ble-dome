@@ -252,7 +252,7 @@ struct ReaderInventory: View{
                         .disabled(Realtime_Inventory_Toggle || reader.tagsCount <= 0 || isInventory)
                     }
                     .frame(width: geometry.size.width - 20, height: 30, alignment: .center)
-                    Invetroy_Buffer(Error_str: Error_str_Buffer, geometry: geometry).environmentObject(reader)
+                    Invetroy_Buffer_list(Error_str: Error_str_Buffer, geometry: geometry).environmentObject(reader)
                 }
                 .frame(width: geometry.size.width - 20, height: geometry.size.height, alignment: .center)
                 .position(x: geometry.size.width / 2, y: geometry.size.height / 2 + 10)
@@ -291,7 +291,7 @@ struct ReaderInventory: View{
     }
 }
 
-struct Invetroy_Buffer: View {
+struct Invetroy_Buffer_list: View {
     @EnvironmentObject var reader:Reader
     let Error_str : [String]
     var geometry : GeometryProxy
@@ -354,7 +354,8 @@ struct Record_Monitor: View {
                     .padding()
                 List{
                     ForEach(0..<Byte_Record.count){ index in
-                        let byte_record = Byte_Record[index]
+                        let Index = Byte_Record.count - index
+                        let byte_record = Byte_Record[Index]
                         let byte_str = Data(byte_record.Byte).hexEncodedString()
                         VStack(alignment: .leading){
                             Text("\(byte_record.Time_string)")
@@ -409,10 +410,10 @@ struct ReadTags_data: View {
                     .frame(width: geometry.size.width - 20, height: 30, alignment: .center)
                     Divider()
                     HStack{
-                        Text("Data Start:")
+                        Text("Start Address:")
                             .font(.headline)
                         Spacer()
-                        Text("\(byte[DataStart_Selected])")
+                        Text("\(byte[DataStart_Selected])bit")
                             .font(.headline)
                             .frame(width: 60, height: 30)
                             .background(Color.gray.opacity(0.5))
@@ -424,7 +425,7 @@ struct ReadTags_data: View {
                         Text("Data Len:")
                             .font(.headline)
                         Spacer()
-                        Text("\(byte[DataLen_Selected])")
+                        Text("\(byte[DataLen_Selected])bit")
                             .font(.headline)
                             .frame(width: 60, height: 30)
                             .background(Color.gray.opacity(0.5))
@@ -456,35 +457,43 @@ struct ReadTags_data: View {
                     Divider()
                     List{
                         if list_show{
-                            ForEach(0..<reader.Tags.count){ index in
-                                let tag = reader.Tags[index]
-                                let PC_str = Data(tag.EPC[0...1]).hexEncodedString()
-                                let EPC_str = Data(tag.EPC[2...(Int(tag.EPC_Len) - 3)]).hexEncodedString()
-                                let CRC_str = Data(tag.EPC[(Int(tag.EPC_Len) - 2)...(Int(tag.EPC_Len) - 1)]).hexEncodedString()
-                                let Data_str = Data(tag.Data).hexEncodedString()
-                                HStack{
-                                    Text("\(tag.id + 1)")
-                                        .frame(width: 20)
-                                    Divider()
-                                    VStack(alignment: .leading){
-                                        Text("\(EPC_str)")
-                                            .font(.headline)
-                                        HStack{
-                                            Text("PC:\(PC_str)")
-                                            Text("CRC:\(CRC_str)")
-                                            Text("EPCLen:\(Int(tag.EPC_Len))")
-                                        }
-                                        Text("\(Data_str)")
-                                            .font(.headline)
-                                        HStack{
-                                            if tag.Data_Len != nil{
-                                                Text("DataLen:\(Int(tag.Data_Len!))")
+                            if Error_str_Buffer.isEmpty{
+                                ForEach(0..<reader.Tags.count){ index in
+                                    let tag = reader.Tags[index]
+                                    let PC_str = Data(tag.EPC[0...1]).hexEncodedString()
+                                    let EPC_str = Data(tag.EPC[2...(Int(tag.EPC_Len) - 3)]).hexEncodedString()
+                                    let CRC_str = Data(tag.EPC[(Int(tag.EPC_Len) - 2)...(Int(tag.EPC_Len) - 1)]).hexEncodedString()
+                                    let Data_str = Data(tag.Data).hexEncodedString()
+                                    HStack{
+                                        Text("\(tag.id + 1)")
+                                            .frame(width: 20)
+                                        Divider()
+                                        VStack(alignment: .leading){
+                                            Text("\(EPC_str)")
+                                                .font(.headline)
+                                            HStack{
+                                                Text("PC:\(PC_str)")
+                                                Text("CRC:\(CRC_str)")
+                                                Text("EPCLen:\(Int(tag.EPC_Len))")
                                             }
-                                            else{
-                                                Text("DataLen:nil")
+                                            Text("\(Data_str)")
+                                                .font(.headline)
+                                            HStack{
+                                                if tag.Data_Len != nil{
+                                                    Text("DataLen:\(Int(tag.Data_Len!))")
+                                                }
+                                                else{
+                                                    Text("DataLen:nil")
+                                                }
                                             }
                                         }
                                     }
+                                }
+                            }
+                            else {
+                                ForEach(0..<Error_str_Buffer.count){ index in
+                                    Text("Error:\(Error_str_Buffer[index])")
+                                        .foregroundColor(.red)
                                 }
                             }
                         }

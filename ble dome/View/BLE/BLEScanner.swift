@@ -76,7 +76,6 @@ struct peripheralrow: View {
     @EnvironmentObject var ble:BLE
     @State var connectButton_str:String = "Tap to Connect"
     @State var longpressed:Bool = false
-    //@State var peripheral_connected = [String:Bool]()
     var body: some View {
         NavigationLink(
             destination:

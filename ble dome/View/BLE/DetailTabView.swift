@@ -10,6 +10,7 @@ import SwiftUI
 struct DetailTabView: View {
     @EnvironmentObject var ble:BLE
     @ObservedObject var reader = Reader()
+    @Binding var Enable : Bool
     var peripheral : Peripheral
     var body: some View {
         TabView() {
