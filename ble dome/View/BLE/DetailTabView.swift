@@ -9,26 +9,48 @@ import SwiftUI
 
 struct DetailTabView: View {
     @EnvironmentObject var ble:BLE
-    @ObservedObject var reader = Reader()
+    @EnvironmentObject var reader : Reader
     @Binding var Enable : Bool
     var peripheral : Peripheral
     var body: some View {
         TabView() {
-                PeripheralDetail(peripheral: peripheral).environmentObject(ble)
-                .tabItem {
-                    Image(systemName: "list.dash")
-                    Text("Detail")
-                }
             if peripheral.Service.contains("2A68"){
-                ReaderTab()
-                    .environmentObject(reader)
-                    .tabItem {
-                        Image(systemName: "dot.radiowaves.left.and.right")
-                        Text("Reader")
-                    }
+                NavigationView{
+                    ReaderTab()
+                        .environmentObject(reader)
+                        .disabled(ble.Connected_Peripheral?.State == 0)
+                        .navigationTitle("\(peripheral.name) Reader")
+                        .navigationBarItems(leading:
+                                                Button(action: {Enable = false}){
+                                                    HStack{
+                                                        Image(systemName: "chevron.backward")
+                                                        Text("Back")
+                                                    }
+                                                })
+                }
+                .tabItem {
+                    Image(systemName: "dot.radiowaves.left.and.right")
+                    Text("Reader")
+                }
+            }
+            NavigationView{
+                PeripheralDetail(peripheral: peripheral)
+                    .environmentObject(ble)
+                    .disabled(ble.Connected_Peripheral?.State == 0)
+                    .navigationTitle("\(peripheral.name) Detail")
+                    .navigationBarItems(leading:
+                                            Button(action: {Enable = false}){
+                                                HStack{
+                                                    Image(systemName: "chevron.backward")
+                                                    Text("Back")
+                                                }
+                                            })
+            }
+            .tabItem {
+                Image(systemName: "list.dash")
+                Text("Detail")
             }
         }
-        .navigationBarTitle("\(peripheral.name) Detail")
     }
 }
 

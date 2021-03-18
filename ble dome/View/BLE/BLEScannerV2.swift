@@ -16,6 +16,7 @@ struct BLEScanner_Alert: View {
             Text("Scanner")
                 .bold()
                 .font(.title)
+            Text("Scan and Connect Deivce")
             PeripheralList(geometry: geometry)
                 .environmentObject(ble)
             Divider()
@@ -25,7 +26,7 @@ struct BLEScanner_Alert: View {
                 ble.stopscan_device()
             }) {
                 Text("Close")
-                    .font(.title)
+                    .font(.headline)
                     .foregroundColor(.blue)
                 
             }
@@ -33,7 +34,7 @@ struct BLEScanner_Alert: View {
         }
         .padding()
         .background(RoundedRectangle(cornerRadius: 20)
-                        .foregroundColor(Color.white.opacity(0.5)).shadow(radius: 1))
+                        .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
         .frame(maxWidth: geometry.size.width - 60, maxHeight: geometry.size.height - 300)
         .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
         .onAppear(perform: {
@@ -89,13 +90,13 @@ struct BLEConnect_button: View {
                     if peripheral.State == 0{
                         Text("Tap to connect")
                             .font(.title2)
-                            .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                            .foregroundColor(ble.Connected_Peripheral == nil ? .blue : Color(UIColor.lightGray))
                             .multilineTextAlignment(.trailing)
                     }
                     else if peripheral.State == 1{
                         Text("Connecting")
                             .font(.title2)
-                            .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                            .foregroundColor(ble.Connected_Peripheral == nil ? .blue : Color(UIColor.lightGray))
                             .multilineTextAlignment(.trailing)
                     }
                     else if peripheral.State == 2{

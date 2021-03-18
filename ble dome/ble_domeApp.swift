@@ -89,9 +89,15 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     func scan_devices(){
         peripherals.removeAll()
         if Connected_Peripheral != nil {
-            peripherals.append(Connected_Peripheral!)
-            peripherals[0].id = 0
+            if Connected_Peripheral!.State == 2 {
+                peripherals.append(Connected_Peripheral!)
+                peripherals[0].id = 0
+            }
+            else {
+                Connected_Peripheral = nil
+            }
         }
+        
         centralManager.scanForPeripherals(withServices: nil, options: nil)
         isScanned = true
         wasScanned = true
@@ -107,7 +113,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         var discoveredPeripheral : CBPeripheral!
-        //var peripheraluuid : String!
         discoveredPeripheral = peripheral
         if let name = peripheral.name{
             if peripherals.filter({$0.name == name}).count < 1 {
@@ -179,7 +184,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         print("\(peripheral.name!) Device Disconnected")
-        Connected_Peripheral = nil
+        Connected_Peripheral!.State = 0
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 0
             peripherals[index].isConnected = false

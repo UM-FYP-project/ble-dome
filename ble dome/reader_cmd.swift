@@ -283,6 +283,9 @@ class Reader: NSObject, ObservableObject{
                         print(Tags[index])
                     }
                 }
+                else if feedback[1] == 0x04 && feedback2D[Index][3] == 0x81 {
+                    Error_String.append(reader_error_code(code: feedback[4]))
+                }
             }
         }
         return Error_String
