@@ -67,7 +67,7 @@ struct PeripheralList: View {
 struct BLEConnect_button: View {
     @EnvironmentObject var ble:BLE
     var name : String
-    var body: some View {
+    var body : some View {
         Button(action: {
             if name != ""{
                 if let index = ble.peripherals.firstIndex(where: {$0.name == name}){
@@ -80,6 +80,7 @@ struct BLEConnect_button: View {
                     }
                     else if peripheral.State == 2{
                         ble.disconnect(peripheral: peripheral.Peripheral)
+                        ble.scan_devices()
                     }
                 }
             }

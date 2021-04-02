@@ -10,8 +10,8 @@
 		9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9528A16A25D03DA500B51649 /* DetailTabView.swift */; };
 		9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9528A17525D0560B00B51649 /* ReaderTab.swift */; };
 		95492EB825E3DEF900ECE3FF /* reader_cmd.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95492EB725E3DEF900ECE3FF /* reader_cmd.swift */; };
+		95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */; };
 		9552406625CA9AB100EA1011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406325CA9AB100EA1011 /* ContentView.swift */; };
-		9552406725CA9AB100EA1011 /* BLEScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406025CA9AB000EA1011 /* BLEScanner.swift */; };
 		9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552407525CC54B100EA1011 /* PeripheralDetail.swift */; };
 		95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */; };
 		95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368B825BF2F700026EC88 /* Assets.xcassets */; };
@@ -22,7 +22,7 @@
 		9528A16A25D03DA500B51649 /* DetailTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailTabView.swift; sourceTree = "<group>"; };
 		9528A17525D0560B00B51649 /* ReaderTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderTab.swift; sourceTree = "<group>"; };
 		95492EB725E3DEF900ECE3FF /* reader_cmd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = reader_cmd.swift; sourceTree = "<group>"; };
-		9552406025CA9AB000EA1011 /* BLEScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEScanner.swift; sourceTree = "<group>"; };
+		95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEScannerV2.swift; sourceTree = "<group>"; };
 		9552406325CA9AB100EA1011 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9552407525CC54B100EA1011 /* PeripheralDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralDetail.swift; sourceTree = "<group>"; };
 		95B368B125BF2F6D0026EC88 /* ble dome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ble dome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -55,7 +55,7 @@
 		9552407125CAC67400EA1011 /* BLE */ = {
 			isa = PBXGroup;
 			children = (
-				9552406025CA9AB000EA1011 /* BLEScanner.swift */,
+				95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */,
 				9552407525CC54B100EA1011 /* PeripheralDetail.swift */,
 				9528A16A25D03DA500B51649 /* DetailTabView.swift */,
 				9528A17525D0560B00B51649 /* ReaderTab.swift */,
@@ -171,8 +171,8 @@
 			files = (
 				9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */,
 				95492EB825E3DEF900ECE3FF /* reader_cmd.swift in Sources */,
+				95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */,
 				9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */,
-				9552406725CA9AB100EA1011 /* BLEScanner.swift in Sources */,
 				9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */,
 				95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */,
 				9552406625CA9AB100EA1011 /* ContentView.swift in Sources */,
