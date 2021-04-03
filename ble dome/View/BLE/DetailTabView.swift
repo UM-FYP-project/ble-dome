@@ -18,7 +18,7 @@ struct DetailTabView: View {
                 NavigationView{
                     ReaderTab()
                         .environmentObject(reader)
-                        .disabled(ble.Connected_Peripheral?.State == 0)
+                        .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
                         .navigationTitle("\(peripheral.name) Reader")
                         .navigationBarItems(leading:
                                                 Button(action: {Enable = false}){
@@ -36,7 +36,7 @@ struct DetailTabView: View {
             NavigationView{
                 PeripheralDetail(peripheral: peripheral)
                     .environmentObject(ble)
-                    .disabled(ble.Connected_Peripheral?.State == 0)
+                    .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
                     .navigationTitle("\(peripheral.name) Detail")
                     .navigationBarItems(leading:
                                             Button(action: {Enable = false}){

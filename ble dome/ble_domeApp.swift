@@ -60,8 +60,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     @Published var Peripheral_Services = [Peripheral_Service]()
     @Published var isScanned : Bool = false
     @Published var wasScanned : Bool = false
-    @Published var Connected_Peripheral :Peripheral?
-    
+//    @Published var Connected_Peripheral :Peripheral?
     //Bluetooth init
     func initBLE(){
         self.centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -87,18 +86,23 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     }
     //Discover device
     func scan_devices(){
-        if Connected_Peripheral != nil {
-            if Connected_Peripheral!.State == 2 {
-                peripherals.removeAll()
-                peripherals.append(Connected_Peripheral!)
-                peripherals[0].id = 0
-            }
-            else {
-                Connected_Peripheral = nil
-                peripherals.removeAll()
-            }
+//        if Connected_Peripheral != nil {
+//            if Connected_Peripheral!.State == 2 {
+//                peripherals.removeAll()
+//                peripherals.append(Connected_Peripheral!)
+//                peripherals[0].id = 0
+//            }
+//            else {
+//                Connected_Peripheral = nil
+//                peripherals.removeAll()
+//            }
+//        }
+        if let index = peripherals.firstIndex(where: {$0.State != 0}){
+            let peripheral : Peripheral = peripherals[index]
+            peripherals.removeAll()
+            peripherals.append(peripheral)
+            peripherals[0].id = 0
         }
-        
         centralManager.scanForPeripherals(withServices: nil, options: nil)
         isScanned = true
         wasScanned = true
@@ -167,7 +171,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 2
             peripherals[index].isConnected = true
-            Connected_Peripheral = peripherals[index]
+//            Connected_Peripheral = peripherals[index]
         }
     }
     
@@ -185,9 +189,9 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         print("\(peripheral.name!) Device Disconnected")
-        Connected_Peripheral!.State = 0
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 0
+//            Connected_Peripheral!.State = 0
             peripherals[index].isConnected = false
             isConnected = false
         }

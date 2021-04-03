@@ -12,7 +12,8 @@ struct ReaderTab: View {
     @State var Reader_disable : Bool = false
     @EnvironmentObject var reader:Reader
     @State var Selected = 1
-    // Reader Setting Picker
+    // Reader Setting
+    @State var isInventory = false
     let Baudrate : [String] = ["9600bps", "19200bps", "38400bps", "115200bps"]
 //    let Baudrate_cmd : [UInt8] = [0x01, 0x02 , 0x03, 0x04]
     let Outpower : [Int] = [20,21,22,23,24,25,26,27,28,29,30,31,32,33]
@@ -28,7 +29,7 @@ struct ReaderTab: View {
     @State var DataBlock_picker = false
     @State var DataBlock_Selected = 1
     @State var DataStart_picker = false
-    @State var DataStart_Selected = 0
+    @State var DataStart_Selected = 2
     @State var DataLen_picker = false
     @State var DataLen_Selected = 20
     let DataBlock_str = ["RESERVED", "EPC", "TAG ID", "USER DATA"]
@@ -54,7 +55,7 @@ struct ReaderTab: View {
                     }
                     else if Selected == 1{
 //                        ReaderInventory(geometry: geometry).environmentObject(reader)
-                        ReaderInventory(geometry: geometry, Selected: $inventorySpeed_Selected, picker: $inventorySpeed_picker)
+                        ReaderInventory(geometry: geometry, Selected: $inventorySpeed_Selected, picker: $inventorySpeed_picker, isInventory: $isInventory)
                             .environmentObject(reader)
                     }
                     else if Selected == 2{
@@ -74,7 +75,7 @@ struct ReaderTab: View {
                     }
                 }
             }
-            .overlay(SelectedBaudrate_picker || SelectedPower_picker || inventorySpeed_picker || DataBlock_picker || DataStart_picker ||  DataLen_picker ? Color.black.opacity(0.6) : nil)
+            .overlay(SelectedBaudrate_picker || SelectedPower_picker || inventorySpeed_picker || DataBlock_picker || DataStart_picker ||  DataLen_picker ? Color.black.opacity(0.8) : nil)
             if SelectedBaudrate_picker == true {
                 Reader_Picker(picker: Baudrate,title: "Select Baudrate", label: "Baudrate", geometry: geometry, Selected: $SelectedBaudrate, enable: $SelectedBaudrate_picker)
             }
@@ -95,6 +96,7 @@ struct ReaderTab: View {
             }
         }
     }
+
 }
 
 struct ReaderSetting: View {
@@ -231,7 +233,8 @@ struct ReaderInventory: View{
 //    @State var picker = false
     @Binding var Selected : Int
     @Binding var picker : Bool
-    @State var isInventory = false
+//    @State var isInventory = false
+    @Binding var isInventory : Bool
     @State var Inventory_button_str = "Start"
     @State var Buffer_button_str = "Read"
     @State var Buffer_button_Bool = false

@@ -72,10 +72,10 @@ struct BLEConnect_button: View {
             if name != ""{
                 if let index = ble.peripherals.firstIndex(where: {$0.name == name}){
                     let peripheral = ble.peripherals[index]
-                    if peripheral.State == 0 && ble.Connected_Peripheral == nil{
+                    if peripheral.State == 0 && ble.peripherals.filter({$0.State != 0}).count < 1{
                         ble.connect(peripheral: peripheral.Peripheral)
                     }
-                    else if peripheral.State == 1 && ble.Connected_Peripheral == nil{
+                    else if peripheral.State == 1{
                         ble.cancelConnection(peripheral: peripheral.Peripheral)
                     }
                     else if peripheral.State == 2{
@@ -91,13 +91,13 @@ struct BLEConnect_button: View {
                     if peripheral.State == 0{
                         Text("Tap to connect")
                             .font(.title2)
-                            .foregroundColor(ble.Connected_Peripheral == nil ? .blue : Color(UIColor.lightGray))
+                            .foregroundColor(ble.peripherals.filter({$0.State != 0}).count < 1 ? .blue : Color(UIColor.lightGray))
                             .multilineTextAlignment(.trailing)
                     }
                     else if peripheral.State == 1{
                         Text("Connecting")
                             .font(.title2)
-                            .foregroundColor(ble.Connected_Peripheral == nil ? .blue : Color(UIColor.lightGray))
+                            .foregroundColor(.blue)
                             .multilineTextAlignment(.trailing)
                     }
                     else if peripheral.State == 2{

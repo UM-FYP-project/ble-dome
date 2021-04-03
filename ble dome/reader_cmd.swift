@@ -374,7 +374,7 @@ class Reader: NSObject, ObservableObject{
 //    }
 
     func Btye_Recorder(defined: Int, byte:[UInt8]){
-        if Byte_Record.count > 30 {
+        if Byte_Record.count > 50 {
             Byte_Record.removeAll()
         }
         let current_time = Date()

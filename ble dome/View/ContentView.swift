@@ -13,6 +13,7 @@ struct ContentView: View {
     @State var isScanner_trigged = false
     @State var notConnectedAlert_trigged = true
     @State var Scanner_longpressed = false
+    @State var Conncetedperipheral_index = 0
     var body: some View {
         GeometryReader{ geometry in
             ZStack{
@@ -20,8 +21,12 @@ struct ContentView: View {
                     NavigationView {
                         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
                             .onTapGesture(perform: {
-                                if ble.Connected_Peripheral != nil{
+//                                if ble.Connected_Peripheral != nil{
+//                                    Scanner_longpressed = true
+//                                }
+                                if let index = ble.peripherals.firstIndex(where: {$0.State == 2}){
                                     Scanner_longpressed = true
+                                    Conncetedperipheral_index = index
                                 }
                             })
                             .navigationBarItems(trailing:
@@ -60,7 +65,7 @@ struct ContentView: View {
                     BLEScanner_Alert(Enable: $isScanner_trigged, geometry: geometry).environmentObject(ble)
                 }
                 if Scanner_longpressed{
-                    DetailTabView(Enable: $Scanner_longpressed, peripheral: ble.Connected_Peripheral!)
+                    DetailTabView(Enable: $Scanner_longpressed, peripheral: ble.peripherals[Conncetedperipheral_index])
                         .environmentObject(ble)
                         .environmentObject(reader)
                 }
