@@ -11,10 +11,9 @@ import CoreBluetooth
 let address : UInt8 = 0xFE
 
 
-struct byte_record: Identifiable{
+struct byteRecord: Identifiable{
     let id : Int
-    let Time : Double
-    let Time_string : String
+    let Time : String
     let Defined : Int
     let Byte : [UInt8]
 }
@@ -53,7 +52,8 @@ class Reader: NSObject, ObservableObject{
     @Published var Tags = [tag]()
 //    @Published var Realtime_Tags = [tag]()
     @Published var TagsData = [tagData]()
-    @Published var Byte_Record = [byte_record]()
+//    @Published var BytesRecord = [byteRecord]()
+    @Published var BytesRecord = [byteRecord]()
     @Published var tagsCount : Int = 0
     
     func cmd_reset () -> [UInt8]{
@@ -310,7 +310,6 @@ class Reader: NSObject, ObservableObject{
         }
         return Error_String
     }
-    
 //    func feedback_Tags(feedback:[UInt8]) -> [String]{
 //        var Error_String = [String]()
 //        var feedback2D = [[UInt8]]()
@@ -374,18 +373,20 @@ class Reader: NSObject, ObservableObject{
 //    }
 
     func Btye_Recorder(defined: Int, byte:[UInt8]){
-        if Byte_Record.count > 50 {
-            Byte_Record.removeAll()
-        }
+//        if Byte_Record.count > 50 {
+//            Byte_Record.removeAll()
+//        }
         let current_time = Date()
-        let millis : Double = current_time.timeIntervalSince1970
+//        let millis : Double = current_time.timeIntervalSince1970
+        let _ : Double = current_time.timeIntervalSince1970
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "nl_NL")
-        formatter.dateFormat = "(Z'Z')MM-dd_'T'HH:mm:ss.SSS"
+//        formatter.dateFormat = "(Z'Z')MM-dd_'T'HH:mm:ss.SSS"
+        formatter.dateFormat = "'T_'mm:ss.SSS"
         let time_string = formatter.string(from: current_time)
-        let record = byte_record(id: Byte_Record.count, Time: millis, Time_string: time_string, Defined: defined, Byte: byte)
-        Byte_Record.append(record)
-        print("T_\(millis)_\(byte)")
+        let record = byteRecord(id: BytesRecord.count, Time: time_string, Defined: defined, Byte: byte)
+        BytesRecord.append(record)
+        print("\(BytesRecord.count) : \(time_string)_\(byte)")
     }
 }
 
@@ -407,20 +408,19 @@ extension BLE{
                 writeValue(value: CmdData, characteristic: Peripheral_characteristics[char_index].Characteristic, peripheral: peripherals[peripheral_index].Peripheral)
             }
         }
-        Reader().Btye_Recorder(defined: 1, byte: cmd)
+//        Reader().Btye_Recorder(defined: 1, byte: cmd)
     }
-    
-    func reader2BLE(record: Bool) -> [UInt8]{
+    func reader2BLE() -> [UInt8]{
         let reader_serivce : CBUUID = CBUUID(string: "2A68")
         let reader_write_char : CBUUID = CBUUID(string: "726F")
         var feedback = [UInt8]()
         if let char_index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == reader_serivce && $0.Characteristic_UUID == reader_write_char}){
             feedback = Peripheral_characteristics[char_index].value
         }
-        if record{
-            print("*****Reader Feedback*****")
-            Reader().Btye_Recorder(defined: 2, byte: feedback)
-        }
+//        if record{
+//            print("*****Reader Feedback*****")
+//            Reader().Btye_Recorder(defined: 2, byte: feedback)
+//        }
         return feedback
     }
 }

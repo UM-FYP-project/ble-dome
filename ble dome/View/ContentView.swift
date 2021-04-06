@@ -19,16 +19,29 @@ struct ContentView: View {
             ZStack{
                 TabView() {
                     NavigationView {
-                        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-                            .onTapGesture(perform: {
-//                                if ble.Connected_Peripheral != nil{
-//                                    Scanner_longpressed = true
-//                                }
-                                if let index = ble.peripherals.firstIndex(where: {$0.State == 2}){
-                                    Scanner_longpressed = true
-                                    Conncetedperipheral_index = index
-                                }
-                            })
+                        HStack{
+//                            if !ble.peripherals.isEmpty {
+//                                NavigationLink(
+//                                    destination:DetailTabView(Enable: $Scanner_longpressed, peripheral: ble.peripherals[Conncetedperipheral_index])
+//                                        .environmentObject(ble)
+//                                        .environmentObject(reader)
+//                                        .navigationBarHidden(true),
+//                                    isActive: $Scanner_longpressed,
+//                                    label: {
+//                                        EmptyView()
+//                                    })
+//                            }
+                            Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+                                .onTapGesture(perform: {
+    //                                if ble.Connected_Peripheral != nil{
+    //                                    Scanner_longpressed = true
+    //                                }
+                                    if let index = ble.peripherals.firstIndex(where: {$0.State == 2}){
+                                        Scanner_longpressed = true
+                                        Conncetedperipheral_index = index
+                                    }
+                                })
+                        }
                             .navigationBarItems(trailing:
                                                     Button(action: {isScanner_trigged = true}) {
                                                         Text("Scanner")
@@ -43,14 +56,19 @@ struct ContentView: View {
                     }
                 }
                 .onAppear(perform: {
-                    if !ble.isInit{
-                        ble.initBLE()
-                    }
-                    if !ble.isConnected{
-                        notConnectedAlert_trigged = true
-                    }
-                    else{
-                        notConnectedAlert_trigged = false
+                    Timer.scheduledTimer(withTimeInterval: 0, repeats: true){_ in
+                        if !ble.isInit{
+                            ble.initBLE()
+                        }
+                        //                    if !ble.isConnected{
+                        //                        notConnectedAlert_trigged = true
+                        //                    }
+                        if (ble.peripherals.filter({$0.State == 2}).count < 1) && !isScanner_trigged{
+                            notConnectedAlert_trigged = true
+                        }
+                        else{
+                            notConnectedAlert_trigged = false
+                        }
                     }
                 })
                 .alert(isPresented: $notConnectedAlert_trigged) {
@@ -60,14 +78,17 @@ struct ContentView: View {
                         dismissButton: .default(Text("OK"), action: {isScanner_trigged = true})
                     )
                 }
-                .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3) : nil)
-                if ble.isBluetoothON && isScanner_trigged{
-                    BLEScanner_Alert(Enable: $isScanner_trigged, geometry: geometry).environmentObject(ble)
-                }
+                .disabled(ble.isBluetoothON && isScanner_trigged)
+                .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
                 if Scanner_longpressed{
                     DetailTabView(Enable: $Scanner_longpressed, peripheral: ble.peripherals[Conncetedperipheral_index])
                         .environmentObject(ble)
                         .environmentObject(reader)
+                        .disabled(ble.isBluetoothON && isScanner_trigged)
+                        .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea()  : nil)
+                }
+                if ble.isBluetoothON && isScanner_trigged{
+                    BLEScanner_Alert(Enable: $isScanner_trigged, geometry: geometry).environmentObject(ble)
                 }
             }
         }

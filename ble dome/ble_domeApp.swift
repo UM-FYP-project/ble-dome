@@ -25,7 +25,7 @@ struct Peripheral: Identifiable {
     let Service : String
     let Peripheral : CBPeripheral
     var State : Int
-    var isConnected : Bool
+//    var isConnected : Bool
 }
 
 struct Peripheral_characteristic: Identifiable{
@@ -54,19 +54,21 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     var centralManager:CBCentralManager!
     @Published var isInit : Bool = false
     @Published var isBluetoothON : Bool = false
-    @Published var isConnected : Bool = false
+//    @Published var isConnected : Bool = false
     @Published var peripherals = [Peripheral]()
     @Published var Peripheral_characteristics = [Peripheral_characteristic]()
     @Published var Peripheral_Services = [Peripheral_Service]()
-    @Published var isScanned : Bool = false
-    @Published var wasScanned : Bool = false
+    @Published var ValueUpated_2A68 : Bool = false
+//    @Published var isScanned : Bool = false
+//    @Published var wasScanned : Bool = false
 //    @Published var Connected_Peripheral :Peripheral?
+    
     //Bluetooth init
     func initBLE(){
         self.centralManager = CBCentralManager(delegate: self, queue: nil)
         print("BLE init")
         isInit = true
-        wasScanned = false
+//        wasScanned = false
         peripherals.removeAll()
     }
     
@@ -78,8 +80,8 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         }
         else {
             isBluetoothON = false
-            isScanned = false
-            wasScanned = false
+//            isScanned = false
+//            wasScanned = false
             isInit = false
         }
         
@@ -104,15 +106,15 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             peripherals[0].id = 0
         }
         centralManager.scanForPeripherals(withServices: nil, options: nil)
-        isScanned = true
-        wasScanned = true
+//        isScanned = true
+//        wasScanned = true
         print("Scanning")
     }
     
     // Stop discoving device
     func stopscan_device() {
         self.centralManager.stopScan()
-        isScanned = false
+//        isScanned = false
         print("Scan Stopped")
     }
     
@@ -124,7 +126,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
                 guard let UUID =  advertisementData["kCBAdvDataServiceUUIDs"] as? Array<Any> else {
                     return
                 }
-                let newPeripheral = Peripheral(id: peripherals.count, name: name, rssi: RSSI.intValue, Service: "\(UUID)", Peripheral: discoveredPeripheral, State: 0, isConnected: false)
+                let newPeripheral = Peripheral(id: peripherals.count, name: name, rssi: RSSI.intValue, Service: "\(UUID)", Peripheral: discoveredPeripheral, State: 0)
                 print("\(name) \(UUID) \(RSSI.intValue)")
                 peripherals.append(newPeripheral)
             }
@@ -142,18 +144,18 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         stopscan_device()
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 1
-            peripherals[index].isConnected = false
-            isConnected = false
+//            peripherals[index].isConnected = false
+//            isConnected = false
         }
      }
     
     func disconnect(peripheral: CBPeripheral){
         print("\(peripheral.name!) Disconnect")
         centralManager.cancelPeripheralConnection(peripheral)
-        isConnected = false
+//        isConnected = false
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 3
-            peripherals[index].isConnected = false
+//            peripherals[index].isConnected = false
         }
     }
     
@@ -167,10 +169,10 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         peripheral.delegate = self
         peripheral.discoverServices(nil)
         
-        isConnected = true
+//        isConnected = true
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 2
-            peripherals[index].isConnected = true
+//            peripherals[index].isConnected = true
 //            Connected_Peripheral = peripherals[index]
         }
     }
@@ -178,10 +180,10 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         if error != nil{
             print("\(peripheral.name!) Failed to Connect")
-            isConnected = false
+//            isConnected = false
             if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
                 peripherals[index].State = 0
-                peripherals[index].isConnected = false
+//                peripherals[index].isConnected = false
             }
             return
         }
@@ -192,8 +194,8 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 0
 //            Connected_Peripheral!.State = 0
-            peripherals[index].isConnected = false
-            isConnected = false
+//            peripherals[index].isConnected = false
+//            isConnected = false
         }
         Peripheral_characteristics.removeAll()
         Peripheral_Services.removeAll()
@@ -269,10 +271,15 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         }
         let byteValue = [UInt8](value)
         if let index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == characteristic.service.uuid && $0.Characteristic_UUID == characteristic.uuid}){
+            if characteristic.uuid == CBUUID(string: "726F"){
+                ValueUpated_2A68 = true
+            }
             Peripheral_characteristics[index].value = byteValue
             Peripheral_characteristics[index].valueStr = value.hexEncodedString()
         }
         print("\(peripheral.name!) : \(characteristic.service.uuid) : \(characteristic.uuid) | \(value.hexEncodedString())")
+//        ValueUpated_2A68 = false
+//        print("ValueUpated_2A68: \(ValueUpated_2A68)")
     }
     
     func readValue(characteristic: CBCharacteristic, peripheral: CBPeripheral){

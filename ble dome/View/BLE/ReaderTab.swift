@@ -11,18 +11,19 @@ struct ReaderTab: View {
     @State var menuButton :Bool = false
     @State var Reader_disable : Bool = false
     @EnvironmentObject var reader:Reader
-    @State var Selected = 1
+    var geometry : GeometryProxy
+    @State var Selected = 0
     // Reader Setting
     @State var isInventory = false
-    let Baudrate : [String] = ["9600bps", "19200bps", "38400bps", "115200bps"]
+//    let Baudrate : [String] = ["9600bps", "19200bps", "38400bps", "115200bps"]
 //    let Baudrate_cmd : [UInt8] = [0x01, 0x02 , 0x03, 0x04]
-    let Outpower : [Int] = [20,21,22,23,24,25,26,27,28,29,30,31,32,33]
+//    let Outpower : [Int] = [20,21,22,23,24,25,26,27,28,29,30,31,32,33]
     @State var SelectedBaudrate = 3
     @State var SelectedBaudrate_picker = false
     @State var SelectedPower = 13
     @State var SelectedPower_picker = false
     // Reader inventory Picker
-    let inventorySpeed = Array(1...255)
+//    let inventorySpeed = Array(1...255)
     @State var inventorySpeed_Selected = 254
     @State var inventorySpeed_picker = false
     // Reader Data Picker
@@ -32,11 +33,12 @@ struct ReaderTab: View {
     @State var DataStart_Selected = 2
     @State var DataLen_picker = false
     @State var DataLen_Selected = 20
-    let DataBlock_str = ["RESERVED", "EPC", "TAG ID", "USER DATA"]
-    let DataBlock_byte :[UInt8] = [0x00, 0x01, 0x02, 0x03]
-    let byte = Array(0...255)
+//    @Binding var overlayState : Bool
+//    let DataBlock_str = ["RESERVED", "EPC", "TAG ID", "USER DATA"]
+//    let DataBlock_byte :[UInt8] = [0x00, 0x01, 0x02, 0x03]
+//    let byte = Array(0...255)
     var body: some View {
-        GeometryReader{ geometry in
+//        GeometryReader{ geometry in
             ZStack() {
                 VStack{
                     Picker(selection: $Selected, label: Text("Reader Picker")) {
@@ -74,29 +76,33 @@ struct ReaderTab: View {
                             .environmentObject(reader)
                     }
                 }
+                .disabled(SelectedBaudrate_picker || SelectedPower_picker || inventorySpeed_picker || DataBlock_picker || DataStart_picker ||  DataLen_picker)
+                .overlay(SelectedBaudrate_picker || SelectedPower_picker || inventorySpeed_picker || DataBlock_picker || DataStart_picker ||  DataLen_picker ? Color.black.opacity(0.3).ignoresSafeArea(): nil)
+                pickerView
             }
-            .overlay(SelectedBaudrate_picker || SelectedPower_picker || inventorySpeed_picker || DataBlock_picker || DataStart_picker ||  DataLen_picker ? Color.black.opacity(0.8) : nil)
+    }
+    var pickerView: some View {
+        ZStack{
             if SelectedBaudrate_picker == true {
-                Reader_Picker(picker: Baudrate,title: "Select Baudrate", label: "Baudrate", geometry: geometry, Selected: $SelectedBaudrate, enable: $SelectedBaudrate_picker)
+                Reader_Picker(picker: ["9600bps", "19200bps", "38400bps", "115200bps"],title: "Select Baudrate", label: "Baudrate", geometry: geometry, Selected: $SelectedBaudrate, enable: $SelectedBaudrate_picker)
             }
             if SelectedPower_picker == true{
-                Reader_Picker(picker: Outpower,title: "Select Output Power", label: "Output Power", geometry: geometry, Selected: $SelectedPower, enable: $SelectedPower_picker)
+                Reader_Picker(picker: [20,21,22,23,24,25,26,27,28,29,30,31,32,33],title: "Select Output Power", label: "Output Power", geometry: geometry, Selected: $SelectedPower, enable: $SelectedPower_picker)
             }
             if inventorySpeed_picker {
-                Reader_Picker(picker: inventorySpeed, title: "Select Speed", label: "Speed", geometry: geometry, Selected: $inventorySpeed_Selected, enable: $inventorySpeed_picker)
+                Reader_Picker(picker: Array(1...255), title: "Select Speed", label: "Speed", geometry: geometry, Selected: $inventorySpeed_Selected, enable: $inventorySpeed_picker)
             }
             if DataBlock_picker{
-                Reader_Picker(picker: DataBlock_str,title: "Select DataBlock", label: "DataBlock", geometry: geometry, Selected: $DataBlock_Selected, enable: $DataBlock_picker)
+                Reader_Picker(picker: ["RESERVED", "EPC", "TAG ID", "USER DATA"],title: "Select DataBlock", label: "DataBlock", geometry: geometry, Selected: $DataBlock_Selected, enable: $DataBlock_picker)
             }
             if DataStart_picker{
-                Reader_Picker(picker: byte,title: "Select Data Start", label: "Data Start", geometry: geometry, Selected: $DataStart_Selected, enable: $DataStart_picker)
+                Reader_Picker(picker: Array(0...255),title: "Select Data Start", label: "Data Start", geometry: geometry, Selected: $DataStart_Selected, enable: $DataStart_picker)
             }
             if DataLen_picker{
-                Reader_Picker(picker: byte,title: "Select Data Lenght", label: "Data Lenght", geometry: geometry, Selected: $DataLen_Selected, enable: $DataLen_picker)
+                Reader_Picker(picker: Array(0...255),title: "Select Data Lenght", label: "Data Lenght", geometry: geometry, Selected: $DataLen_Selected, enable: $DataLen_picker)
             }
         }
     }
-
 }
 
 struct ReaderSetting: View {
@@ -107,6 +113,7 @@ struct ReaderSetting: View {
     let Baudrate : [String] = ["9600bps", "19200bps", "38400bps", "115200bps"]
     let Baudrate_cmd : [UInt8] = [0x01, 0x02 , 0x03, 0x04]
     let Outpower : [Int] = [20,21,22,23,24,25,26,27,28,29,30,31,32,33]
+    @State var ErrorStr = [String]()
 //    @State var SelectedBaudrate = 3
 //    @State var SelectedBaudrate_picker = false
 //    @State var SelectedPower = 13
@@ -129,7 +136,10 @@ struct ReaderSetting: View {
                         Spacer()
                         Button(action: {
                             let cmd = reader.cmd_reset()
-                            ble.cmd2reader(cmd: cmd)
+//                            ble.cmd2reader(cmd: cmd)
+//                            reader.Btye_Recorder(defined: 1, byte: cmd)
+//                            var feedback = [UInt8]()
+                            cmdtransitor(cmd: cmd)
                         }) {
                             Text("Reset")
                                 .foregroundColor(.blue)
@@ -149,7 +159,12 @@ struct ReaderSetting: View {
                             .onTapGesture {
                                 SelectedBaudrate_picker = true
                             }
-                        Button(action: {ble.cmd2reader(cmd:reader.cmd_set_baudrate(baudrate_para: Baudrate_cmd[SelectedBaudrate]))
+                        Button(action: {
+                            let cmd : [UInt8] = reader.cmd_set_baudrate(baudrate_para: Baudrate_cmd[SelectedBaudrate])
+//                            var feedback = [UInt8]()
+                            cmdtransitor(cmd: cmd)
+//                            ble.cmd2reader(cmd: cmd)
+//                            reader.Btye_Recorder(defined: 1, byte: cmd)
                         }) {
                             Text("Set")
                                 .foregroundColor(.blue)
@@ -171,8 +186,10 @@ struct ReaderSetting: View {
                                 SelectedPower_picker = true
                             }
                         Button(action: {
-                            ble.cmd2reader(cmd:
-                                            reader.cmd_set_output_power(output_power: Outpower[SelectedPower]))
+                            let cmd : [UInt8] = reader.cmd_set_output_power(output_power: Outpower[SelectedPower])
+//                            ble.cmd2reader(cmd: cmd)
+//                            reader.Btye_Recorder(defined: 1, byte: cmd)
+                            cmdtransitor(cmd: cmd)
                         }) {
                             Text("Set")
                                 .foregroundColor(.blue)
@@ -195,12 +212,14 @@ struct ReaderSetting: View {
                                 .frame(width: 120, height: 30, alignment: .center)
                         }
                         Button(action: {
-                            ble.cmd2reader(cmd:
-                                            reader.cmd_get_output_power())
-                            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-                                let reader_feedback = ble.reader2BLE(record: true)
-                                Outpower_feedback = reader.feedback_get_output_power(feedback: reader_feedback)
-                            }
+                            let cmd : [UInt8] = reader.cmd_get_output_power()
+//                            ble.cmd2reader(cmd: cmd)
+//                            reader.Btye_Recorder(defined: 1, byte: cmd)
+//                            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
+//                                let reader_feedback = ble.reader2BLE()
+//                                Outpower_feedback = reader.feedback_get_output_power(feedback: reader_feedback)
+//                            }
+                            cmdtransitor(cmd: cmd)
                         }) {
                             Text("Get")
                                 .foregroundColor(.blue)
@@ -208,6 +227,7 @@ struct ReaderSetting: View {
                         }
                     }
                     Divider()
+                    ErrorList
                     Spacer()
                 }
                 .frame(width: geometry.size.width - 20)
@@ -221,6 +241,55 @@ struct ReaderSetting: View {
 //                Reader_Picker(picker: Outpower,title: "Select Output Power", label: "Output Power", geometry: geometry, Selected: $SelectedPower, enable: $SelectedPower_picker)
 //            }
 //        }
+    }
+    
+    var ErrorList: some View {
+        List{
+            if !ErrorStr.isEmpty{
+                ForEach (0..<ErrorStr.count){ index in
+                    Text(ErrorStr[ErrorStr.count - 1 - index])
+                        .foregroundColor(.red)
+                }
+            }
+        }
+        .listStyle(PlainListStyle())
+    }
+    
+    func cmdtransitor(cmd: [UInt8]){
+        var flag : Bool = false
+        var readState : Bool = false
+        var counter : Int = 0
+        Timer.scheduledTimer(withTimeInterval: 0, repeats: true){timer in
+            if !flag{
+                ble.cmd2reader(cmd: cmd)
+                reader.Btye_Recorder(defined: 1, byte: cmd)
+                flag = true
+            }
+            if ble.ValueUpated_2A68{
+                print("ValueUpated_2A68")
+                let feedback = ble.reader2BLE()
+                reader.Btye_Recorder(defined: 2, byte: feedback)
+                if feedback[0] == 0xA0 && feedback[1] == 0xFE {
+                    if feedback[3] == 0x70 || feedback[3] == 0x71 || feedback[3] == 0x76{
+                        if ErrorStr.count > 5 {
+                            ErrorStr.removeAll()
+                        }
+                        let Error = reader.reader_error_code(code: feedback[Int(feedback[1])])
+                        ErrorStr.append(Error)
+                    }
+                    else if feedback[3] == 0x77 {
+                        Outpower_feedback = reader.feedback_get_output_power(feedback: feedback)
+                    }
+                }
+                ble.ValueUpated_2A68 = false
+                readState = true
+            }
+            counter += 1
+            if counter > 200 || readState{
+                print(counter)
+                timer.invalidate()
+            }
+        }
     }
 }
 
@@ -308,7 +377,9 @@ struct ReaderInventory: View{
                         .disabled(Realtime_Inventory_Toggle || reader.tagsCount <= 0 || Buffer_button_Bool || isInventory)
                         Divider()
                         Button(action: {
-                            ble.cmd2reader(cmd: reader.cmd_clear_inventory_buffer())
+                            let cmd : [UInt8] = reader.cmd_clear_inventory_buffer()
+                            ble.cmd2reader(cmd: cmd)
+                            reader.Btye_Recorder(defined: 1, byte: cmd)
                             reader.tagsCount = 0
                         }) {
                             Text("Clear")
@@ -318,12 +389,17 @@ struct ReaderInventory: View{
                     }
                     .frame(height: 30, alignment: .center)
 //                    Invetroy_Buffer_list(Error_str: Error_str_Buffer, geometry: geometry).environmentObject(reader)
-                    Invetroy_Buffer_list(ErrorStr: ErrorStr, geometry: geometry).environmentObject(reader)
+                    Divider()
+//                    Invetroy_Buffer_list(ErrorStr: ErrorStr, geometry: geometry).environmentObject(reader)
+                    Bufferlist
                     Spacer()
                 }
                 .frame(width: geometry.size.width - 20)
             }
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+            .onAppear(perform: {
+                Inventory_button_str = (isInventory ? "Stop" : "Start")
+            })
 //            .overlay(picker  ? Color.black.opacity(0.3) : nil)
 //            if picker {
 //                Reader_Picker(picker: speed, title: "Select Speed", label: "Speed", geometry: geometry, Selected: $Selected, enable: $picker)
@@ -332,39 +408,34 @@ struct ReaderInventory: View{
     }
     
     func EnableInventory(){
-        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true){ timer in
-            ble.cmd2reader(cmd: reader.cmd_inventory(inventory_speed: UInt8(speed[Selected])))
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.25) {
-                reader.tagsCount = reader.feedback_Inventory(feedback: ble.reader2BLE(record: true)).0
-                ErrorString = reader.feedback_Inventory(feedback: ble.reader2BLE(record: false)).1
+        var flag : Bool = false
+        var counter : Int = 0
+        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){ timer in
+            let cmd : [UInt8] = reader.cmd_inventory(inventory_speed: UInt8(speed[Selected]))
+            if !flag || counter > 20{
+                counter = 0
+                ble.cmd2reader(cmd: cmd)
+                reader.Btye_Recorder(defined: 1, byte: cmd)
+                flag = true
             }
+            if ble.ValueUpated_2A68{
+                let feedback = ble.reader2BLE()
+                reader.Btye_Recorder(defined: 2, byte: feedback)
+                if feedback[0] == 0xA0 && feedback[1] == 0xFE{
+                    reader.tagsCount = reader.feedback_Inventory(feedback: feedback).0
+                    ErrorString = reader.feedback_Inventory(feedback: feedback).1
+                }
+                ble.ValueUpated_2A68 = false
+                flag = false
+            }
+            counter += 1
             if !isInventory {
                 timer.invalidate()
             }
         }
     }
     
-    func Invetroy_Buffer_aciton(){
-        Buffer_button_str = "Reading"
-        Buffer_button_Bool = true
-        ble.cmd2reader(cmd: reader.cmd_get_inventory_buffer())
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
-            let reader_feedback = ble.reader2BLE(record: false)
-//            Error_str_Buffer = reader.feedback_Tags(feedback: reader_feedback)
-            ErrorStr = reader.feedback2Tags(feedback: reader_feedback)
-        }
-        Buffer_button_str = "Read"
-        Buffer_button_Bool = false
-    }
-    
-}
-
-struct Invetroy_Buffer_list: View {
-    @EnvironmentObject var reader:Reader
-//    let Error_str : [String]
-    let ErrorStr : String
-    var geometry : GeometryProxy
-    var body: some View {
+    var Bufferlist: some View {
         VStack(alignment: .center){
             Text("Buffer List")
                 .font(.headline)
@@ -399,50 +470,113 @@ struct Invetroy_Buffer_list: View {
                     Text(ErrorStr)
                         .foregroundColor(.red)
                 }
-//                if Error_str.isEmpty {
-//                    ForEach(0..<reader.Tags.count, id:\.self){ index in
-//                        let tag = reader.Tags[index]
-//                        let PC_str = Data(tag.EPC[0...1]).hexEncodedString()
-//                        let EPC_str = Data(tag.EPC[2...(Int(tag.EPC_Len) - 3)]).hexEncodedString()
-//                        let CRC_str = Data(tag.EPC[(Int(tag.EPC_Len) - 2)...(Int(tag.EPC_Len) - 1)]).hexEncodedString()
-//                        HStack{
-//                            Text("\(tag.id + 1)")
-//                                .frame(width: 15)
-//                            Divider()
-//                            VStack(alignment: .leading){
-//                                Text("\(EPC_str)")
-//                                    .font(.headline)
-//                                HStack{
-//                                    Text("PC:\(PC_str)")
-//                                    Text("CRC:\(CRC_str)")
-//                                    Text("Len:\(Int(tag.EPC_Len))")
-//                                    Text("RSSI:\(tag.RSSI_int)")
-//                                }
-//                            }
-//                        }
-//                        //.frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
-//                    }
-//                }
-//                else {
-//                    ForEach(0..<Error_str.count, id:\.self){ index in
-//                        HStack{
-//                            Text("\(index + 1)")
-//                                .frame(width: 20)
-//                                .foregroundColor(.red)
-//                            Divider()
-//                            Text(Error_str[index])
-//                                .foregroundColor(.red)
-//                        }
-//                        //.frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
-//                    }
-//                }
             }
-//            .padding(.leading, -10)
             .listStyle(PlainListStyle())
             .frame(width: geometry.size.width, height: geometry.size.height / 2 + 60, alignment: .center)
         }
     }
+    
+    func Invetroy_Buffer_aciton(){
+        Buffer_button_str = "Reading"
+        Buffer_button_Bool = true
+        let cmd : [UInt8] = reader.cmd_get_inventory_buffer()
+        ble.cmd2reader(cmd: cmd)
+        reader.Btye_Recorder(defined: 1, byte: cmd)
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
+            let reader_feedback = ble.reader2BLE()
+//            Error_str_Buffer = reader.feedback_Tags(feedback: reader_feedback)
+            ErrorStr = reader.feedback2Tags(feedback: reader_feedback)
+        }
+        Buffer_button_str = "Read"
+        Buffer_button_Bool = false
+    }
+    
 }
+
+//struct Invetroy_Buffer_list: View {
+//    @EnvironmentObject var reader:Reader
+////    let Error_str : [String]
+//    let ErrorStr : String
+//    var geometry : GeometryProxy
+//    var body: some View {
+//        VStack(alignment: .center){
+//            Text("Buffer List")
+//                .font(.headline)
+//            Divider()
+//            List {
+//                if ErrorStr == ""{
+//                    if !reader.Tags.isEmpty {
+//                        ForEach(0..<reader.Tags.count){ index in
+//                            let tag = reader.Tags[index]
+//                            let PCstr = Data(tag.PC).hexEncodedString()
+//                            let EPCstr = Data(tag.EPC).hexEncodedString()
+//                            let CRCstr = Data(tag.CRC).hexEncodedString()
+//                            HStack{
+//                                Text("\(tag.id + 1)")
+//                                    .frame(width: 15)
+//                                Divider()
+//                                VStack(alignment: .leading){
+//                                    Text("\(EPCstr)")
+//                                        .font(.headline)
+//                                    HStack{
+//                                        Text("PC:\(PCstr)")
+//                                        Text("CRC:\(CRCstr)")
+//                                        Text("Len:\(Int(tag.EPClen))")
+//                                        Text("RSSI:\(tag.RSSI)")
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                else {
+//                    Text(ErrorStr)
+//                        .foregroundColor(.red)
+//                }
+////                if Error_str.isEmpty {
+////                    ForEach(0..<reader.Tags.count, id:\.self){ index in
+////                        let tag = reader.Tags[index]
+////                        let PC_str = Data(tag.EPC[0...1]).hexEncodedString()
+////                        let EPC_str = Data(tag.EPC[2...(Int(tag.EPC_Len) - 3)]).hexEncodedString()
+////                        let CRC_str = Data(tag.EPC[(Int(tag.EPC_Len) - 2)...(Int(tag.EPC_Len) - 1)]).hexEncodedString()
+////                        HStack{
+////                            Text("\(tag.id + 1)")
+////                                .frame(width: 15)
+////                            Divider()
+////                            VStack(alignment: .leading){
+////                                Text("\(EPC_str)")
+////                                    .font(.headline)
+////                                HStack{
+////                                    Text("PC:\(PC_str)")
+////                                    Text("CRC:\(CRC_str)")
+////                                    Text("Len:\(Int(tag.EPC_Len))")
+////                                    Text("RSSI:\(tag.RSSI_int)")
+////                                }
+////                            }
+////                        }
+////                        //.frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+////                    }
+////                }
+////                else {
+////                    ForEach(0..<Error_str.count, id:\.self){ index in
+////                        HStack{
+////                            Text("\(index + 1)")
+////                                .frame(width: 20)
+////                                .foregroundColor(.red)
+////                            Divider()
+////                            Text(Error_str[index])
+////                                .foregroundColor(.red)
+////                        }
+////                        //.frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+////                    }
+////                }
+//            }
+////            .padding(.leading, -10)
+//            .listStyle(PlainListStyle())
+//            .frame(width: geometry.size.width, height: geometry.size.height / 2 + 60, alignment: .center)
+//        }
+//    }
+//}
 
 struct Record_Monitor: View {
     @EnvironmentObject var reader:Reader
@@ -470,6 +604,21 @@ struct Record_Monitor: View {
 //                    }
 //                }
 //                .listStyle(PlainListStyle())
+                List{
+                    if !reader.BytesRecord.isEmpty {
+                        ForEach(0..<reader.BytesRecord.count){ index in
+//                            let Index = reader.Byte_Record.count - index
+                            let byte_record = reader.BytesRecord[reader.BytesRecord.count - 1 - index]
+                            let byte_str = Data(byte_record.Byte).hexEncodedString()
+                            VStack(alignment: .leading){
+                                Text(byte_record.Time)
+                                Text(byte_str)
+                                    .foregroundColor(byte_record.Defined == 1 ? .blue : .red)
+                            }
+                        }
+                    }
+                }
+                .listStyle(PlainListStyle())
                 Spacer()
             }
         }
@@ -556,9 +705,11 @@ struct ReadTags_data: View {
                             .font(.headline)
                         Spacer()
                         Button(action: {
-                            ble.cmd2reader(cmd: reader.cmd_data_read(data_block: DataBlock_byte[DataBlock_Selected], data_start: UInt8(byte[DataStart_Selected]), data_len: UInt8(byte[DataLen_Selected])))
+                            let cmd : [UInt8] = reader.cmd_data_read(data_block: DataBlock_byte[DataBlock_Selected], data_start: UInt8(byte[DataStart_Selected]), data_len: UInt8(byte[DataLen_Selected]))
+                            ble.cmd2reader(cmd: cmd)
+                            reader.Btye_Recorder(defined: 1, byte: cmd)
                             DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.4) {
-                                let reader_feedback = ble.reader2BLE(record: false)
+                                let reader_feedback = ble.reader2BLE()
 //                                Error_str_Buffer = reader.feedback_Tags(feedback: reader_feedback)
                                 ErrorStr = reader.feedback2Tags(feedback: reader_feedback)
 //                                list_show = true
@@ -574,7 +725,7 @@ struct ReadTags_data: View {
                         .bold()
                     Divider()
                     List{
-                        if ErrorStr != "" {
+                        if ErrorStr == "" {
                             if !reader.TagsData.isEmpty {
                                 ForEach(0..<reader.TagsData.count){ index in
                                     let TagData = reader.TagsData[index]
@@ -670,19 +821,20 @@ struct Reader_WriteData: View{
     @EnvironmentObject var reader:Reader
     @State var EPC_picker_trigger : Bool = false
     @State var EPC_Selected : Int = 0
-    @State var EPC_Match_Error : String?
-    @State var Match_ButtState : Int = 0
+    @State var EPC_Match_Error : String = ""
+//    @State var Match_ButtState : Int = 0
+    @Binding var MatchState : Int // 0: Match, 1: Matching, 2: Matched
     var geometry : GeometryProxy
     var body: some View {
         ZStack{
             VStack{
                 HStack{
-                    Text("Tag Matching")
+                    Text("Tag Select")
                         .font(.headline)
                     Text(Data(reader.Tags[EPC_Selected].EPC).hexEncodedString())
                         .font(.headline)
                         .frame(height: 30)
-                        .frame(maxWidth: 200)
+                        .frame(maxWidth: 250)
                         .background(Color.gray.opacity(0.5))
                         .cornerRadius(10)
                         .onTapGesture {
@@ -691,30 +843,37 @@ struct Reader_WriteData: View{
                     Button(action: {
                         Match_ButtAct()
                     }){
-                        Match_ButtStr
+                        Text(MatchState == 0 ? "Match" : MatchState == 2 ? "Unmatch" : "Matching")
                     }
                 }
                 .frame(width: geometry.size.width - 20, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+                Divider()
+                HStack{
+                    Text("Matched Tag")
+                        .font(.headline)
+                }
             }
             .frame(alignment: .center)
         }
-        .frame(alignment: .center)
+        .frame(width: geometry.size.width, height: geometry.size.height - 20, alignment: .center)
     }
     
     func Match_ButtAct(){
         let EPC : [UInt8] = Array(reader.Tags[EPC_Selected].EPC)
-        ble.cmd2reader(cmd: reader.cmd_EPC_match(setEPC_mode: 0x00, EPC: EPC))
+        let cmd : [UInt8] = reader.cmd_EPC_match(setEPC_mode: 0x00, EPC: EPC)
+        ble.cmd2reader(cmd: cmd)
+        reader.Btye_Recorder(defined: 1, byte: cmd)
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-            let reader_feedback00 = ble.reader2BLE(record: true)
-            if reader_feedback00[4] != 0x10 {
-                EPC_Match_Error = reader.reader_error_code(code: reader_feedback00[4])
+            let reader_feedback = ble.reader2BLE()
+            if reader_feedback[4] != 0x10 {
+                EPC_Match_Error = reader.reader_error_code(code: reader_feedback[4])
             }
         }
     }
-    
-    var Match_ButtStr: some View {
-        Text("Match")
-    }
+//
+//    var Match_ButtStr: some View {
+//        Text("Match")
+//    }
 }
 
 struct Reader_Picker: View{
@@ -740,7 +899,7 @@ struct Reader_Picker: View{
                 .clipped()
             }
             .background(RoundedRectangle(cornerRadius: 10)
-                            .foregroundColor(Color.white.opacity(0.7)).shadow(radius: 1))
+                            .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
             VStack{
                 Button(action: {self.enable = false}) {
                     Text("OK")
@@ -750,7 +909,7 @@ struct Reader_Picker: View{
                 .padding()
                 .frame(maxWidth: geometry.size.width - 30)
                 .background(RoundedRectangle(cornerRadius: 10)
-                                .foregroundColor(Color.white.opacity(0.7)).shadow(radius: 1))
+                                .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
             }
         }
         .frame(maxWidth: geometry.size.width - 30)
