@@ -20,7 +20,7 @@ struct BLEScanner_Alert: View {
             PeripheralList(geometry: geometry)
                 .environmentObject(ble)
             Divider()
-                .padding()
+                .frame(width: geometry.size.width - 60)
             Button(action: {
                 self.Enable = false
                 ble.stopscan_device()
@@ -28,7 +28,7 @@ struct BLEScanner_Alert: View {
                 Text("Close")
                     .font(.headline)
                     .foregroundColor(.blue)
-                
+                    .padding()
             }
             .frame(width: geometry.size.width - 60)
         }
@@ -61,6 +61,7 @@ struct PeripheralList: View {
                     .frame(alignment: .trailing)
             }
         }
+        .listStyle(SidebarListStyle())
     }
 }
 

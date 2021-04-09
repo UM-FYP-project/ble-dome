@@ -13,14 +13,15 @@ struct DetailTabView: View {
     @Binding var Enable : Bool
     var peripheral : Peripheral
     var body: some View {
-//        GeometryReader { gemetry in
-        ZStack{
+        GeometryReader { geometry in
+//        ZStack{
             TabView() {
                 if peripheral.Service.contains("2A68"){
                     NavigationView{
-                        GeometryReader{ geometry in
-                            ReaderTab(geometry: geometry)
+                        GeometryReader{ geom in
+                            ReaderTab(geometry: geom)
                             .environmentObject(reader)
+                            .environmentObject(readerPicker)
                             .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
                             .navigationTitle("\(peripheral.name) Reader")
                             .navigationBarItems(leading:
@@ -58,9 +59,9 @@ struct DetailTabView: View {
                 }
             }
 
-        }
-//        .navigationBarHidden(true)
 //        }
+//        .navigationBarHidden(true)
+        }
     }
 }
 

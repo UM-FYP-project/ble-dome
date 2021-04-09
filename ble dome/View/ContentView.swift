@@ -56,7 +56,7 @@ struct ContentView: View {
                     }
                 }
                 .onAppear(perform: {
-                    Timer.scheduledTimer(withTimeInterval: 0, repeats: true){_ in
+                    Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
                         if !ble.isInit{
                             ble.initBLE()
                         }

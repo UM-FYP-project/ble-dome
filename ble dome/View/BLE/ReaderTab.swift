@@ -33,6 +33,8 @@ struct ReaderTab: View {
     @State var DataStart_Selected = 2
     @State var DataLen_picker = false
     @State var DataLen_Selected = 20
+    // data Write
+    @State var MatchState : Int = 0
 //    @Binding var overlayState : Bool
 //    let DataBlock_str = ["RESERVED", "EPC", "TAG ID", "USER DATA"]
 //    let DataBlock_byte :[UInt8] = [0x00, 0x01, 0x02, 0x03]
@@ -67,9 +69,9 @@ struct ReaderTab: View {
                             .environmentObject(reader)
                     }
                     else if Selected == 3{
-                        //                        Reader_WriteData(geometry: geometry)
-                        //                            .environmentObject(reader)
-                        //                            .disabled(reader.Tags.isEmpty)
+                        Reader_WriteData(geometry: geometry, MatchState: $MatchState)
+                            .environmentObject(reader)
+                            .disabled(reader.Tags.isEmpty)
                     }
                     else if Selected == 4{
                         Record_Monitor(geometry: geometry)
@@ -233,14 +235,6 @@ struct ReaderSetting: View {
                 .frame(width: geometry.size.width - 20)
             }
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
-//            .overlay(SelectedBaudrate_picker || SelectedPower_picker ? Color.black.opacity(0.6) : nil)
-//            if SelectedBaudrate_picker == true {
-//                Reader_Picker(picker: Baudrate,title: "Select Baudrate", label: "Baudrate", geometry: geometry, Selected: $SelectedBaudrate, enable: $SelectedBaudrate_picker)
-//            }
-//            if SelectedPower_picker == true{
-//                Reader_Picker(picker: Outpower,title: "Select Output Power", label: "Output Power", geometry: geometry, Selected: $SelectedPower, enable: $SelectedPower_picker)
-//            }
-//        }
     }
     
     var ErrorList: some View {
@@ -269,12 +263,12 @@ struct ReaderSetting: View {
                 print("ValueUpated_2A68")
                 let feedback = ble.reader2BLE()
                 reader.Btye_Recorder(defined: 2, byte: feedback)
-                if feedback[0] == 0xA0 && feedback[1] == 0xFE {
+                if feedback[0] == 0xA0 && feedback[2] == 0xFE {
                     if feedback[3] == 0x70 || feedback[3] == 0x71 || feedback[3] == 0x76{
+                        let Error = reader.reader_error_code(code: feedback[Int(feedback[1])])
                         if ErrorStr.count > 5 {
                             ErrorStr.removeAll()
                         }
-                        let Error = reader.reader_error_code(code: feedback[Int(feedback[1])])
                         ErrorStr.append(Error)
                     }
                     else if feedback[3] == 0x77 {
@@ -315,11 +309,11 @@ struct ReaderInventory: View{
 //        GeometryReader { geometry in
             ZStack{
                 VStack(alignment: .center){
-//                    Toggle(isOn: $Realtime_Inventory_Toggle) {
-//                        Text("Realtime Inventory")
-//                            .font(.headline)
-//                    }
-//                    Divider()
+                    Toggle(isOn: $Realtime_Inventory_Toggle) {
+                        Text("Realtime Inventory")
+                            .font(.headline)
+                    }
+                    Divider()
                     HStack{
                         Text("Inventory Speed:")
                             .font(.headline)
@@ -334,7 +328,12 @@ struct ReaderInventory: View{
                             }
                         Button(action: {
                             isInventory.toggle()
-                            EnableInventory()
+                            if !Realtime_Inventory_Toggle{
+                                EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(speed[Selected])))
+                            }
+                            else {
+                                EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(speed[Selected])))
+                            }
                             Inventory_button_str = (isInventory ? "Stop" : "Start")
                         }) {
                             Text(Inventory_button_str)
@@ -364,12 +363,8 @@ struct ReaderInventory: View{
                             .font(.headline)
                         Spacer()
                         Button(action: {
-                            if !Realtime_Inventory_Toggle{
-                                Invetroy_Buffer_aciton()
-                            }
-                            else {
-                                
-                            }
+                                get_Buffer()
+
                         }) {
                             Text(Buffer_button_str)
                                 .bold()
@@ -385,7 +380,7 @@ struct ReaderInventory: View{
                             Text("Clear")
                                 .bold()
                         }
-                        .disabled(Realtime_Inventory_Toggle || reader.tagsCount <= 0 || isInventory)
+//                        .disabled(Realtime_Inventory_Toggle || reader.tagsCount <= 0 || isInventory)
                     }
                     .frame(height: 30, alignment: .center)
 //                    Invetroy_Buffer_list(Error_str: Error_str_Buffer, geometry: geometry).environmentObject(reader)
@@ -400,39 +395,6 @@ struct ReaderInventory: View{
             .onAppear(perform: {
                 Inventory_button_str = (isInventory ? "Stop" : "Start")
             })
-//            .overlay(picker  ? Color.black.opacity(0.3) : nil)
-//            if picker {
-//                Reader_Picker(picker: speed, title: "Select Speed", label: "Speed", geometry: geometry, Selected: $Selected, enable: $picker)
-//            }
-//        }
-    }
-    
-    func EnableInventory(){
-        var flag : Bool = false
-        var counter : Int = 0
-        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){ timer in
-            let cmd : [UInt8] = reader.cmd_inventory(inventory_speed: UInt8(speed[Selected]))
-            if !flag || counter > 20{
-                counter = 0
-                ble.cmd2reader(cmd: cmd)
-                reader.Btye_Recorder(defined: 1, byte: cmd)
-                flag = true
-            }
-            if ble.ValueUpated_2A68{
-                let feedback = ble.reader2BLE()
-                reader.Btye_Recorder(defined: 2, byte: feedback)
-                if feedback[0] == 0xA0 && feedback[1] == 0xFE{
-                    reader.tagsCount = reader.feedback_Inventory(feedback: feedback).0
-                    ErrorString = reader.feedback_Inventory(feedback: feedback).1
-                }
-                ble.ValueUpated_2A68 = false
-                flag = false
-            }
-            counter += 1
-            if !isInventory {
-                timer.invalidate()
-            }
-        }
     }
     
     var Bufferlist: some View {
@@ -441,34 +403,32 @@ struct ReaderInventory: View{
                 .font(.headline)
             Divider()
             List {
-                if ErrorStr == ""{
-                    if !reader.Tags.isEmpty {
-                        ForEach(0..<reader.Tags.count){ index in
-                            let tag = reader.Tags[index]
-                            let PCstr = Data(tag.PC).hexEncodedString()
-                            let EPCstr = Data(tag.EPC).hexEncodedString()
-                            let CRCstr = Data(tag.CRC).hexEncodedString()
-                            HStack{
-                                Text("\(tag.id + 1)")
-                                    .frame(width: 15)
-                                Divider()
-                                VStack(alignment: .leading){
-                                    Text("\(EPCstr)")
-                                        .font(.headline)
-                                    HStack{
-                                        Text("PC:\(PCstr)")
-                                        Text("CRC:\(CRCstr)")
-                                        Text("Len:\(Int(tag.EPClen))")
-                                        Text("RSSI:\(tag.RSSI)")
-                                    }
+                if ErrorStr != ""{
+                    Text(ErrorStr)
+                        .foregroundColor(.red)
+                }
+                if !reader.Tags.isEmpty {
+                    ForEach(0..<reader.Tags.count, id: \.self){ index in
+                        let tag = reader.Tags[index]
+                        let PCstr = Data(tag.PC).hexEncodedString()
+                        let EPCstr = Data(tag.EPC).hexEncodedString()
+                        let CRCstr = Data(tag.CRC).hexEncodedString()
+                        HStack{
+                            Text("\(tag.id + 1)")
+                                .frame(width: 15)
+                            Divider()
+                            VStack(alignment: .leading){
+                                Text("\(EPCstr)")
+                                    .font(.headline)
+                                HStack{
+                                    Text("PC:\(PCstr)")
+                                    Text("CRC:\(CRCstr)")
+                                    Text("Len:\(Int(tag.EPClen))")
+                                    Text("RSSI:\(tag.RSSI)")
                                 }
                             }
                         }
                     }
-                }
-                else {
-                    Text(ErrorStr)
-                        .foregroundColor(.red)
                 }
             }
             .listStyle(PlainListStyle())
@@ -476,107 +436,76 @@ struct ReaderInventory: View{
         }
     }
     
-    func Invetroy_Buffer_aciton(){
-        Buffer_button_str = "Reading"
-        Buffer_button_Bool = true
-        let cmd : [UInt8] = reader.cmd_get_inventory_buffer()
-        ble.cmd2reader(cmd: cmd)
-        reader.Btye_Recorder(defined: 1, byte: cmd)
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.2) {
-            let reader_feedback = ble.reader2BLE()
-//            Error_str_Buffer = reader.feedback_Tags(feedback: reader_feedback)
-            ErrorStr = reader.feedback2Tags(feedback: reader_feedback)
+    func EnableInventory(cmd: [UInt8]){
+        var flag : Bool = false
+        var counter : Int = 0
+        var LoopCount : Int = 0
+        Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true){ timer in
+//            let cmd : [UInt8] = reader.cmd_inventory(inventory_speed: UInt8(speed[Selected]))
+            if !flag || counter > 5{
+                counter = 0
+                ble.cmd2reader(cmd: cmd)
+                reader.Btye_Recorder(defined: 1, byte: cmd)
+                flag = true
+            }
+            while (flag && LoopCount < 50) {
+                if ble.ValueUpated_2A68{
+                    let feedback = ble.reader2BLE()
+                    reader.Btye_Recorder(defined: 2, byte: feedback)
+                    if feedback[0] == 0xA0 && feedback[2] == 0xFE{
+                        //                    reader.Btye_Recorder(defined: 2, byte: feedback)
+                        if feedback[3] == 0x80 && cmd[3] == 0x80{
+                            reader.tagsCount = reader.feedback_Inventory(feedback: feedback).0
+                            ErrorString = reader.feedback_Inventory(feedback: feedback).1
+                            flag = false
+                        }
+                        if feedback[3] == 0x89 && cmd[3] == 0x89{
+                            ErrorString = reader.feedback2Tags(feedback: feedback)
+                            flag = false
+                        }
+                    }
+                    ble.ValueUpated_2A68 = false
+                }
+                LoopCount += 1
+            }
+            counter += 1
+            LoopCount = 0
+            if !isInventory {
+                timer.invalidate()
+            }
         }
-        Buffer_button_str = "Read"
-        Buffer_button_Bool = false
     }
     
+    func get_Buffer(){
+        var flag : Bool = false
+        var completed : Bool = false
+        var counter : Int = 0
+        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){ timer in
+            Buffer_button_str = "Reading"
+            Buffer_button_Bool = true
+            let cmd : [UInt8] = reader.cmd_get_inventory_buffer()
+            if !flag{
+                ble.cmd2reader(cmd: cmd)
+                reader.Btye_Recorder(defined: 1, byte: cmd)
+                flag = true
+            }
+            if ble.ValueUpated_2A68{
+                let feedback = ble.reader2BLE()
+                if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x90{
+                    ErrorStr = reader.feedback2Tags(feedback: feedback)
+                    completed = true
+                }
+                ble.ValueUpated_2A68 = false
+            }
+            counter += 1
+            if counter > 20 || completed {
+                Buffer_button_str = "Read"
+                Buffer_button_Bool = false
+                timer.invalidate()
+            }
+        }
+    }
 }
-
-//struct Invetroy_Buffer_list: View {
-//    @EnvironmentObject var reader:Reader
-////    let Error_str : [String]
-//    let ErrorStr : String
-//    var geometry : GeometryProxy
-//    var body: some View {
-//        VStack(alignment: .center){
-//            Text("Buffer List")
-//                .font(.headline)
-//            Divider()
-//            List {
-//                if ErrorStr == ""{
-//                    if !reader.Tags.isEmpty {
-//                        ForEach(0..<reader.Tags.count){ index in
-//                            let tag = reader.Tags[index]
-//                            let PCstr = Data(tag.PC).hexEncodedString()
-//                            let EPCstr = Data(tag.EPC).hexEncodedString()
-//                            let CRCstr = Data(tag.CRC).hexEncodedString()
-//                            HStack{
-//                                Text("\(tag.id + 1)")
-//                                    .frame(width: 15)
-//                                Divider()
-//                                VStack(alignment: .leading){
-//                                    Text("\(EPCstr)")
-//                                        .font(.headline)
-//                                    HStack{
-//                                        Text("PC:\(PCstr)")
-//                                        Text("CRC:\(CRCstr)")
-//                                        Text("Len:\(Int(tag.EPClen))")
-//                                        Text("RSSI:\(tag.RSSI)")
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//                else {
-//                    Text(ErrorStr)
-//                        .foregroundColor(.red)
-//                }
-////                if Error_str.isEmpty {
-////                    ForEach(0..<reader.Tags.count, id:\.self){ index in
-////                        let tag = reader.Tags[index]
-////                        let PC_str = Data(tag.EPC[0...1]).hexEncodedString()
-////                        let EPC_str = Data(tag.EPC[2...(Int(tag.EPC_Len) - 3)]).hexEncodedString()
-////                        let CRC_str = Data(tag.EPC[(Int(tag.EPC_Len) - 2)...(Int(tag.EPC_Len) - 1)]).hexEncodedString()
-////                        HStack{
-////                            Text("\(tag.id + 1)")
-////                                .frame(width: 15)
-////                            Divider()
-////                            VStack(alignment: .leading){
-////                                Text("\(EPC_str)")
-////                                    .font(.headline)
-////                                HStack{
-////                                    Text("PC:\(PC_str)")
-////                                    Text("CRC:\(CRC_str)")
-////                                    Text("Len:\(Int(tag.EPC_Len))")
-////                                    Text("RSSI:\(tag.RSSI_int)")
-////                                }
-////                            }
-////                        }
-////                        //.frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
-////                    }
-////                }
-////                else {
-////                    ForEach(0..<Error_str.count, id:\.self){ index in
-////                        HStack{
-////                            Text("\(index + 1)")
-////                                .frame(width: 20)
-////                                .foregroundColor(.red)
-////                            Divider()
-////                            Text(Error_str[index])
-////                                .foregroundColor(.red)
-////                        }
-////                        //.frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
-////                    }
-////                }
-//            }
-////            .padding(.leading, -10)
-//            .listStyle(PlainListStyle())
-//            .frame(width: geometry.size.width, height: geometry.size.height / 2 + 60, alignment: .center)
-//        }
-//    }
-//}
 
 struct Record_Monitor: View {
     @EnvironmentObject var reader:Reader
@@ -585,25 +514,6 @@ struct Record_Monitor: View {
 //        GeometryReader{ geometry in
         ZStack{
             VStack(alignment: .center){
-//                Text("Monitor")
-//                    .bold()
-//                    .font(.largeTitle)
-//                    .padding()
-//                List{
-//                    if !reader.Byte_Record.isEmpty {
-//                        ForEach(0..<reader.Byte_Record.count){ index in
-//                            let Index = reader.Byte_Record.count - index
-//                            let byte_record = reader.Byte_Record[Index]
-//                            let byte_str = Data(byte_record.Byte).hexEncodedString()
-//                            VStack(alignment: .leading){
-//                                Text("\(byte_record.Time_string)")
-//                                Text(byte_str)
-//                                    .foregroundColor(byte_record.Defined == 1 ? .blue : .red)
-//                            }
-//                        }
-//                    }
-//                }
-//                .listStyle(PlainListStyle())
                 List{
                     if !reader.BytesRecord.isEmpty {
                         ForEach(0..<reader.BytesRecord.count){ index in
@@ -643,7 +553,6 @@ struct ReadTags_data: View {
     @Binding var DataStart_Selected : Int
     @Binding var DataLen_picker : Bool
     @Binding var DataLen_Selected : Int
-//    @State var Error_str_Buffer = [String]()
     @State var ErrorStr : String = ""
     @State var list_show = false
     let DataBlock_str = ["RESERVED", "EPC", "TAG ID", "USER DATA"]
@@ -705,17 +614,31 @@ struct ReadTags_data: View {
                             .font(.headline)
                         Spacer()
                         Button(action: {
+                            var flag : Bool = false
+                            var completed : Bool = false
+                            var counter : Int = 0
                             let cmd : [UInt8] = reader.cmd_data_read(data_block: DataBlock_byte[DataBlock_Selected], data_start: UInt8(byte[DataStart_Selected]), data_len: UInt8(byte[DataLen_Selected]))
-                            ble.cmd2reader(cmd: cmd)
-                            reader.Btye_Recorder(defined: 1, byte: cmd)
-                            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.4) {
-                                let reader_feedback = ble.reader2BLE()
-//                                Error_str_Buffer = reader.feedback_Tags(feedback: reader_feedback)
-                                ErrorStr = reader.feedback2Tags(feedback: reader_feedback)
-//                                list_show = true
+                            Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){timer in
+                                if !flag {
+                                    ble.cmd2reader(cmd: cmd)
+                                    reader.Btye_Recorder(defined: 1, byte: cmd)
+                                    flag = true
+                                }
+                                if ble.ValueUpated_2A68{
+                                    let feedback = ble.reader2BLE()
+                                    if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x81{
+                                        ErrorStr = reader.feedback2Tags(feedback: feedback)
+                                        completed = true
+                                    }
+                                    ble.ValueUpated_2A68 = false
+                                }
+                                counter += 1
+                                if counter > 30 || completed {
+                                    timer.invalidate()
+                                }
                             }
                         }) {
-                            Text("Start")
+                            Text("Read")
                         }
                         .disabled(!(reader.tagsCount > 0))
                     }
@@ -725,76 +648,34 @@ struct ReadTags_data: View {
                         .bold()
                     Divider()
                     List{
-                        if ErrorStr == "" {
-                            if !reader.TagsData.isEmpty {
-                                ForEach(0..<reader.TagsData.count){ index in
-                                    let TagData = reader.TagsData[index]
-                                    let PCstr = Data(TagData.PC).hexEncodedString()
-                                    let CRCstr = Data(TagData.CRC).hexEncodedString()
-                                    let Datastr = Data(TagData.Data).hexEncodedString()
-                                    HStack{
-                                        Text("\(TagData.id + 1)")
-                                            .frame(width: 20)
-                                        Divider()
-                                        VStack(alignment: .leading){
-                                            Text("\(Datastr)")
-                                                .font(.headline)
-                                            HStack{
-                                                Text("PC:\(PCstr)")
-                                                Text("CRC:\(CRCstr)")
-                                                Text("Len:\(Int(TagData.DataLen))")
-                                                Text("RSSI:\(TagData.RSSI)")
-                                            }
+                        if ErrorStr != "" {
+                            Text(ErrorStr)
+                                .foregroundColor(.red)
+                        }
+                        if !reader.TagsData.isEmpty {
+                            ForEach(0..<reader.TagsData.count, id: \.self ){ index in
+                                let TagData = reader.TagsData[index]
+                                let PCstr = Data(TagData.PC).hexEncodedString()
+                                let CRCstr = Data(TagData.CRC).hexEncodedString()
+                                let Datastr = Data(TagData.Data).hexEncodedString()
+                                HStack{
+                                    Text("\(TagData.id + 1)")
+                                        .frame(width: 20)
+                                    Divider()
+                                    VStack(alignment: .leading){
+                                        Text("\(Datastr)")
+                                            .font(.headline)
+                                        HStack{
+                                            Text("PC:\(PCstr)")
+                                            Text("CRC:\(CRCstr)")
+                                            Text("Len:\(Int(TagData.DataLen))")
+                                            Text("RSSI:\(TagData.RSSI)")
                                         }
                                     }
                                 }
                             }
                         }
-                        else {
-                            Text(ErrorStr)
-                                .foregroundColor(.red)
-                        }
-//                        if list_show{
-//                            if Error_str_Buffer.isEmpty{
-//                                ForEach(0..<reader.Tags.count){ index in
-//                                    let tag = reader.Tags[index]
-//                                    let PC_str = Data(tag.EPC[0...1]).hexEncodedString()
-//                                    let EPC_str = Data(tag.EPC[2...(Int(tag.EPC_Len) - 3)]).hexEncodedString()
-//                                    let CRC_str = Data(tag.EPC[(Int(tag.EPC_Len) - 2)...(Int(tag.EPC_Len) - 1)]).hexEncodedString()
-//                                    let Data_str = Data(tag.Data).hexEncodedString()
-//                                    HStack{
-//                                        Text("\(tag.id + 1)")
-//                                            .frame(width: 20)
-//                                        Divider()
-//                                        VStack(alignment: .leading){
-//                                            Text("\(EPC_str)")
-//                                                .font(.headline)
-//                                            HStack{
-//                                                Text("PC:\(PC_str)")
-//                                                Text("CRC:\(CRC_str)")
-//                                                Text("EPCLen:\(Int(tag.EPC_Len))")
-//                                            }
-//                                            Text("\(Data_str)")
-//                                                .font(.headline)
-//                                            HStack{
-//                                                if tag.Data_Len != nil{
-//                                                    Text("DataLen:\(Int(tag.Data_Len!))")
-//                                                }
-//                                                else{
-//                                                    Text("DataLen:nil")
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                            else {
-//                                ForEach(0..<Error_str_Buffer.count){ index in
-//                                    Text("Error:\(Error_str_Buffer[index])")
-//                                        .foregroundColor(.red)
-//                                }
-//                            }
-//                        }
+
                     }
                     .listStyle(PlainListStyle())
                     .frame(width: geometry.size.width, height: geometry.size.height / 2 + 80)
@@ -802,56 +683,51 @@ struct ReadTags_data: View {
                 }
             }
             .frame(width: geometry.size.width, height: geometry.size.height - 20, alignment: .center)
-//            .overlay(DataBlock_picker || DataStart_picker ||  DataLen_picker ? Color.black.opacity(0.6) : nil)
-//            if DataBlock_picker{
-//                Reader_Picker(picker: DataBlock_str,title: "Select DataBlock", label: "DataBlock", geometry: geometry, Selected: $DataBlock_Selected, enable: $DataBlock_picker)
-//            }
-//            if DataStart_picker{
-//                Reader_Picker(picker: byte,title: "Select Data Start", label: "Data Start", geometry: geometry, Selected: $DataStart_Selected, enable: $DataStart_picker)
-//            }
-//            if DataLen_picker{
-//                Reader_Picker(picker: byte,title: "Select Data Lenght", label: "Data Lenght", geometry: geometry, Selected: $DataLen_Selected, enable: $DataLen_picker)
-//            }
-//        }
     }
 }
 
 struct Reader_WriteData: View{
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader:Reader
+    var geometry : GeometryProxy
     @State var EPC_picker_trigger : Bool = false
     @State var EPC_Selected : Int = 0
     @State var EPC_Match_Error : String = ""
+    @State var FeedbackStr = [String]()
 //    @State var Match_ButtState : Int = 0
     @Binding var MatchState : Int // 0: Match, 1: Matching, 2: Matched
-    var geometry : GeometryProxy
     var body: some View {
         ZStack{
             VStack{
                 HStack{
-                    Text("Tag Select")
+                    Text("Tag")
                         .font(.headline)
-                    Text(Data(reader.Tags[EPC_Selected].EPC).hexEncodedString())
+                    Spacer()
+                    Text(reader.Tags.isEmpty ? "" : Data(reader.Tags[EPC_Selected].EPC).hexEncodedString())
                         .font(.headline)
                         .frame(height: 30)
-                        .frame(maxWidth: 250)
+                        .frame(maxWidth: 350)
                         .background(Color.gray.opacity(0.5))
                         .cornerRadius(10)
                         .onTapGesture {
-                            EPC_picker_trigger = true
+                            EPC_picker_trigger = (reader.Tags.isEmpty ? false : true)
                         }
-                    Button(action: {
-                        Match_ButtAct()
-                    }){
-                        Text(MatchState == 0 ? "Match" : MatchState == 2 ? "Unmatch" : "Matching")
-                    }
                 }
                 .frame(width: geometry.size.width - 20, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
                 Divider()
                 HStack{
-                    Text("Matched Tag")
+                    Text("Match Tag")
                         .font(.headline)
+                    Spacer()
+                    Button(action: {
+                        Match_ButtAct()
+                    }){
+                        Text(MatchState == 0 ? "Match" : MatchState == 2 ? "Unmatch" : "Matching")
+                            .bold()
+                    }
                 }
+                Divider()
+                Spacer()
             }
             .frame(alignment: .center)
         }
@@ -859,21 +735,72 @@ struct Reader_WriteData: View{
     }
     
     func Match_ButtAct(){
+        var flag : Int = 0
+        var counter : Int = 0
         let EPC : [UInt8] = Array(reader.Tags[EPC_Selected].EPC)
-        let cmd : [UInt8] = reader.cmd_EPC_match(setEPC_mode: 0x00, EPC: EPC)
-        ble.cmd2reader(cmd: cmd)
-        reader.Btye_Recorder(defined: 1, byte: cmd)
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-            let reader_feedback = ble.reader2BLE()
-            if reader_feedback[4] != 0x10 {
-                EPC_Match_Error = reader.reader_error_code(code: reader_feedback[4])
+        let cmd_Match : [UInt8] = reader.cmd_EPC_match(setEPC_mode: 0x00, EPC: EPC)
+        let cmd_umMatch : [UInt8] = reader.cmd_EPC_match(setEPC_mode: 0x01, EPC: [])
+        let cmd_getMatched : [UInt8] = [0xA0, 0x03, 0xFE, 0x86]
+//        ble.cmd2reader(cmd: cmd_Match)
+        //        reader.Btye_Recorder(defined: 1, byte: cmd_Match)
+        Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){ timer in
+            if flag == 0 && MatchState == 0{
+                ble.cmd2reader(cmd: cmd_Match)
+                reader.Btye_Recorder(defined: 1, byte: cmd_Match)
+                MatchState = 1
+                flag = 1
+            }
+            else if flag == 0 && MatchState == 2 {
+                ble.cmd2reader(cmd: cmd_umMatch)
+                reader.Btye_Recorder(defined: 1, byte: cmd_umMatch)
+                MatchState = 1
+                flag = 1
+            }
+            else if flag == 1 && (MatchState == 1 || MatchState == 2) {
+                if ble.ValueUpated_2A68{
+                    let feedback = ble.reader2BLE()
+                    reader.Btye_Recorder(defined: 2, byte: feedback)
+                    if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x85{
+                        let ErrorStr = reader.reader_error_code(code: feedback[4])
+                        FeedbackStr.append(ErrorStr)
+                        flag = (MatchState == 2 ? 4 : 2)
+                    }
+                    ble.ValueUpated_2A68 = false
+                }
+            }
+            else if flag == 2 && MatchState == 1 {
+                ble.cmd2reader(cmd: cmd_getMatched)
+                reader.Btye_Recorder(defined: 1, byte: cmd_getMatched)
+                MatchState = 1
+                flag = 3
+            }
+            else if flag == 3 && MatchState == 1 {
+                if ble.ValueUpated_2A68{
+                    let feedback = ble.reader2BLE()
+                    reader.Btye_Recorder(defined: 2, byte: feedback)
+                    if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x86{
+                        if feedback[4] == 0 {
+                            MatchState = 2
+                        }
+                        else {
+                            MatchState = 0
+                            FeedbackStr.append("Matching EPC Fail")
+                        }
+                        flag = 4
+                    }
+                    ble.ValueUpated_2A68 = false
+                }
+            }
+            counter += 1
+            if flag > 3 || counter > 25 {
+                if counter > 25 && MatchState == 1{
+                    FeedbackStr.append("Matching EPC Fail")
+                    MatchState = 0
+                }
+                timer.invalidate()
             }
         }
     }
-//
-//    var Match_ButtStr: some View {
-//        Text("Match")
-//    }
 }
 
 struct Reader_Picker: View{
