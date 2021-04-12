@@ -25,7 +25,6 @@ struct Peripheral: Identifiable {
     let Service : String
     let Peripheral : CBPeripheral
     var State : Int
-//    var isConnected : Bool
 }
 
 struct Peripheral_characteristic: Identifiable{
@@ -104,6 +103,9 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             peripherals.removeAll()
             peripherals.append(peripheral)
             peripherals[0].id = 0
+        }
+        else{
+            peripherals.removeAll()
         }
         centralManager.scanForPeripherals(withServices: nil, options: nil)
 //        isScanned = true

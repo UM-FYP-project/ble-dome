@@ -101,12 +101,6 @@ struct CharacteristicProperties: View {
             Spacer()
             HStack(alignment: .bottom){
                 if characteristic.iswritable{
-//                    NavigationLink(
-//                        destination: WriteValuetoChar(peripheral: peripheral, characteristic: characteristic),
-//                        isActive: $WriteValueBool,
-//                        label: {
-//                            EmptyView()
-//                        })
                     Text("Write")
                         .foregroundColor(.blue)
                         .frame(width: 50, height: 30)

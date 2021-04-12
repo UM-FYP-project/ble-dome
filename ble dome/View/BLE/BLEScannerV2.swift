@@ -90,7 +90,7 @@ struct BLEConnect_button: View {
                 if let index = ble.peripherals.firstIndex(where: {$0.name == name}){
                     let peripheral = ble.peripherals[index]
                     if peripheral.State == 0{
-                        Text("Tap to connect")
+                        Text("Connect")
                             .font(.title2)
                             .foregroundColor(ble.peripherals.filter({$0.State != 0}).count < 1 ? .blue : Color(UIColor.lightGray))
                             .multilineTextAlignment(.trailing)
@@ -102,7 +102,7 @@ struct BLEConnect_button: View {
                             .multilineTextAlignment(.trailing)
                     }
                     else if peripheral.State == 2{
-                        Text("Tap to Disconnect")
+                        Text("Disconnect")
                             .font(.title2)
                             .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
                             .multilineTextAlignment(.trailing)
