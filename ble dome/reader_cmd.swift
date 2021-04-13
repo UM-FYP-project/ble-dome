@@ -272,7 +272,6 @@ class Reader: NSObject, ObservableObject{
                         let RSSI = feedbackRow[(Int(EPClen) + 7)]
                         if Tags.filter({$0.EPC == EPC}).count < 1 {
                             let Tag = tag(id: Tags.count, EPClen: EPClen, PC: PC, EPC: EPC, CRC: CRC, RSSI: Int(RSSI) - 130)
-                            EPCstr.append(Data(EPC).hexEncodedString())
                             Tags.append(Tag)
 //                            print(Tag)
                         }
@@ -323,13 +322,15 @@ class Reader: NSObject, ObservableObject{
                         let Len  = feedbackRow[1] + 1
                         let RSSI = feedbackRow[Int(Len) - 1]
                         let EPC : [UInt8] = Array(feedbackRow[7...Int(Len) - 2])
-                        if Tags.filter({$0.EPC == EPC}).count < 1 {
-                            let Tag = tag(id: Tags.count, EPClen: Len - 4, PC: PC, EPC: EPC, CRC: [00,00], RSSI: Int(RSSI) - 130)
-                            Tags.append(Tag)
-                        }
-                        else {
-                            if let i = Tags.firstIndex(where: {$0.EPC == EPC}){
-                                Tags[i].RSSI = Int(RSSI) - 130
+                        if PC != [00,00] {
+                            if Tags.filter({$0.EPC == EPC}).count < 1 {
+                                let Tag = tag(id: Tags.count, EPClen: Len - 4, PC: PC, EPC: EPC, CRC: [00,00], RSSI: Int(RSSI) - 130)
+                                Tags.append(Tag)
+                            }
+                            else {
+                                if let i = Tags.firstIndex(where: {$0.EPC == EPC}){
+                                    Tags[i].RSSI = Int(RSSI) - 130
+                                }
                             }
                         }
                     }
@@ -338,9 +339,12 @@ class Reader: NSObject, ObservableObject{
             }
             if (handled == 0x90 || handled == 0x89){
                 Tags.sort{($0.RSSI >= $1.RSSI)}
+                EPCstr.removeAll()
                 for index in 0..<Tags.count{
                     Tags[index].id = index
+                    EPCstr.append(Data(Tags[index].EPC).hexEncodedString())
                 }
+                
             }
             if handled == 0x81{
                 TagsData.sort{($0.RSSI >= $1.RSSI)}
@@ -374,13 +378,7 @@ class Reader: NSObject, ObservableObject{
         print("\(BytesRecord.count) : \(time_string)_\(Data(byte).hexEncodedString())")
     }
     
-//    func returnEPCstr() -> [String]{
-//        var EPCstr = [String]()
-//        for index in 0..<Tags.count {
-//            EPCstr.append(Data(Tags[index].EPC).hexEncodedString())
-//        }
-//        return EPCstr
-//    }
+
 }
 
 extension Dictionary where Value: Equatable {
@@ -420,30 +418,3 @@ extension BLE{
 }
 
 
-class readerPicker: ObservableObject{
-    // Reader Setting Picker
-    let BaudrateCmdinStr : [String] = ["9600bps", "19200bps", "38400bps", "115200bps"]
-    let BaudrateCmdinByte : [UInt8] = [0x01, 0x02 , 0x03, 0x04]
-    let Outpower : [Int] = [20,21,22,23,24,25,26,27,28,29,30,31,32,33]
-    @Published var SelectedBaudrate = 3
-    @Published var SelectedBaudrate_picker = false
-    @Published var SelectedPower = 13
-    @Published var SelectedPower_picker = false
-    // Reader inventory Picker
-    let inventorySpeed = Array(1...255)
-    @Published var inventorySpeed_Selected = 254
-    @Published var inventorySpeed_picker = false
-    // Reader Data Picker
-    let DataCmdinStr = ["RESERVED", "EPC", "TAG ID", "USER DATA"]
-    let DataCmdinByte :[UInt8] = [0x00, 0x01, 0x02, 0x03]
-    let DataByte = Array(0...255)
-    @Published var DataBlock_picker = false
-    @Published var DataBlock_Selected = 1
-    @Published var DataStart_picker = false
-    @Published var DataStart_Selected = 2
-    @Published var DataLen_picker = false
-    @Published var DataLen_Selected = 20
-    //EPC match Picker
-    @Published var EPC_picker = false
-    @Published var EPC_Selected = 0
-}

@@ -10,7 +10,7 @@ import SwiftUI
 struct DetailTabView: View {
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader : Reader
-    @EnvironmentObject var picker : readerPicker
+    @EnvironmentObject var readeract : readerAct
     @State private var selectedTab = 0
 //    @Binding var Enable : Bool
     var peripheral : Peripheral
@@ -24,6 +24,7 @@ struct DetailTabView: View {
                         GeometryReader{ geom in
                             ReaderTab(geometry: geom)
                                 .environmentObject(reader)
+                                .environmentObject(readeract)
                                 .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
                         }
                         .tabItem {
@@ -45,28 +46,28 @@ struct DetailTabView: View {
                 //            }
             }
             
-            .disabled(picker.SelectedBaudrate_picker || picker.SelectedPower_picker || picker.inventorySpeed_picker || picker.DataBlock_picker || picker.DataStart_picker ||  picker.DataLen_picker || picker.EPC_picker)
-            .overlay(picker.SelectedBaudrate_picker || picker.SelectedPower_picker || picker.inventorySpeed_picker || picker.DataBlock_picker || picker.DataStart_picker ||  picker.DataLen_picker || picker.EPC_picker ? Color.black.opacity(0.3).ignoresSafeArea(): nil)
-            if picker.SelectedBaudrate_picker{
-                Reader_Picker(picker: picker.BaudrateCmdinStr,title: "Select Baudrate", label: "Baudrate", geometry: geometry, Selected: $picker.SelectedBaudrate, enable: $picker.SelectedBaudrate_picker)
+            .disabled(readeract.SelectedBaudrate_picker || readeract.SelectedPower_picker || readeract.inventorySpeed_picker || readeract.DataBlock_picker || readeract.DataStart_picker ||  readeract.DataLen_picker || readeract.EPC_picker)
+            .overlay(readeract.SelectedBaudrate_picker || readeract.SelectedPower_picker || readeract.inventorySpeed_picker || readeract.DataBlock_picker || readeract.DataStart_picker ||  readeract.DataLen_picker || readeract.EPC_picker ? Color.black.opacity(0.3).ignoresSafeArea(): nil)
+            if readeract.SelectedBaudrate_picker{
+                Reader_Picker(picker: readeract.BaudrateCmdinStr,title: "Select Baudrate", label: "Baudrate", geometry: geometry, Selected: $readeract.SelectedBaudrate, enable: $readeract.SelectedBaudrate_picker)
             }
-            if picker.SelectedPower_picker{
-                Reader_Picker(picker: picker.Outpower,title: "Select Output Power", label: "Output Power", geometry: geometry, Selected: $picker.SelectedPower, enable: $picker.SelectedPower_picker)
+            if readeract.SelectedPower_picker{
+                Reader_Picker(picker: readeract.Outpower,title: "Select Output Power", label: "Output Power", geometry: geometry, Selected: $readeract.SelectedPower, enable: $readeract.SelectedPower_picker)
             }
-            if picker.inventorySpeed_picker {
-                Reader_Picker(picker: picker.inventorySpeed, title: "Select Speed", label: "Speed", geometry: geometry, Selected: $picker.inventorySpeed_Selected, enable: $picker.inventorySpeed_picker)
+            if readeract.inventorySpeed_picker {
+                Reader_Picker(picker: readeract.inventorySpeed, title: "Select Speed", label: "Speed", geometry: geometry, Selected: $readeract.inventorySpeed_Selected, enable: $readeract.inventorySpeed_picker)
             }
-            if picker.DataBlock_picker{
-                Reader_Picker(picker: picker.DataCmdinStr,title: "Select DataBlock", label: "DataBlock", geometry: geometry, Selected: $picker.DataBlock_Selected, enable: $picker.DataBlock_picker)
+            if readeract.DataBlock_picker{
+                Reader_Picker(picker: readeract.DataCmdinStr,title: "Select DataBlock", label: "DataBlock", geometry: geometry, Selected: $readeract.DataBlock_Selected, enable: $readeract.DataBlock_picker)
             }
-            if picker.DataStart_picker{
-                Reader_Picker(picker: picker.DataByte,title: "Select Data Start", label: "Data Start", geometry: geometry, Selected: $picker.DataStart_Selected, enable: $picker.DataStart_picker)
+            if readeract.DataStart_picker{
+                Reader_Picker(picker: readeract.DataByte,title: "Select Data Start", label: "Data Start", geometry: geometry, Selected: $readeract.DataStart_Selected, enable: $readeract.DataStart_picker)
             }
-            if picker.DataLen_picker{
-                Reader_Picker(picker: picker.DataByte,title: "Select Data Lenght", label: "Data Lenght", geometry: geometry, Selected: $picker.DataLen_Selected, enable: $picker.DataLen_picker)
+            if readeract.DataLen_picker{
+                Reader_Picker(picker: readeract.DataByte,title: "Select Data Lenght", label: "Data Lenght", geometry: geometry, Selected: $readeract.DataLen_Selected, enable: $readeract.DataLen_picker)
             }
-            if picker.EPC_picker{
-                Reader_Picker(picker: reader.EPCstr, title: "Select Tag EPC", label: "EPC Matching", geometry: geometry, Selected: $picker.EPC_Selected, enable: $picker.EPC_picker)
+            if readeract.EPC_picker{
+                Reader_Picker(picker: reader.EPCstr, title: "Select Tag EPC", label: "EPC Matching", geometry: geometry, Selected: $readeract.EPC_Selected, enable: $readeract.EPC_picker)
             }
         }
         .navigationTitle("\(peripheral.name)")

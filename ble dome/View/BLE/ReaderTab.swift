@@ -11,12 +11,12 @@ struct ReaderTab: View {
     @State var menuButton :Bool = false
     @State var Reader_disable : Bool = false
     @EnvironmentObject var reader:Reader
-    @EnvironmentObject var picker : readerPicker
+    @EnvironmentObject var readeract : readerAct
     var geometry : GeometryProxy
     @State var Selected = 0
-    @State var isInventory = false // Reader Inverntorying or not
+//    @State var isInventory = false // Reader Inverntorying or not
     // data Write
-    @State var MatchState : Int = 0
+//    @State var MatchState : Int = 0
     var body: some View {
             ZStack() {
                 VStack{
@@ -32,24 +32,24 @@ struct ReaderTab: View {
                     if Selected == 0{
                         ReaderSetting(geometry: geometry)
                             .environmentObject(reader)
-                            .environmentObject(picker)
+                            .environmentObject(readeract)
                         
                     }
                     else if Selected == 1{
-                        ReaderInventory(geometry: geometry, isInventory: $isInventory)
+                        ReaderInventory(geometry: geometry, isInventory: $readeract.isInventory, Realtime_Inventory_Toggle: $readeract.RealtimeInventory_Toggle)
                             .environmentObject(reader)
-                            .environmentObject(picker)
+                            .environmentObject(readeract)
 
                     }
                     else if Selected == 2{
                         ReadTags_data(geometry: geometry)
                             .environmentObject(reader)
-                            .environmentObject(picker)
+                            .environmentObject(readeract)
                     }
                     else if Selected == 3{
-                        Reader_WriteData(geometry: geometry, MatchState: $MatchState)
+                        Reader_WriteData(geometry: geometry, MatchState: $readeract.MatchState)
                             .environmentObject(reader)
-                            .environmentObject(picker)
+                            .environmentObject(readeract)
                             .disabled(reader.Tags.isEmpty)
                     }
                     else if Selected == 4{
@@ -64,7 +64,7 @@ struct ReaderTab: View {
 struct ReaderSetting: View {
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader:Reader
-    @EnvironmentObject var picker : readerPicker
+    @EnvironmentObject var readeract : readerAct
     var geometry : GeometryProxy
     @State var Outpower_feedback : Int?
     @State var ErrorStr = [String]()
@@ -89,16 +89,16 @@ struct ReaderSetting: View {
                         Text("Set Baudrate")
                             .font(.headline)
                         Spacer()
-                        Text("\(picker.BaudrateCmdinStr[picker.SelectedBaudrate])")
+                        Text("\(readeract.BaudrateCmdinStr[readeract.SelectedBaudrate])")
                             .font(.headline)
                             .frame(width: 120, height: 30)
                             .background(Color.gray.opacity(0.5))
                             .cornerRadius(10)
                             .onTapGesture {
-                                picker.SelectedBaudrate_picker = true
+                                readeract.SelectedBaudrate_picker = true
                             }
                         Button(action: {
-                            let cmd : [UInt8] = reader.cmd_set_baudrate(baudrate_para: picker.BaudrateCmdinByte[picker.SelectedBaudrate])
+                            let cmd : [UInt8] = reader.cmd_set_baudrate(baudrate_para: readeract.BaudrateCmdinByte[readeract.SelectedBaudrate])
 //                            var feedback = [UInt8]()
                             cmdtransitor(cmd: cmd)
 //                            ble.cmd2reader(cmd: cmd)
@@ -115,16 +115,16 @@ struct ReaderSetting: View {
                             .font(.headline)
                             .frame(width: 120, height: 30,alignment: .leading)
                         Spacer()
-                        Text("\(picker.Outpower[picker.SelectedPower])dBm")
+                        Text("\(readeract.Outpower[readeract.SelectedPower])dBm")
                             .font(.headline)
                             .frame(width: 120, height: 30)
                             .background(Color.gray.opacity(0.5))
                             .cornerRadius(10)
                             .onTapGesture {
-                                picker.SelectedPower_picker = true
+                                readeract.SelectedPower_picker = true
                             }
                         Button(action: {
-                            let cmd : [UInt8] = reader.cmd_set_output_power(output_power: picker.Outpower[picker.SelectedPower])
+                            let cmd : [UInt8] = reader.cmd_set_output_power(output_power: readeract.Outpower[readeract.SelectedPower])
                             cmdtransitor(cmd: cmd)
                         }) {
                             Text("Set")
@@ -217,13 +217,13 @@ struct ReaderSetting: View {
 struct ReaderInventory: View{
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader:Reader
-    @EnvironmentObject var picker : readerPicker
+    @EnvironmentObject var readeract : readerAct
     var geometry : GeometryProxy
     @Binding var isInventory : Bool
+    @Binding var Realtime_Inventory_Toggle : Bool
     @State var Inventory_button_str = "Start"
     @State var Buffer_button_str = "Read"
     @State var Buffer_button_Bool = false
-    @State var Realtime_Inventory_Toggle = false
     @State var ErrorString = "nil"
     @State var ErrorStr : String = ""
     var body: some View {
@@ -239,21 +239,21 @@ struct ReaderInventory: View{
                         Text("Inventory Speed:")
                             .font(.headline)
                         Spacer()
-                        Text("\(picker.inventorySpeed[picker.inventorySpeed_Selected])")
+                        Text("\(readeract.inventorySpeed[readeract.inventorySpeed_Selected])")
                             .font(.headline)
                             .frame(width: 60, height: 30)
                             .background(Color.gray.opacity(0.5))
                             .cornerRadius(10)
                             .onTapGesture {
-                                picker.inventorySpeed_picker = true
+                                readeract.inventorySpeed_picker = true
                             }
                         Button(action: {
                             isInventory.toggle()
                             if !Realtime_Inventory_Toggle{
-                                EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(picker.inventorySpeed[picker.inventorySpeed_Selected])))
+                                EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
                             }
                             else {
-                                EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(picker.inventorySpeed[picker.inventorySpeed_Selected])))
+                                EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
                             }
                             Inventory_button_str = (isInventory ? "Stop" : "Start")
                         }) {
@@ -456,7 +456,7 @@ struct Record_Monitor: View {
 struct ReadTags_data: View {
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader:Reader
-    @EnvironmentObject var picker : readerPicker
+    @EnvironmentObject var readeract : readerAct
     var geometry : GeometryProxy
     @State var ErrorStr : String = ""
     @State var list_show = false
@@ -467,13 +467,13 @@ struct ReadTags_data: View {
                         Text("Data Block")
                             .font(.headline)
                         Spacer()
-                        Text(picker.DataCmdinStr[picker.DataBlock_Selected])
+                        Text(readeract.DataCmdinStr[readeract.DataBlock_Selected])
                             .font(.headline)
                             .frame(width: 120, height: 30)
                             .background(Color.gray.opacity(0.5))
                             .cornerRadius(10)
                             .onTapGesture {
-                                picker.DataBlock_picker = true
+                                readeract.DataBlock_picker = true
                             }
                     }
                     .frame(width: geometry.size.width - 20, height: 30)
@@ -482,26 +482,26 @@ struct ReadTags_data: View {
                         Text("Start Address:")
                             .font(.headline)
                         Spacer()
-                        Text("\(picker.DataByte[picker.DataStart_Selected])bit")
+                        Text("\(readeract.DataByte[readeract.DataStart_Selected])bit")
                             .font(.headline)
                             .frame(width: 60, height: 30)
                             .background(Color.gray.opacity(0.5))
                             .cornerRadius(10)
                             .onTapGesture {
-                                picker.DataStart_picker = true
+                                readeract.DataStart_picker = true
                             }
                         Divider()
                         Text("Data Len:")
                             .bold()
                             .font(.headline)
                         Spacer()
-                        Text("\(picker.DataByte[picker.DataLen_Selected])bit")
+                        Text("\(readeract.DataByte[readeract.DataLen_Selected])bit")
                             .font(.headline)
                             .frame(width: 60, height: 30)
                             .background(Color.gray.opacity(0.5))
                             .cornerRadius(10)
                             .onTapGesture {
-                                picker.DataLen_picker = true
+                                readeract.DataLen_picker = true
                             }
                     }
                     .frame(width: geometry.size.width - 20, height: 30)
@@ -514,7 +514,7 @@ struct ReadTags_data: View {
                             var flag : Bool = false
                             var completed : Bool = false
                             var counter : Int = 0
-                            let cmd : [UInt8] = reader.cmd_data_read(data_block: picker.DataCmdinByte[picker.DataBlock_Selected], data_start: UInt8(picker.DataByte[picker.DataStart_Selected]), data_len: UInt8(picker.DataByte[picker.DataLen_Selected]))
+                            let cmd : [UInt8] = reader.cmd_data_read(data_block: readeract.DataCmdinByte[readeract.DataBlock_Selected], data_start: UInt8(readeract.DataByte[readeract.DataStart_Selected]), data_len: UInt8(readeract.DataByte[readeract.DataLen_Selected]))
                             Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){timer in
                                 if !flag {
                                     ble.cmd2reader(cmd: cmd)
@@ -586,7 +586,7 @@ struct ReadTags_data: View {
 struct Reader_WriteData: View{
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader:Reader
-    @EnvironmentObject var picker : readerPicker
+    @EnvironmentObject var readeract : readerAct
     var geometry : GeometryProxy
     @State var EPC_Match_Error : String = ""
     @State var FeedbackStr = [String]()
@@ -599,14 +599,14 @@ struct Reader_WriteData: View{
                     Text("Tag")
                         .font(.headline)
                     Spacer()
-                    Text(reader.Tags.isEmpty ? "" : Data(reader.Tags[picker.EPC_Selected].EPC).hexEncodedString())
+                    Text(reader.Tags.isEmpty ? "" : Data(reader.Tags[readeract.EPC_Selected].EPC).hexEncodedString())
                         .font(.headline)
                         .frame(height: 30)
                         .frame(maxWidth: 350)
                         .background(Color.gray.opacity(0.5))
                         .cornerRadius(10)
                         .onTapGesture {
-                            picker.EPC_picker = (reader.Tags.isEmpty ? false : true)
+                            readeract.EPC_picker = (reader.Tags.isEmpty ? false : true)
                         }
                 }
                 Divider()
@@ -617,7 +617,7 @@ struct Reader_WriteData: View{
                     Button(action: {
                         Match_ButtAct()
                     }){
-                        Text(MatchState == 0 ? "Match" : MatchState == 2 ? "Unmatch" : "Matching")
+                        Text(MatchState == 0 ? "Match" : MatchState == 1 ? "Matching" : MatchState == 2 ? "Unmatch" : "Unmatching")
                             .bold()
                     }
                 }
@@ -632,54 +632,69 @@ struct Reader_WriteData: View{
     func Match_ButtAct(){
         var CmdState : Int = 0
         var counter : Int = 0
-        let EPC : [UInt8] = Array(reader.Tags[picker.EPC_Selected].EPC)
+        let EPC : [UInt8] = Array(reader.Tags[readeract.EPC_Selected].EPC)
         let cmd_Match : [UInt8] = reader.cmd_EPC_match(setEPC_mode: 0x00, EPC: EPC)
         let cmd_umMatch : [UInt8] = reader.cmd_EPC_match(setEPC_mode: 0x01, EPC: [])
         let cmd_getMatched : [UInt8] = [0xA0, 0x03, 0xFE, 0x86]
 //        ble.cmd2reader(cmd: cmd_Match)
         //        reader.Btye_Recorder(defined: 1, byte: cmd_Match)
         Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){ timer in
-            if CmdState == 0 && MatchState == 0{
+            if CmdState == 0 && MatchState == 0{ // Send Match Cmd
                 ble.cmd2reader(cmd: cmd_Match)
                 reader.Btye_Recorder(defined: 1, byte: cmd_Match)
                 MatchState = 1
                 CmdState = 1
             }
-            else if CmdState == 0 && MatchState == 2 {
+            else if CmdState == 0 && MatchState == 2 { // Send UnMatch Cmd
                 ble.cmd2reader(cmd: cmd_umMatch)
                 reader.Btye_Recorder(defined: 1, byte: cmd_umMatch)
-                MatchState = 1
+                MatchState = 3
                 CmdState = 1
             }
-            else if CmdState == 1 && (MatchState == 1 || MatchState == 2) {
+            else if CmdState == 1 && (MatchState == 1 || MatchState == 3) { // Matching or UmMactching for waiting feedback
                 if ble.ValueUpated_2A68{
                     let feedback = ble.reader2BLE()
                     reader.Btye_Recorder(defined: 2, byte: feedback)
                     if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x85{
-                        let ErrorStr = reader.reader_error_code(code: feedback[4])
-                        FeedbackStr.append(ErrorStr)
-                        CmdState = (MatchState == 2 ? 4 : 2)
+                        if feedback[1] == 0x04 {
+                            let ErrorStr = reader.reader_error_code(code: feedback[4])
+                            FeedbackStr.append(ErrorStr)
+                            CmdState = 4
+                        }
+                        else{
+                            CmdState = 2
+                        }
                     }
                     ble.ValueUpated_2A68 = false
                 }
             }
-            else if CmdState == 2 && MatchState == 1 {
+            else if CmdState == 2 && (MatchState == 1 || MatchState == 3) { // verify mactching result
                 ble.cmd2reader(cmd: cmd_getMatched)
                 reader.Btye_Recorder(defined: 1, byte: cmd_getMatched)
-                MatchState = 1
                 CmdState = 3
             }
-            else if CmdState == 3 && MatchState == 1 {
+            else if CmdState == 3 && (MatchState == 1 || MatchState == 3) {
                 if ble.ValueUpated_2A68{
                     let feedback = ble.reader2BLE()
                     reader.Btye_Recorder(defined: 2, byte: feedback)
                     if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x86{
                         if feedback[4] == 0 {
+                            if MatchState == 1 {
+                                FeedbackStr.append("Matching Complete")
+                            }
+                            else {
+                                FeedbackStr.append("Unmatching EPC Fail")
+                            }
                             MatchState = 2
                         }
                         else {
+                            if MatchState == 1 {
+                                FeedbackStr.append("Matching EPC Fail")
+                            }
+                            else {
+                                FeedbackStr.append("Unmatching Complete")
+                            }
                             MatchState = 0
-                            FeedbackStr.append("Matching EPC Fail")
                         }
                         CmdState = 4
                     }
@@ -689,7 +704,7 @@ struct Reader_WriteData: View{
             counter += 1
             if CmdState > 3 || counter > 30 {
                 if counter > 25 && MatchState == 1{
-                    FeedbackStr.append("Matching EPC Fail")
+                    FeedbackStr.append("Matching EPC isn't Complete")
                     MatchState = 0
                 }
                 timer.invalidate()
