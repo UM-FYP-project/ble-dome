@@ -12,6 +12,7 @@ struct ReaderTab: View {
     @State var Reader_disable : Bool = false
     @EnvironmentObject var reader:Reader
     @EnvironmentObject var readeract : readerAct
+    @EnvironmentObject var location : LocationManager
     var geometry : GeometryProxy
     @State var Selected = 0
 //    @State var isInventory = false // Reader Inverntorying or not
@@ -594,7 +595,7 @@ struct Reader_WriteData: View{
     @Binding var MatchState : Int // 0: Match, 1: Matching, 2: Matched
     var body: some View {
         ZStack{
-            VStack{
+            VStack(alignment: .center){
                 HStack{
                     Text("Tag")
                         .font(.headline)
@@ -609,6 +610,7 @@ struct Reader_WriteData: View{
                             readeract.EPC_picker = (reader.Tags.isEmpty ? false : true)
                         }
                 }
+                .frame(width: geometry.size.width - 20)
                 Divider()
                 HStack{
                     Text("Match Tag")
@@ -621,12 +623,42 @@ struct Reader_WriteData: View{
                             .bold()
                     }
                 }
+                .frame(width: geometry.size.width - 20)
                 Divider()
+                HStack{
+                    Text("Data Write")
+                        .font(.headline)
+                    Spacer()
+                    Button(action: {
+                        Match_ButtAct()
+                    }){
+                        Text("Write")
+                    }
+                    .disabled(MatchState != 2)
+                }
+                .frame(width: geometry.size.width - 20)
+                Divider()
+                feedbackStrList
                 Spacer()
             }
-            .frame(width: geometry.size.width - 20)
+//            .frame(width: geometry.size.width - 20)
         }
         .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+    }
+    
+    var feedbackStrList: some View {
+        VStack(alignment: .center){
+            if !FeedbackStr.isEmpty{
+                List{
+                    ForEach (0..<FeedbackStr.count){ index in
+                        Text(FeedbackStr[FeedbackStr.count - 1 - index])
+                            .foregroundColor(.red)
+                    }
+                }
+                .listStyle(PlainListStyle())
+                .frame(width: geometry.size.width - 20)
+            }
+        }
     }
     
     func Match_ButtAct(){
@@ -713,6 +745,143 @@ struct Reader_WriteData: View{
     }
 }
 
+struct TagData_Write: View{
+    var geometry : GeometryProxy
+    @EnvironmentObject var location : LocationManager
+    @State var funcSelected : Int = 4
+    @Binding var floor : Int
+    @Binding var Seq : UInt
+    var userLatitude: String {
+        return "\(location.lastLocation?.coordinate.latitude ?? 0)"
+    }
+    
+    var userLongitude: String {
+        return "\(location.lastLocation?.coordinate.longitude ?? 0)"
+    }
+    @State var Latitude : Float = 0
+    @State var Longitude : Float = 0
+    var body: some View {
+        VStack(alignment: .center){
+            Text("Wrtie Data to Tag")
+                .bold()
+                .font(.headline)
+//            Divider()
+            Picker(selection: $funcSelected, label: Text("DataBL Picker")) {
+                Text("RESERVED").tag(0)
+                Text("EPC").tag(1)
+                Text("TAG ID").tag(2)
+                Text("USER DATA").tag(3)
+                Text("NaviTag").tag(4)
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            Divider()
+            if funcSelected == 4{
+                NaviTagWrite
+            }
+        }
+    }
+    
+    var NaviTagWrite: some View{
+        VStack(alignment: .center){
+            HStack(){
+                Text("Floor")
+                    .font(.headline)
+                Spacer()
+                Button(action: {self.floor += -1}) {
+                    Text("-")
+                        .bold()
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                }
+                .frame(width: 30)
+                Text(floor == 0 ? "G/F" : "\(floor)/F")
+                    .bold()
+                    .font(.headline)
+                    .frame(width: 40)
+                Button(action: {self.floor += 1}) {
+                    Text("+")
+                        .bold()
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                }
+                .frame(width: 30)
+            }
+            .frame(width: geometry.size.width - 20)
+            Divider()
+            HStack{
+                Text("Hazard")
+                    .font(.headline)
+                Spacer()
+                Picker(selection: $funcSelected, label: Text("Hazard Picker")) {
+                    Text("Stairs").tag(0)
+                    Text("Entrance").tag(1)
+                    Text("Elevator").tag(2)
+                    Text("Crossroad").tag(3)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+            }
+            .frame(width: geometry.size.width - 20)
+            Divider()
+            HStack{
+                Text("Sequence")
+                    .font(.headline)
+                Spacer()
+                Button(action: {self.Seq -= 1}) {
+                    Text("-")
+                        .bold()
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                }
+                .disabled(Seq < 1)
+                .frame(width: 30)
+                Text(Seq < 10 ? "0\(Seq)" : "\(Seq)")
+                    .bold()
+                    .font(.headline)
+                    .frame(width: 30)
+                Button(action: {self.Seq += 1}) {
+                    Text("+")
+                        .bold()
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                }
+                .frame(width: 30)
+            }
+            .frame(width: geometry.size.width - 20)
+            Divider()
+            HStack{
+                Text("Location")
+                    .font(.headline)
+                Spacer()
+                Button(action: {
+                    Latitude = Float(userLatitude) ?? 0
+                    Longitude = Float(userLongitude) ?? 0
+                }) {
+                    Text("Get")
+                        .bold()
+                        .font(.headline)
+                }
+                .frame(width: 30)
+            }
+            .frame(width: geometry.size.width - 20)
+            Divider()
+            HStack{
+                Text("Latitude:")
+                    .font(.headline)
+                Text(Latitude != 0 ? "\(Latitude)" : "")
+                Spacer()
+                Divider()
+                    .frame(height: 20)
+                Text("Longitude:")
+                    .font(.headline)
+                Text(Longitude != 0 ? "\(Longitude)" : "")
+                Spacer()
+            }
+            .frame(width: geometry.size.width - 20)
+            Divider()
+        }
+    }
+}
+
 struct Reader_Picker: View{
     var picker : [Any]
     var title : String
@@ -754,11 +923,14 @@ struct Reader_Picker: View{
     }
 }
 
+
 struct ReaderTab_Previews: PreviewProvider {
+//    @State var floor = 0
     static var previews: some View {
         Group {
 //            ReaderTab()
             GeometryReader {geometry in
+                TagData_Write(geometry: geometry, floor: .constant(-1), Seq: .constant(0))
 //                Reader_WriteData(geometry: geometry)
     //            ReaderInventory()
 //                ReaderSetting(geometry: geometry)

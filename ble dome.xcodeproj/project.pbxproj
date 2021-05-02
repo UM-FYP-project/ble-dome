@@ -9,27 +9,33 @@
 /* Begin PBXBuildFile section */
 		9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9528A16A25D03DA500B51649 /* DetailTabView.swift */; };
 		9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9528A17525D0560B00B51649 /* ReaderTab.swift */; };
+		95363B81261CA1B300BF633A /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95363B80261CA1B300BF633A /* MapKit.framework */; };
 		95492EB825E3DEF900ECE3FF /* reader_cmd.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95492EB725E3DEF900ECE3FF /* reader_cmd.swift */; };
 		95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */; };
 		9552406625CA9AB100EA1011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406325CA9AB100EA1011 /* ContentView.swift */; };
 		9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552407525CC54B100EA1011 /* PeripheralDetail.swift */; };
+		9580C65F262574B8008EA64D /* readerAct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9580C65E262574B8008EA64D /* readerAct.swift */; };
 		95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */; };
 		95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368B825BF2F700026EC88 /* Assets.xcassets */; };
 		95B368BC25BF2F700026EC88 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368BB25BF2F700026EC88 /* Preview Assets.xcassets */; };
+		95DF4D91263D65E40022EC92 /* location.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95DF4D90263D65E40022EC92 /* location.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		9528A16A25D03DA500B51649 /* DetailTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailTabView.swift; sourceTree = "<group>"; };
 		9528A17525D0560B00B51649 /* ReaderTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderTab.swift; sourceTree = "<group>"; };
+		95363B80261CA1B300BF633A /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		95492EB725E3DEF900ECE3FF /* reader_cmd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = reader_cmd.swift; sourceTree = "<group>"; };
 		95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEScannerV2.swift; sourceTree = "<group>"; };
 		9552406325CA9AB100EA1011 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9552407525CC54B100EA1011 /* PeripheralDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralDetail.swift; sourceTree = "<group>"; };
+		9580C65E262574B8008EA64D /* readerAct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readerAct.swift; sourceTree = "<group>"; };
 		95B368B125BF2F6D0026EC88 /* ble dome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ble dome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ble_domeApp.swift; sourceTree = "<group>"; };
 		95B368B825BF2F700026EC88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		95B368BB25BF2F700026EC88 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		95B368BD25BF2F700026EC88 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		95DF4D90263D65E40022EC92 /* location.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = location.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,12 +43,21 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				95363B81261CA1B300BF633A /* MapKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		95363B7F261CA1B300BF633A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				95363B80261CA1B300BF633A /* MapKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		9552407025CAC66800EA1011 /* View */ = {
 			isa = PBXGroup;
 			children = (
@@ -68,6 +83,7 @@
 			children = (
 				95B368B325BF2F6D0026EC88 /* ble dome */,
 				95B368B225BF2F6D0026EC88 /* Products */,
+				95363B7F261CA1B300BF633A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -84,6 +100,8 @@
 			children = (
 				95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */,
 				95492EB725E3DEF900ECE3FF /* reader_cmd.swift */,
+				95DF4D90263D65E40022EC92 /* location.swift */,
+				9580C65E262574B8008EA64D /* readerAct.swift */,
 				9552407025CAC66800EA1011 /* View */,
 				95B368B825BF2F700026EC88 /* Assets.xcassets */,
 				95B368BD25BF2F700026EC88 /* Info.plist */,
@@ -172,8 +190,10 @@
 				9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */,
 				95492EB825E3DEF900ECE3FF /* reader_cmd.swift in Sources */,
 				95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */,
+				95DF4D91263D65E40022EC92 /* location.swift in Sources */,
 				9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */,
 				9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */,
+				9580C65F262574B8008EA64D /* readerAct.swift in Sources */,
 				95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */,
 				9552406625CA9AB100EA1011 /* ContentView.swift in Sources */,
 			);

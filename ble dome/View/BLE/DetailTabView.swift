@@ -8,14 +8,16 @@
 import SwiftUI
 
 struct DetailTabView: View {
+    var geometry : GeometryProxy
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader : Reader
     @EnvironmentObject var readeract : readerAct
+    @EnvironmentObject var location : LocationManager
     @State private var selectedTab = 0
 //    @Binding var Enable : Bool
     var peripheral : Peripheral
     var body: some View {
-        GeometryReader { geometry in
+//        GeometryReader { geometry in
             ZStack{
                 //                NavigationView{
                 TabView(selection: $selectedTab) {
@@ -25,6 +27,7 @@ struct DetailTabView: View {
                             ReaderTab(geometry: geom)
                                 .environmentObject(reader)
                                 .environmentObject(readeract)
+                                .environmentObject(location)
                                 .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
                         }
                         .tabItem {
@@ -45,7 +48,7 @@ struct DetailTabView: View {
                 }
                 //            }
             }
-            
+            .navigationTitle("\(peripheral.name)")
             .disabled(readeract.SelectedBaudrate_picker || readeract.SelectedPower_picker || readeract.inventorySpeed_picker || readeract.DataBlock_picker || readeract.DataStart_picker ||  readeract.DataLen_picker || readeract.EPC_picker)
             .overlay(readeract.SelectedBaudrate_picker || readeract.SelectedPower_picker || readeract.inventorySpeed_picker || readeract.DataBlock_picker || readeract.DataStart_picker ||  readeract.DataLen_picker || readeract.EPC_picker ? Color.black.opacity(0.3).ignoresSafeArea(): nil)
             if readeract.SelectedBaudrate_picker{
@@ -69,8 +72,6 @@ struct DetailTabView: View {
             if readeract.EPC_picker{
                 Reader_Picker(picker: reader.EPCstr, title: "Select Tag EPC", label: "EPC Matching", geometry: geometry, Selected: $readeract.EPC_Selected, enable: $readeract.EPC_picker)
             }
-        }
-        .navigationTitle("\(peripheral.name)")
     }
 }
 

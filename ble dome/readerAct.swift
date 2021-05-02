@@ -36,4 +36,5 @@ class readerAct: ObservableObject{
     //EPC match Picker
     @Published var EPC_picker = false
     @Published var EPC_Selected = 0
+    
 }
