@@ -639,7 +639,11 @@ struct Reader_WriteData: View{
                 .frame(width: geometry.size.width - 20)
                 Divider()
                 feedbackStrList
-                Spacer()
+                Divider()
+                ScrollView {
+                    /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Content@*/Text("Placeholder")/*@END_MENU_TOKEN@*/
+                }
+//                Spacer()
             }
 //            .frame(width: geometry.size.width - 20)
         }
@@ -751,21 +755,29 @@ struct TagData_Write: View{
     @State var funcSelected : Int = 4
     @Binding var floor : Int
     @Binding var Seq : UInt
-    var userLatitude: String {
-        return "\(location.lastLocation?.coordinate.latitude ?? 0)"
-    }
-    
-    var userLongitude: String {
-        return "\(location.lastLocation?.coordinate.longitude ?? 0)"
-    }
     @State var Latitude : Float = 0
     @State var Longitude : Float = 0
+    @State var Xcoordinate : String = ""
+    @State var Ycoordinate : String = ""
+    @State var writeAlert : Bool = false
+    @State var AlertStr : String = ""
     var body: some View {
         VStack(alignment: .center){
-            Text("Wrtie Data to Tag")
-                .bold()
-                .font(.headline)
-//            Divider()
+            HStack{
+                Text("Write Data")
+                    .bold()
+                    .font(.headline)
+                Spacer()
+                Button(action: {
+                    writeAlert = true
+                    if funcSelected == 4{
+                        
+                    }
+                }) {
+                    Text("Write")
+                }
+            }
+            .frame(width: geometry.size.width - 20)
             Picker(selection: $funcSelected, label: Text("DataBL Picker")) {
                 Text("RESERVED").tag(0)
                 Text("EPC").tag(1)
@@ -779,6 +791,20 @@ struct TagData_Write: View{
                 NaviTagWrite
             }
         }
+        .alert(isPresented: $writeAlert) {
+            Alert(
+                title: Text("Write Data to Tag"),
+                message: Text(AlertStr),
+                primaryButton:
+                    .cancel(),
+                secondaryButton:
+                    .default(
+                    Text("Write"),
+                    action: {
+                        funcSelected = 4
+                    }
+                )
+            )}
     }
     
     var NaviTagWrite: some View{
@@ -809,7 +835,7 @@ struct TagData_Write: View{
             .frame(width: geometry.size.width - 20)
             Divider()
             HStack{
-                Text("Hazard")
+                Text("Information")
                     .font(.headline)
                 Spacer()
                 Picker(selection: $funcSelected, label: Text("Hazard Picker")) {
@@ -817,6 +843,7 @@ struct TagData_Write: View{
                     Text("Entrance").tag(1)
                     Text("Elevator").tag(2)
                     Text("Crossroad").tag(3)
+                    Text("Straight").tag(4)
                 }
                 .pickerStyle(SegmentedPickerStyle())
             }
@@ -848,36 +875,91 @@ struct TagData_Write: View{
             }
             .frame(width: geometry.size.width - 20)
             Divider()
+            Cooradintion
+        }
+    }
+    
+    var Cooradintion: some View{
+        VStack(alignment: .center){
             HStack{
                 Text("Location")
                     .font(.headline)
                 Spacer()
                 Button(action: {
-                    Latitude = Float(userLatitude) ?? 0
-                    Longitude = Float(userLongitude) ?? 0
+                    getLocation()
                 }) {
                     Text("Get")
                         .bold()
                         .font(.headline)
+                    Image(systemName: "mappin.and.ellipse")
                 }
-                .frame(width: 30)
+                .frame(width: 60)
             }
             .frame(width: geometry.size.width - 20)
             Divider()
             HStack{
                 Text("Latitude:")
                     .font(.headline)
-                Text(Latitude != 0 ? "\(Latitude)" : "")
                 Spacer()
+                Text("\(Latitude)")
                 Divider()
                     .frame(height: 20)
                 Text("Longitude:")
                     .font(.headline)
-                Text(Longitude != 0 ? "\(Longitude)" : "")
                 Spacer()
+                Text("\(Longitude)")
             }
             .frame(width: geometry.size.width - 20)
             Divider()
+            Text("Indoor Cooradination")
+                .font(.headline)
+            Divider()
+            HStack{
+                Text("X:")
+                    .font(.headline)
+                Spacer()
+                TextField("X Coordinate", text: $Xcoordinate)
+                    .keyboardType(.numbersAndPunctuation)
+                    .padding()
+                    .frame(width:150, height: 30)
+                    .background(Color.gray.opacity(0.15))
+                    .cornerRadius(10)
+                    .padding()
+                    .frame(width:150, height: 30)
+                Divider()
+                    .frame(height: 30)
+                Text("Y:")
+                    .font(.headline)
+                Spacer()
+                TextField("Y Coordinate", text: $Ycoordinate)
+                    .keyboardType(.numberPad)
+                    .padding()
+                    .frame(width:150, height: 30)
+                    .background(Color.gray.opacity(0.15))
+                    .cornerRadius(10)
+                    .padding()
+                    .frame(width:150, height: 30)
+                    
+            }
+            .frame(width: geometry.size.width - 20)
+            Divider()
+        }
+    }
+    
+    func getLocation() {
+        self.location.start()
+        var counter : Int = 0
+        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
+            Latitude = Float(self.location.lastLocation?.coordinate.latitude ?? 00)
+            Longitude = Float(self.location.lastLocation?.coordinate.longitude ?? 00)
+            counter += 1
+            if location.LocationIsUpdate || counter > 10 {
+                self.location.stop()
+                timer.invalidate()
+                if !(counter > 10){
+                    print("LatitudeInByte: \(Data(Latitude.bytes).hexEncodedString()) LongitudeInByte: \(Data(Longitude.bytes).hexEncodedString())")
+                }
+            }
         }
     }
 }

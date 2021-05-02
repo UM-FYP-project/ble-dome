@@ -50,11 +50,19 @@ struct ContentView: View {
                             }
                             Button(action: {
                                 self.location.start()
-                                Latitude = Float(self.location.lastLocation?.coordinate.latitude ?? 00)
-                                Longitude = Float(self.location.lastLocation?.coordinate.longitude ?? 00)
-                                print("LatitudeInByte: \(Data(Latitude.bytes).hexEncodedString()) LongitudeInByte: \(Data(Longitude.bytes).hexEncodedString())")
-//                                print(LongitudeInByte)
-//                                self.location.stop()
+                                var counter : Int = 0
+                                Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
+                                    Latitude = Float(self.location.lastLocation?.coordinate.latitude ?? 00)
+                                    Longitude = Float(self.location.lastLocation?.coordinate.longitude ?? 00)
+                                    counter += 1
+                                    if location.LocationIsUpdate || counter > 10 {
+                                        self.location.stop()
+                                        timer.invalidate()
+                                        if !(counter > 10){
+                                            print("LatitudeInByte: \(Data(Latitude.bytes).hexEncodedString()) LongitudeInByte: \(Data(Longitude.bytes).hexEncodedString())")
+                                        }
+                                    }
+                                }
                             }) {
                                 Text("Get Location")
                                     .bold()
