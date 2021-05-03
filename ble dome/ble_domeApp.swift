@@ -379,3 +379,11 @@ extension Float {
    }
 }
 
+extension Int16 {
+   var bytes: [UInt8] {
+    withUnsafeBytes(of: self.bigEndian, Array.init)
+   }
+}
+
+
+

@@ -105,10 +105,10 @@ class Reader: NSObject, ObservableObject{
         return cmd
     }
     
-    func cmd_data_write (data_block:UInt8, data_start:UInt8, data:[UInt8]) -> [UInt8]{
-        let cmd_len : UInt8 = 0x07 + UInt8(data.count)
+    func cmd_data_write (passwd: [UInt8], data_block:UInt8, data_start:UInt8, data:[UInt8]) -> [UInt8]{
+        let cmd_len : UInt8 = 0x09 + UInt8(data.count)
         let data_len : UInt8 = UInt8(data.count / 2)
-        let cmd : [UInt8] = [0xA0, cmd_len, address, 0x82, data_block, data_start, data_len] + data
+        let cmd : [UInt8] = [0xA0, cmd_len, address, 0x82] + passwd + [data_block, data_start, data_len] + data
         return cmd
     }
     
@@ -131,7 +131,6 @@ class Reader: NSObject, ObservableObject{
         }
         return cmd
     }
-    
     
     func cmd_real_time_inventory (inventory_speed:UInt8) -> [UInt8]{
         let cmd : [UInt8] = [0xA0, 0x04, address, 0x89, inventory_speed]

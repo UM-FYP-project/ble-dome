@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct PeripheralDetail: View {
     @EnvironmentObject var ble:BLE
@@ -154,13 +155,20 @@ struct WriteValuetoChar: View {
                         Text("Value wrote: \(WriteValueStr)")
                     }
                     .padding()
-                    TextField("Value in Byte without 0x", text: $WriteValueStr)
+                    TextField("Value in Byte without 0x and Space", text: $WriteValueStr)
+                        .onReceive(Just(WriteValueStr), perform: { newValue in
+                            let filtered = newValue.filter { "0123456789ABCDEFabcdef".contains($0) }
+                            if filtered != newValue {
+                                self.WriteValueStr = filtered
+                            }
+                        })
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .frame(width: UIScreen.main.bounds.width - 60)
+                        .multilineTextAlignment(.center)
+                        .frame(width: geometry.size.width - 60)
                         Toggle(isOn: $WriteWithoutResponse) {
                             Text("WithoutResponse")
                         }
-                        .frame(width: UIScreen.main.bounds.width - 60)
+                        .frame(width: geometry.size.width - 60)
                         .disabled(!WriteWithoutResponse_toggel)
                     Divider()
                     HStack(alignment:.center){

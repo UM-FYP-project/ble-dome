@@ -28,7 +28,8 @@ struct ContentView: View {
                                 if !ble.peripherals.isEmpty && !(ble.peripherals.filter({$0.State == 2}).count < 1){
                                     NavigationLink(
                                         destination:
-                                            DetailTabView(geometry: geometry, peripheral: ble.peripherals[Conncetedperipheral_index])
+//                                            DetailTabView(geometry: geometry, peripheral: ble.peripherals[Conncetedperipheral_index])
+                                            DetailTabView(peripheral: ble.peripherals[Conncetedperipheral_index])
                                             .environmentObject(ble)
                                             .environmentObject(reader)
                                             .environmentObject(readeract)
@@ -68,19 +69,6 @@ struct ContentView: View {
                                     .bold()
                                     .font(.headline)
                             }
-                            HStack{
-                                Text("Latitude:")
-                                    .font(.headline)
-                                Text("\(Latitude)")
-                                Spacer()
-                                Divider()
-                                    .frame(height: 20)
-                                Text("Longitude:")
-                                    .font(.headline)
-                                Text("\(Longitude)")
-                                Spacer()
-                            }
-                            .frame(width: geometry.size.width - 20)
                             Divider()
                             HStack{
                                 Text("Latitude:")
@@ -105,8 +93,19 @@ struct ContentView: View {
                                 Spacer()
                             }
                             .frame(width: geometry.size.width - 20)
+                            Divider()
+                            HStack{
+                                Text("Num:")
+                                    .font(.headline)
+                                Text("\(Data(Int16(-255).bytes).hexEncodedString())")
+                                Spacer()
+                                Divider()
+                                    .frame(height: 20)
+                                Text("\(Int16(bigEndian: Data(Int16(-255).bytes).withUnsafeBytes{$0.load(as: Int16.self)}))")
+                                Spacer()
+                                
+                            }
                         }
-                        
                         .tabItem{
                             Image(systemName: "house")
                             Text("Home")
