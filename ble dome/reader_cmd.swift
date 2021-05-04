@@ -48,6 +48,17 @@ struct tagData: Identifiable{
     let Data : [UInt8]
 }
 
+struct NavTag{
+    let floor : Int
+    let Infor : String
+    let Seq : Int
+    let Step : Int
+    let Xcoordinate : Float?
+    let Ycoordinate : Float?
+    let Latitude : Float?
+    let Longitude : Float?
+}
+
 class Reader: NSObject, ObservableObject{
     @Published var Tags = [tag]()
 //    @Published var Realtime_Tags = [tag]()
@@ -106,7 +117,7 @@ class Reader: NSObject, ObservableObject{
     }
     
     func cmd_data_write (passwd: [UInt8], data_block:UInt8, data_start:UInt8, data:[UInt8]) -> [UInt8]{
-        let cmd_len : UInt8 = 0x09 + UInt8(data.count)
+        let cmd_len : UInt8 = 0x10 + UInt8(data.count)
         let data_len : UInt8 = UInt8(data.count / 2)
         let cmd : [UInt8] = [0xA0, cmd_len, address, 0x82] + passwd + [data_block, data_start, data_len] + data
         return cmd
@@ -377,7 +388,63 @@ class Reader: NSObject, ObservableObject{
         print("\(BytesRecord.count) : \(time_string)_\(Data(byte).hexEncodedString())")
     }
     
-
+    func TagtoNav(Tag: tag?, TagData: tagData?) -> NavTag?{
+        var navtag : NavTag? = nil
+        if Tag != nil {
+            let EPC = Tag!.EPC
+            if EPC[0] == 0x4E && EPC[1] == 0x56{
+                let floor : Int = Int(Int16(bigEndian: Data(Array(EPC[2...3])).withUnsafeBytes{$0.load(as: Int16.self)}))
+                var inform : String = ""
+                if Array(EPC[4...6]) == [0x00,0x00,0x00] {
+                    switch EPC[7] {
+                    case 1:
+                        inform = "Entrance"
+                    case 2:
+                        inform = "Elevator"
+                    case 3:
+                        inform = "Crossroad"
+                    case 4:
+                        inform = "Straight"
+                    default:
+                        inform = "Stairs"
+                    }
+                }
+                let seq : Int = Int(EPC[8])
+                let steps : Int = Int(EPC[9])
+                navtag = NavTag(floor: floor, Infor: inform, Seq: seq, Step: steps, Xcoordinate: nil, Ycoordinate: nil, Latitude: nil, Longitude: nil)
+            }
+        }
+        else if TagData != nil {
+            let EPC = TagData!.Data
+            if EPC[0] == 0x4E && EPC[1] == 0x56{
+                let floor : Int = Int(Int16(bigEndian: Data(Array(EPC[2...3])).withUnsafeBytes{$0.load(as: Int16.self)}))
+                var inform : String = ""
+                if Array(EPC[4...6]) == [0x00,0x00,0x00] {
+                    switch EPC[7] {
+                    case 1:
+                        inform = "Entrance"
+                    case 2:
+                        inform = "Elevator"
+                    case 3:
+                        inform = "Crossroad"
+                    case 4:
+                        inform = "Straight"
+                    default:
+                        inform = "Stairs"
+                    }
+                }
+                let seq : Int = Int(EPC[8])
+                let steps : Int = Int(EPC[9])
+                let x : Float = Data(Array(EPC[10...13])).withUnsafeBytes{$0.load(as: Float.self)}
+                let y : Float = Data(Array(EPC[14...17])).withUnsafeBytes{$0.load(as: Float.self)}
+                let lat : Float = Data(Array(EPC[17...21])).withUnsafeBytes{$0.load(as: Float.self)}
+                let long : Float = Data(Array(EPC[22...25])).withUnsafeBytes{$0.load(as: Float.self)}
+                navtag = NavTag(floor: floor, Infor: inform, Seq: seq, Step: steps, Xcoordinate: x, Ycoordinate: y, Latitude: lat, Longitude: long)
+            }
+        }
+        
+        return navtag
+    }
 }
 
 extension Dictionary where Value: Equatable {

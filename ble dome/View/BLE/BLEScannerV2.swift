@@ -12,13 +12,15 @@ struct BLEScanner_Alert: View {
     @Binding var Enable : Bool
     var geometry : GeometryProxy
     var body: some View {
+        
         VStack(alignment:.center){
             Text("Scanner")
                 .bold()
                 .font(.title)
             Text("Scan and Connect Deivce")
-            PeripheralList(geometry: geometry)
-                .environmentObject(ble)
+//            PeripheralList(geometry: geometry)
+//                .environmentObject(ble)
+            PeripheralList
             Divider()
                 .frame(width: geometry.size.width - 60)
             Button(action: {
@@ -26,11 +28,10 @@ struct BLEScanner_Alert: View {
                 ble.stopscan_device()
             }) {
                 Text("Close")
-                    .font(.headline)
+                    .font(.title2)
                     .foregroundColor(.blue)
-                    .padding()
             }
-            .frame(width: geometry.size.width - 60)
+            .frame(width: geometry.size.width - 60, height: 40)
         }
         .padding()
         .background(RoundedRectangle(cornerRadius: 20)
@@ -43,25 +44,31 @@ struct BLEScanner_Alert: View {
             }
         })
     }
-}
-
-struct PeripheralList: View {
-    @EnvironmentObject var ble:BLE
-    var geometry : GeometryProxy
-    var body: some View {
-        List(ble.peripherals) {peripheral in
-            HStack{
-                VStack(alignment: .leading){
-                    Text(peripheral.name)
-                        .bold()
-                    Text("Rssi: \(peripheral.rssi)")
+    
+    var PeripheralList: some View {
+        VStack{
+            if !ble.peripherals.isEmpty {
+                List{
+                    ForEach(0..<ble.peripherals.count, id: \.self) { index in
+                        let peripheral = ble.peripherals[index]
+                        HStack{
+                            VStack(alignment: .leading){
+                                Text(peripheral.name)
+                                    .bold()
+                                Text("Rssi: \(peripheral.rssi)")
+                            }
+                            Spacer()
+                            BLEConnect_button(name: peripheral.name)
+                                .frame(alignment: .trailing)
+                        }
+                        .listRowBackground(RoundedRectangle(cornerRadius: 0)
+                                            .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
+                    }
                 }
-                Spacer()
-                BLEConnect_button(name: peripheral.name)
-                    .frame(alignment: .trailing)
+                .colorMultiply(Color.white.opacity(0.8))
+                .shadow(radius: 1)
             }
         }
-        .listStyle(SidebarListStyle())
     }
 }
 
@@ -118,10 +125,10 @@ struct BLEConnect_button: View {
     }
 }
 
-struct BLEScanner_Alert_Previews: PreviewProvider {
-    static var previews: some View {
-        GeometryReader{ geometry in
-            BLEScanner_Alert(Enable: .constant(true), geometry: geometry).environmentObject(BLE())
-        }
-    }
-}
+//struct BLEScanner_Alert_Previews: PreviewProvider {
+//    static var previews: some View {
+//        GeometryReader{ geometry in
+//            BLEScanner_Alert(Enable: .constant(true), geometry: geometry).environmentObject(BLE())
+//        }
+//    }
+//}

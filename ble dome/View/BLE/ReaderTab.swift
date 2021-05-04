@@ -50,7 +50,7 @@ struct ReaderTab: View {
                                 .environmentObject(readeract)
                         }
                         else if Selected == 3{
-                            Reader_WriteData(geometry: geometry, MatchState: $readeract.MatchState)
+                            Reader_WriteData(geometry: geometry)
                                 .environmentObject(reader)
                                 .environmentObject(readeract)
                                 .disabled(reader.Tags.isEmpty)
@@ -88,6 +88,7 @@ struct ReaderSetting: View {
                                 .font(.headline)
                         }
                     }
+                    .frame(width: geometry.size.width - 20)
                     Divider()
                     HStack{
                         Text("Set Baudrate")
@@ -113,6 +114,7 @@ struct ReaderSetting: View {
                                 .font(.headline)
                         }
                     }
+                    .frame(width: geometry.size.width - 20)
                     Divider()
                     HStack{
                         Text("Set Power")
@@ -136,6 +138,7 @@ struct ReaderSetting: View {
                                 .font(.headline)
                         }
                     }
+                    .frame(width: geometry.size.width - 20)
                     Divider()
                     HStack{
                         Text("Get Power")
@@ -160,11 +163,12 @@ struct ReaderSetting: View {
                                 .font(.headline)
                         }
                     }
+                    .frame(width: geometry.size.width - 20)
                     Divider()
                     ErrorList
                     Spacer()
                 }
-                .frame(width: geometry.size.width - 20)
+//                .frame(width: geometry.size.width - 20)
             }
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
     }
@@ -365,6 +369,7 @@ struct ReaderInventory: View{
                         let PCstr = Data(tag.PC).hexEncodedString()
                         let EPCstr = Data(tag.EPC).hexEncodedString()
                         let CRCstr = Data(tag.CRC).hexEncodedString()
+                        let NavTag : NavTag? = reader.TagtoNav(Tag:tag, TagData: nil)
                         HStack{
                             Text("\(tag.id + 1)")
                                 .frame(width: 15)
@@ -377,6 +382,12 @@ struct ReaderInventory: View{
                                     Text("CRC:\(CRCstr)")
                                     Text("Len:\(Int(tag.EPClen))")
                                     Text("RSSI:\(tag.RSSI)")
+                                }
+                                if NavTag != nil {
+                                    HStack{
+                                        Text("Floor:\(NavTag!.floor)/F")
+                                        Text("Infor:\(NavTag!.Infor)\(NavTag!.Seq) \(NavTag!.Step)")
+                                    }
                                 }
                             }
                         }
@@ -466,7 +477,7 @@ struct Record_Monitor: View {
             VStack(alignment: .center){
                 List{
                     if !reader.BytesRecord.isEmpty {
-                        ForEach(0..<reader.BytesRecord.count){ index in
+                        ForEach(0..<reader.BytesRecord.count, id: \.self){ index in
 //                            let Index = reader.Byte_Record.count - index
                             let byte_record = reader.BytesRecord[reader.BytesRecord.count - 1 - index]
                             let byte_str = Data(byte_record.Byte).hexEncodedString()
@@ -659,7 +670,6 @@ struct ReadTags_data: View {
         var flag : Bool = false
         var completed : Bool = false
         var counter : Int = 0
-//                            let cmd : [UInt8] = reader.cmd_data_read(data_block: readeract.DataCmdinByte[readeract.DataBlock_Selected], data_start: UInt8(readeract.DataByte[readeract.DataStart_Selected]), data_len: UInt8(readeract.DataByte[readeract.DataLen_Selected]))
         let cmd : [UInt8] = reader.cmd_data_read(data_block: readeract.DataCmdinByte[readeract.DataBlock_Selected], data_start: UInt8(readeract.DataStart), data_len: UInt8(readeract.DataLen))
         Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){timer in
             if !flag {
@@ -690,8 +700,6 @@ struct Reader_WriteData: View{
     var geometry : GeometryProxy
     @State var EPC_Match_Error : String = ""
     @State var FeedbackStr = [String]()
-//    @State var Match_ButtState : Int = 0
-    @Binding var MatchState : Int // 0: Match, 1: Matching, 2: Matched
     var body: some View {
         ZStack{
             VStack(alignment: .center){
@@ -718,29 +726,28 @@ struct Reader_WriteData: View{
                     Button(action: {
                         Match_ButtAct()
                     }){
-                        Text(MatchState == 0 ? "Match" : MatchState == 1 ? "Matching" : MatchState == 2 ? "Unmatch" : "Unmatching")
+                        Text(readeract.MatchState == 0 ? "Match" : readeract.MatchState == 1 ? "Matching" : readeract.MatchState == 2 ? "Unmatch" : "Unmatching")
                             .bold()
                     }
                 }
                 .frame(width: geometry.size.width - 20)
                 Divider()
-                HStack{
-                    Text("Data Write")
-                        .font(.headline)
-                    Spacer()
-                    Button(action: {
-                        Match_ButtAct()
-                    }){
-                        Text("Write")
-                    }
-                    .disabled(MatchState != 2)
-                }
-                .frame(width: geometry.size.width - 20)
-                Divider()
+//                HStack{
+//                    Text("Data Write")
+//                        .font(.headline)
+//                    Spacer()
+//                    Button(action: {
+//                        Match_ButtAct()
+//                    }){
+//                        Text("Write")
+//                    }
+//                    .disabled(readeract.MatchState != 2)
+//                }
+//                .frame(width: geometry.size.width - 20)
+//                Divider()
                 feedbackStrList
-                Divider()
                 TagData_Write(geometry: geometry)
-                    .disabled(MatchState != 2)
+                    .disabled(readeract.MatchState != 2)
                 Spacer()
             }
             .frame(width: geometry.size.width - 20)
@@ -752,7 +759,7 @@ struct Reader_WriteData: View{
         VStack(alignment: .center){
             if !FeedbackStr.isEmpty{
                 List{
-                    ForEach (0..<FeedbackStr.count){ index in
+                    ForEach (0..<FeedbackStr.count, id: \.self){ index in
                         Text(FeedbackStr[FeedbackStr.count - 1 - index])
                             .foregroundColor(.red)
                     }
@@ -760,6 +767,7 @@ struct Reader_WriteData: View{
                 .listStyle(PlainListStyle())
                 .frame(width: geometry.size.width - 20)
             }
+            Divider()
         }
     }
     
@@ -773,62 +781,70 @@ struct Reader_WriteData: View{
 //        ble.cmd2reader(cmd: cmd_Match)
         //        reader.Btye_Recorder(defined: 1, byte: cmd_Match)
         Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){ timer in
-            if CmdState == 0 && MatchState == 0{ // Send Match Cmd
+            if CmdState == 0 && readeract.MatchState == 0{ // Send Match Cmd
                 ble.cmd2reader(cmd: cmd_Match)
                 reader.Btye_Recorder(defined: 1, byte: cmd_Match)
-                MatchState = 1
+                readeract.MatchState = 1
                 CmdState = 1
             }
-            else if CmdState == 0 && MatchState == 2 { // Send UnMatch Cmd
+            else if CmdState == 0 && readeract.MatchState == 2 { // Send UnMatch Cmd
                 ble.cmd2reader(cmd: cmd_umMatch)
                 reader.Btye_Recorder(defined: 1, byte: cmd_umMatch)
-                MatchState = 3
+                readeract.MatchState = 3
                 CmdState = 1
             }
-            else if CmdState == 1 && (MatchState == 1 || MatchState == 3) { // Matching or UmMactching for waiting feedback
+            else if CmdState == 1 && (readeract.MatchState == 1 || readeract.MatchState == 3) { // Matching or UmMactching for waiting feedback
                 if ble.ValueUpated_2A68{
                     let feedback = ble.reader2BLE()
                     reader.Btye_Recorder(defined: 2, byte: feedback)
                     if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x85{
                         if feedback[1] == 0x04 {
-                            let ErrorStr = reader.reader_error_code(code: feedback[4])
-                            FeedbackStr.append(ErrorStr)
-                            CmdState = 4
-                        }
-                        else{
-                            CmdState = 2
+                            if feedback[4] != 0x10{
+                                let ErrorStr = reader.reader_error_code(code: feedback[4])
+                                FeedbackStr.append(ErrorStr)
+                                CmdState = 4
+                                if readeract.MatchState == 1 {
+                                    readeract.MatchState = 0
+                                }
+                                else if readeract.MatchState == 3{
+                                    readeract.MatchState = 2
+                                }
+                            }
+                            else{
+                                CmdState = 2
+                            }
                         }
                     }
                     ble.ValueUpated_2A68 = false
                 }
             }
-            else if CmdState == 2 && (MatchState == 1 || MatchState == 3) { // verify mactching result
+            else if CmdState == 2 && (readeract.MatchState == 1 || readeract.MatchState == 3) { // verify mactching result
                 ble.cmd2reader(cmd: cmd_getMatched)
                 reader.Btye_Recorder(defined: 1, byte: cmd_getMatched)
                 CmdState = 3
             }
-            else if CmdState == 3 && (MatchState == 1 || MatchState == 3) {
+            else if CmdState == 3 && (readeract.MatchState == 1 || readeract.MatchState == 3) {
                 if ble.ValueUpated_2A68{
                     let feedback = ble.reader2BLE()
                     reader.Btye_Recorder(defined: 2, byte: feedback)
                     if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x86{
                         if feedback[4] == 0 {
-                            if MatchState == 1 {
-                                FeedbackStr.append("Matching Complete")
+                            if readeract.MatchState == 1 {
+//                                FeedbackStr.append("Matching Complete")
                             }
                             else {
                                 FeedbackStr.append("Unmatching EPC Fail")
                             }
-                            MatchState = 2
+                            readeract.MatchState = 2
                         }
                         else {
-                            if MatchState == 1 {
+                            if readeract.MatchState == 1 {
                                 FeedbackStr.append("Matching EPC Fail")
                             }
                             else {
-                                FeedbackStr.append("Unmatching Complete")
+//                                FeedbackStr.append("Unmatching Complete")
                             }
-                            MatchState = 0
+                            readeract.MatchState = 0
                         }
                         CmdState = 4
                     }
@@ -837,9 +853,9 @@ struct Reader_WriteData: View{
             }
             counter += 1
             if CmdState > 3 || counter > 30 {
-                if counter > 25 && MatchState == 1{
+                if counter > 25 && readeract.MatchState == 1{
                     FeedbackStr.append("Matching EPC isn't Complete")
-                    MatchState = 0
+                    readeract.MatchState = 0
                 }
                 timer.invalidate()
             }
@@ -849,22 +865,25 @@ struct Reader_WriteData: View{
 
 struct TagData_Write: View{
     var geometry : GeometryProxy
+    @EnvironmentObject var ble:BLE
+    @EnvironmentObject var reader:Reader
     @EnvironmentObject var location : LocationManager
     @EnvironmentObject var readeract : readerAct
     @State var funcSelected : Int = 4
-    @State var floor : Int8 = 0
-    @State var Seq : UInt8 = 0
+//    @State var floor : Int = 0
+//    @State var Seq : UInt = 0
     @State var inforSelected : Int = 4
     @State var Latitude : Float = 0
     @State var Longitude : Float = 0
-    @State var Xcoordinate : String = "0.0"
-    @State var Ycoordinate : String = "0.0"
+//    @State var Xcoordinate : String = "0.0"
+//    @State var Ycoordinate : String = "0.0"
     @State var writeAlert : Bool = false
     @State var AlertStr : String = ""
     @State var StartAdd : Int = 0
     @State var WriteByteStr : String = ""
     @State var PasswdStr : String = ""
-    @State var Steps : UInt8 = 0
+    @State var Steps : Int = 0
+    @State var ErrorStr = [String]()
     let InforStrArray : [String] = ["Stairs","Entrance","Elevator","Crossroad","Straight"]
     var body: some View {
         VStack(alignment: .center){
@@ -876,10 +895,10 @@ struct TagData_Write: View{
                 Button(action: {
                     writeAlert = true
                     if funcSelected == 4{
-                        AlertStr = "Password: \(PasswdStr.hexaData.hexEncodedString())\nFloor: \(floor == 0 ? "G/F" : "\(floor)/F")\nInformation: \(InforStrArray[inforSelected])\(inforSelected != 4 ?Seq < 10 ? "0\(Seq)" : "\(Seq)" : "")\n\(inforSelected == 0 ? "Num of Steps: \(Steps)\n" : "")Indoor: \(Float(Xcoordinate) ?? 0) : \(Float(Ycoordinate) ?? 0)\nLocation: \(Latitude) : \(Longitude)"
+                        AlertStr = "Password: \(String(PasswdStr.prefix(8)).hexaData.hexEncodedString())\nFloor: \(readeract.floor == 0 ? "G/F" : "\(readeract.floor)/F")\nInformation: \(InforStrArray[inforSelected])\(inforSelected != 4 ? readeract.Seq < 10 ? "0\(readeract.Seq)" : "\(readeract.Seq)" : "")\n\(inforSelected == 0 ? "Num of Steps: \(Steps)\n" : "")Indoor: \(Float(readeract.Xcoordinate) ?? 0) : \(Float(readeract.Ycoordinate) ?? 0)\nLocation: \(Latitude) : \(Longitude)"
                     }
                     else{
-                        AlertStr = "Password: \(PasswdStr.hexaData.hexEncodedString())\nWrite Data to: \(readeract.DataCmdinStr[funcSelected])\nData: \(WriteByteStr.hexaData.hexEncodedString())"
+                        AlertStr = "Password: \(PasswdStr.hexaData.hexEncodedString())\nWrite Data to: \(readeract.DataCmdinStr[funcSelected])\nData: \(WriteByteStr.hexaData.hexEncodedString())\nStartAddress: \(StartAdd)"
                     }
                 }) {
                     Text("Write")
@@ -904,6 +923,9 @@ struct TagData_Write: View{
                         let filtered = newValue.filter { "0123456789ABCDEFabcdef".contains($0) }
                         if filtered != newValue {
                             self.PasswdStr = filtered
+                        }
+                        if PasswdStr.count > 7 {
+                            PasswdStr = String(PasswdStr.prefix(8))
                         }
                     })
                     .multilineTextAlignment(.center)
@@ -954,11 +976,8 @@ struct TagData_Write: View{
                 Divider()
                 TextField("Value in Byte without 0x and Space", text: $WriteByteStr)
                     .onReceive(Just(WriteByteStr), perform: { newValue in
-                        var filtered = newValue.filter { "0123456789ABCDEFabcdef".contains($0) }
+                        let filtered = newValue.filter { "0123456789ABCDEFabcdef".contains($0) }
                         if filtered != newValue {
-                            if filtered.count > 7 {
-                                filtered = String(filtered.prefix(7))
-                            }
                             self.WriteByteStr = filtered
                         }
                     })
@@ -979,7 +998,7 @@ struct TagData_Write: View{
                     .default(
                     Text("Confirm to Write"),
                     action: {
-                        funcSelected = 4
+                        WirtetoTag()
                     }
                 )
             )}
@@ -991,21 +1010,31 @@ struct TagData_Write: View{
                 Text("Floor")
                     .font(.headline)
                 Spacer()
-                Button(action: {self.floor += -1}) {
+                Button(action: {readeract.floor -= 1}) {
                     Text("-")
                         .bold()
                         .font(.headline)
                 }
+                .disabled(readeract.floor < -255)
                 .frame(width: 30)
-                Text(floor == 0 ? "G/F" : "\(floor)/F")
-                    .bold()
-                    .font(.headline)
-                    .frame(width: 40)
-                Button(action: {self.floor += 1}) {
+                TextField("", value: $readeract.floor, formatter: NumberFormatter())
+                    .onReceive(Just(readeract.floor), perform: {_ in
+                        if readeract.floor > 255 {
+                            readeract.floor = 255
+                        }
+                        else if readeract.floor < -255 {
+                            readeract.floor = -255
+                        }
+                    })
+                    .multilineTextAlignment(.center)
+                    .keyboardType(.numbersAndPunctuation)
+                    .frame(maxWidth: 50)
+                Button(action: {readeract.floor += 1}) {
                     Text("+")
                         .bold()
                         .font(.headline)
                 }
+                .disabled(readeract.floor > 255)
                 .frame(width: 30)
             }
             .frame(width: geometry.size.width - 20)
@@ -1029,18 +1058,18 @@ struct TagData_Write: View{
                     Text("Sequence")
                         .font(.headline)
                     Spacer()
-                    Button(action: {self.Seq -= 1}) {
+                    Button(action: {readeract.Seq -= 1}) {
                         Text("-")
                             .bold()
                             .font(.headline)
                     }
-                    .disabled(Seq < 1)
+                    .disabled(readeract.Seq < 1)
                     .frame(width: 30)
-                    Text(Seq < 10 ? "0\(Seq)" : "\(Seq)")
+                    Text(readeract.Seq < 10 ? "0\(readeract.Seq)" : "\(readeract.Seq)")
                         .bold()
                         .font(.headline)
                         .frame(width: 30)
-                    Button(action: {self.Seq += 1}) {
+                    Button(action: {readeract.Seq += 1}) {
                         Text("+")
                             .bold()
                             .font(.headline)
@@ -1062,10 +1091,19 @@ struct TagData_Write: View{
                     }
                     .disabled(Steps < 1)
                     .frame(width: 30)
-                    Text("\(Steps)")
-                        .bold()
-                        .font(.headline)
-                        .frame(width: 30)
+//                    Text("\(Steps)")
+//                        .bold()
+//                        .font(.headline)
+//                        .frame(width: 30)
+                    TextField("", value: $Steps, formatter: NumberFormatter())
+                        .onReceive(Just(Steps), perform: {_ in
+                            if Steps > 255 {
+                                self.Steps = 255
+                            }
+                            else if Steps < 0 {
+                                self.Steps = 0
+                            }
+                        })
                     Button(action: {self.Steps += 1}) {
                         Text("+")
                             .bold()
@@ -1078,6 +1116,7 @@ struct TagData_Write: View{
                 Divider()
             }
             Cooradintion
+            ErrorList
         }
     }
     
@@ -1119,16 +1158,16 @@ struct TagData_Write: View{
                 Text("X:")
                     .font(.headline)
                 Spacer()
-                TextField("X Coordinate", text: $Xcoordinate)
+                TextField("X Coordinate", text: $readeract.Xcoordinate)
                     .keyboardType(.numbersAndPunctuation)
-                    .onReceive(Just(Xcoordinate), perform: { newValue in
+                    .onReceive(Just(readeract.Xcoordinate), perform: { newValue in
                         let filtered = newValue.filter { "0123456789.-".contains($0) }
                         if filtered != newValue {
                             let float : Float = Float(filtered) ?? 00
-                            self.Xcoordinate = String(float)
+                            readeract.Xcoordinate = String(float)
                         }
                     })
-                    .multilineTextAlignment(.trailing)
+                    .multilineTextAlignment(.center)
                     .frame(width:150, height: 30)
                     .background(Color.gray.opacity(0.15))
                     .cornerRadius(10)
@@ -1137,15 +1176,35 @@ struct TagData_Write: View{
                 Text("Y:")
                     .font(.headline)
                 Spacer()
-                TextField("Y Coordinate", text: $Ycoordinate)
+                TextField("Y Coordinate", text: $readeract.Ycoordinate)
                     .keyboardType(.numbersAndPunctuation)
-                    .multilineTextAlignment(.trailing)
+                    .onReceive(Just(readeract.Ycoordinate), perform: { newValue in
+                        let filtered = newValue.filter { "0123456789.-".contains($0) }
+                        if filtered != newValue {
+                            let float : Float = Float(filtered) ?? 00
+                            readeract.Ycoordinate = String(float)
+                        }
+                    })
+                    .multilineTextAlignment(.center)
                     .frame(width:150, height: 30)
                     .background(Color.gray.opacity(0.15))
                     .cornerRadius(10)
             }
             .frame(width: geometry.size.width - 20)
             Divider()
+        }
+    }
+    
+    var ErrorList: some View{
+        VStack{
+            if !ErrorStr.isEmpty {
+                List{
+                    ForEach (0..<ErrorStr.count, id: \.self){ index in
+                        Text(ErrorStr[ErrorStr.count - 1 - index])
+                            .foregroundColor(.red)
+                    }
+                }
+            }
         }
     }
     
@@ -1167,7 +1226,45 @@ struct TagData_Write: View{
     }
     
     func WirtetoTag(){
-        
+        var flag : Bool = false
+        var completed : Bool = false
+        var counter : Int = 0
+        var cmd = [UInt8]()
+        let PasswdBytes : [UInt8] = [UInt8](PasswdStr.hexaData)
+        if funcSelected == 4{
+            let infor : [UInt8] = [0x00,0x00,0x00,UInt8(inforSelected)]
+            let coordinate : [UInt8] = (Float(readeract.Xcoordinate) ?? 0).bytes + (Float(readeract.Ycoordinate) ?? 0).bytes + Latitude.bytes + Longitude.bytes + [UInt8(0xEC)]
+            let Data : [UInt8] = [0x4E,0x56] + Array(Int16(readeract.floor).bytes) + infor + [UInt8(readeract.Seq), UInt8(Steps)] + coordinate
+            cmd = reader.cmd_data_write(passwd: PasswdBytes, data_block: UInt8(1), data_start: UInt8(2), data: Data)
+        }
+        else{
+            cmd = reader.cmd_data_write(passwd: PasswdBytes, data_block: readeract.DataCmdinByte[funcSelected], data_start: UInt8(StartAdd), data: [UInt8](WriteByteStr.hexaData))
+        }
+        Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){timer in
+            if !flag {
+                ble.cmd2reader(cmd: cmd)
+                reader.Btye_Recorder(defined: 1, byte: cmd)
+                flag = true
+            }
+            if ble.ValueUpated_2A68{
+                let feedback = ble.reader2BLE()
+                if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x82{
+                    if feedback[1] != 4 {
+                        ErrorStr.append("Write Tag Succeeded")
+                        readeract.MatchState = 0
+                    }
+                    else {
+                        ErrorStr.append(reader.reader_error_code(code: feedback[4]))
+                    }
+                    completed = true
+                }
+                ble.ValueUpated_2A68 = false
+            }
+            counter += 1
+            if counter > 30 || completed {
+                timer.invalidate()
+            }
+        }
     }
     
 }

@@ -10,7 +10,7 @@ import Foundation
 class readerAct: ObservableObject{
     @Published var isInventory = false // Reader Inverntorying or not
     @Published var RealtimeInventory_Toggle = false // Reader Inverntorying in Realtime or not
-    @Published var MatchState : Int = 0// EPC Match State 0: Match, 1: Matching, 2: Matched
+    @Published var MatchState : Int = 0// 0: Match, 1: Matching, 2: Matched, 3: UnMactching
     // Reader Setting Picker
     let BaudrateCmdinStr : [String] = ["9600bps", "19200bps", "38400bps", "115200bps"]
     let BaudrateCmdinByte : [UInt8] = [0x01, 0x02 , 0x03, 0x04]
@@ -39,4 +39,9 @@ class readerAct: ObservableObject{
     //EPC match Picker
     @Published var EPC_picker = false
     @Published var EPC_Selected = 0
+    //Write tag
+    @Published var Xcoordinate : String = "0.0"
+    @Published var Ycoordinate : String = "0.0"
+    @Published var floor : Int = 0
+    @Published var Seq : UInt = 0
 }

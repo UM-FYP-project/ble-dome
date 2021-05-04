@@ -363,6 +363,7 @@ extension Data {
 extension StringProtocol {
     var hexaData: Data { .init(hexa) }
     var hexaBytes: [UInt8] { .init(hexa) }
+    var asciiValues: [UInt8] { compactMap(\.asciiValue) }
     private var hexa: UnfoldSequence<UInt8, Index> {
         sequence(state: startIndex) { startIndex in
             guard startIndex < self.endIndex else { return nil }
@@ -384,6 +385,5 @@ extension Int16 {
     withUnsafeBytes(of: self.bigEndian, Array.init)
    }
 }
-
 
 
