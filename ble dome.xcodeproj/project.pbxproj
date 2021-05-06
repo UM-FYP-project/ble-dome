@@ -14,6 +14,10 @@
 		95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */; };
 		9552406625CA9AB100EA1011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406325CA9AB100EA1011 /* ContentView.swift */; };
 		9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552407525CC54B100EA1011 /* PeripheralDetail.swift */; };
+		95687E9026444F1000C9116D /* ReaderSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E8F26444F1000C9116D /* ReaderSetting.swift */; };
+		95687E9226444FEB00C9116D /* ReaderInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E9126444FEB00C9116D /* ReaderInventory.swift */; };
+		95687E94264450B300C9116D /* RecordMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E93264450B300C9116D /* RecordMonitor.swift */; };
+		95687E96264450E600C9116D /* ReadTagsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E95264450E600C9116D /* ReadTagsData.swift */; };
 		9580C65F262574B8008EA64D /* readerAct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9580C65E262574B8008EA64D /* readerAct.swift */; };
 		95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */; };
 		95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368B825BF2F700026EC88 /* Assets.xcassets */; };
@@ -29,6 +33,10 @@
 		95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEScannerV2.swift; sourceTree = "<group>"; };
 		9552406325CA9AB100EA1011 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9552407525CC54B100EA1011 /* PeripheralDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralDetail.swift; sourceTree = "<group>"; };
+		95687E8F26444F1000C9116D /* ReaderSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSetting.swift; sourceTree = "<group>"; };
+		95687E9126444FEB00C9116D /* ReaderInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderInventory.swift; sourceTree = "<group>"; };
+		95687E93264450B300C9116D /* RecordMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMonitor.swift; sourceTree = "<group>"; };
+		95687E95264450E600C9116D /* ReadTagsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadTagsData.swift; sourceTree = "<group>"; };
 		9580C65E262574B8008EA64D /* readerAct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readerAct.swift; sourceTree = "<group>"; };
 		95B368B125BF2F6D0026EC88 /* ble dome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ble dome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ble_domeApp.swift; sourceTree = "<group>"; };
@@ -63,6 +71,8 @@
 			children = (
 				9552406325CA9AB100EA1011 /* ContentView.swift */,
 				9552407125CAC67400EA1011 /* BLE */,
+				9528A16A25D03DA500B51649 /* DetailTabView.swift */,
+				95687E8E26444EB700C9116D /* Reader */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -72,10 +82,20 @@
 			children = (
 				95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */,
 				9552407525CC54B100EA1011 /* PeripheralDetail.swift */,
-				9528A16A25D03DA500B51649 /* DetailTabView.swift */,
-				9528A17525D0560B00B51649 /* ReaderTab.swift */,
 			);
 			path = BLE;
+			sourceTree = "<group>";
+		};
+		95687E8E26444EB700C9116D /* Reader */ = {
+			isa = PBXGroup;
+			children = (
+				9528A17525D0560B00B51649 /* ReaderTab.swift */,
+				95687E8F26444F1000C9116D /* ReaderSetting.swift */,
+				95687E9126444FEB00C9116D /* ReaderInventory.swift */,
+				95687E95264450E600C9116D /* ReadTagsData.swift */,
+				95687E93264450B300C9116D /* RecordMonitor.swift */,
+			);
+			path = Reader;
 			sourceTree = "<group>";
 		};
 		95B368A825BF2F6D0026EC88 = {
@@ -187,6 +207,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				95687E9226444FEB00C9116D /* ReaderInventory.swift in Sources */,
+				95687E94264450B300C9116D /* RecordMonitor.swift in Sources */,
+				95687E96264450E600C9116D /* ReadTagsData.swift in Sources */,
 				9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */,
 				95492EB825E3DEF900ECE3FF /* reader_cmd.swift in Sources */,
 				95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */,
@@ -194,6 +217,7 @@
 				9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */,
 				9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */,
 				9580C65F262574B8008EA64D /* readerAct.swift in Sources */,
+				95687E9026444F1000C9116D /* ReaderSetting.swift in Sources */,
 				95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */,
 				9552406625CA9AB100EA1011 /* ContentView.swift in Sources */,
 			);

@@ -63,6 +63,7 @@ struct BLEScanner_Alert: View {
                         Divider()
                             .frame(width: geometry.size.width - 60)
                     }
+//                    .onDrag(<#T##data: () -> NSItemProvider##() -> NSItemProvider#>)
                 }
                 //                List{
                 //                    ForEach(0..<ble.peripherals.count, id: \.self) { index in
