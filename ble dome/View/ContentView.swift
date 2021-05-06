@@ -41,7 +41,7 @@ struct ContentView: View {
                                             EmptyView()
                                         })
                                 }
-                                Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+                                Text("Setting")
                                     .onTapGesture(perform: {
                                         if let index = ble.peripherals.firstIndex(where: {$0.State == 2}){
                                             Scanner_longpressed = true
@@ -49,69 +49,69 @@ struct ContentView: View {
                                         }
                                     })
                             }
-                            Button(action: {
-                                self.location.start()
-                                var counter : Int = 0
-                                Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
-                                    Latitude = Float(self.location.lastLocation?.coordinate.latitude ?? 00)
-                                    Longitude = Float(self.location.lastLocation?.coordinate.longitude ?? 00)
-                                    counter += 1
-                                    if location.LocationIsUpdate || counter > 10 {
-                                        self.location.stop()
-                                        timer.invalidate()
-                                        if !(counter > 10){
-                                            print("LatitudeInByte: \(Data(Latitude.bytes).hexEncodedString()) LongitudeInByte: \(Data(Longitude.bytes).hexEncodedString())")
-                                        }
-                                    }
-                                }
-                            }) {
-                                Text("Get Location")
-                                    .bold()
-                                    .font(.headline)
-                            }
-                            Divider()
-                            HStack{
-                                Text("Latitude:")
-                                    .font(.headline)
-                                Text("\(Data(Latitude.bytes).hexEncodedString())")
-                                Spacer()
-                                Divider()
-                                    .frame(height: 20)
-                                Text("\(Data(Latitude.bytes).withUnsafeBytes{$0.load(fromByteOffset: 0, as: Float.self)})")
-                                Spacer()
-                            }
-                            .frame(width: geometry.size.width - 20)
-                            Divider()
-                            HStack{
-                                Text("Longitude:")
-                                    .font(.headline)
-                                Text("\(Data(Longitude.bytes).hexEncodedString())")
-                                Spacer()
-                                Divider()
-                                    .frame(height: 20)
-                                Text("\(Data(Longitude.bytes).withUnsafeBytes{$0.load(as: Float.self)})")
-                                Spacer()
-                            }
-                            .frame(width: geometry.size.width - 20)
-                            Divider()
-                            HStack{
-                                Text("Num:")
-                                    .font(.headline)
-                                Text("\(Data(Int16(-255).bytes).hexEncodedString())")
-                                Spacer()
-                                Divider()
-                                    .frame(height: 20)
-                                Text("\(Int16(bigEndian: Data(Int16(-255).bytes).withUnsafeBytes{$0.load(as: Int16.self)}))")
-                                Spacer()
-                                
-                            }
+//                            Button(action: {
+//                                self.location.start()
+//                                var counter : Int = 0
+//                                Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
+//                                    Latitude = Float(self.location.lastLocation?.coordinate.latitude ?? 00)
+//                                    Longitude = Float(self.location.lastLocation?.coordinate.longitude ?? 00)
+//                                    counter += 1
+//                                    if location.LocationIsUpdate || counter > 10 {
+//                                        self.location.stop()
+//                                        timer.invalidate()
+//                                        if !(counter > 10){
+//                                            print("LatitudeInByte: \(Data(Latitude.bytes).hexEncodedString()) LongitudeInByte: \(Data(Longitude.bytes).hexEncodedString())")
+//                                        }
+//                                    }
+//                                }
+//                            }) {
+//                                Text("Get Location")
+//                                    .bold()
+//                                    .font(.headline)
+//                            }
+//                            Divider()
+//                            HStack{
+//                                Text("Latitude:")
+//                                    .font(.headline)
+//                                Text("\(Data(Latitude.bytes).hexEncodedString())")
+//                                Spacer()
+//                                Divider()
+//                                    .frame(height: 20)
+//                                Text("\(Data(Latitude.bytes).withUnsafeBytes{$0.load(fromByteOffset: 0, as: Float.self)})")
+//                                Spacer()
+//                            }
+//                            .frame(width: geometry.size.width - 20)
+//                            Divider()
+//                            HStack{
+//                                Text("Longitude:")
+//                                    .font(.headline)
+//                                Text("\(Data(Longitude.bytes).hexEncodedString())")
+//                                Spacer()
+//                                Divider()
+//                                    .frame(height: 20)
+//                                Text("\(Data(Longitude.bytes).withUnsafeBytes{$0.load(as: Float.self)})")
+//                                Spacer()
+//                            }
+//                            .frame(width: geometry.size.width - 20)
+//                            Divider()
+//                            HStack{
+//                                Text("Num:")
+//                                    .font(.headline)
+//                                Text("\(Data(Int16(-255).bytes).hexEncodedString())")
+//                                Spacer()
+//                                Divider()
+//                                    .frame(height: 20)
+//                                Text("\(Int16(bigEndian: Data(Int16(-255).bytes).withUnsafeBytes{$0.load(as: Int16.self)}))")
+//                                Spacer()
+//
+//                            }
                         }
                         .tabItem{
                             Image(systemName: "house")
                             Text("Home")
                         }
                     }
-                    .navigationTitle("Test")
+                    .navigationTitle("Home")
                     .navigationBarItems(trailing:
                                             Button(action: {isScanner_trigged = true}) {
                                                 Text("Scanner")

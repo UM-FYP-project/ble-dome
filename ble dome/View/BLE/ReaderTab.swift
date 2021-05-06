@@ -16,52 +16,51 @@ struct ReaderTab: View {
     @EnvironmentObject var location : LocationManager
     var geometry : GeometryProxy
     @State var Selected = 0
-//    @State var isInventory = false // Reader Inverntorying or not
+    //    @State var isInventory = false // Reader Inverntorying or not
     // data Write
-//    @State var MatchState : Int = 0
+    //    @State var MatchState : Int = 0
     var body: some View {
-            ZStack() {
-                VStack{
-                    Picker(selection: $Selected, label: Text("Reader Picker")) {
-                        Text("Setting").tag(0)
-                        Text("Inventory").tag(1)
-                        Text("Read").tag(2)
-                        Text("Write").tag(3)
-                        Text("Monitor").tag(4)
+        ZStack() {
+            VStack{
+                Picker(selection: $Selected, label: Text("Reader Picker")) {
+                    Text("Setting").tag(0)
+                    Text("Inventory").tag(1)
+                    Text("Read").tag(2)
+                    Text("Write").tag(3)
+                    Text("Monitor").tag(4)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .frame(width: geometry.size.width - 20)
+                ScrollView {
+                    if Selected == 0{
+                        ReaderSetting(geometry: geometry)
+                            .environmentObject(reader)
+                            .environmentObject(readeract)
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .frame(width: geometry.size.width - 20)
-                    ScrollView {
-                        if Selected == 0{
-                            ReaderSetting(geometry: geometry)
-                                .environmentObject(reader)
-                                .environmentObject(readeract)
-                            
-                        }
-                        else if Selected == 1{
-                            ReaderInventory(geometry: geometry, isInventory: $readeract.isInventory, Realtime_Inventory_Toggle: $readeract.RealtimeInventory_Toggle)
-                                .environmentObject(reader)
-                                .environmentObject(readeract)
-
-                        }
-                        else if Selected == 2{
-                            ReadTags_data(geometry: geometry)
-                                .environmentObject(reader)
-                                .environmentObject(readeract)
-                        }
-                        else if Selected == 3{
-                            Reader_WriteData(geometry: geometry)
-                                .environmentObject(reader)
-                                .environmentObject(readeract)
-                                .disabled(reader.Tags.isEmpty)
-                        }
-                        else if Selected == 4{
-                            Record_Monitor(geometry: geometry)
-                                .environmentObject(reader)
-                        }
+                    else if Selected == 1{
+                        ReaderInventory(geometry: geometry, isInventory: $readeract.isInventory, Realtime_Inventory_Toggle: $readeract.RealtimeInventory_Toggle)
+                            .environmentObject(reader)
+                            .environmentObject(readeract)
+                        
+                    }
+                    else if Selected == 2{
+                        ReadTags_data(geometry: geometry)
+                            .environmentObject(reader)
+                            .environmentObject(readeract)
+                    }
+                    else if Selected == 3{
+                        Reader_WriteData(geometry: geometry)
+                            .environmentObject(reader)
+                            .environmentObject(readeract)
+                            .disabled(reader.Tags.isEmpty)
+                    }
+                    else if Selected == 4{
+                        Record_Monitor(geometry: geometry)
+                            .environmentObject(reader)
                     }
                 }
             }
+        }
     }
 }
 
@@ -73,104 +72,104 @@ struct ReaderSetting: View {
     @State var Outpower_feedback : Int?
     @State var ErrorStr = [String]()
     var body: some View {
-            ZStack{
-                VStack(alignment: .center){
-                    HStack{
-                        Text("Reset Reader")
-                            .font(.headline)
-                        Spacer()
-                        Button(action: {
-                            let cmd = reader.cmd_reset()
-                            cmdtransitor(cmd: cmd)
-                        }) {
-                            Text("Reset")
-                                .foregroundColor(.blue)
-                                .font(.headline)
-                        }
-                    }
-                    .frame(width: geometry.size.width - 20)
-                    Divider()
-                    HStack{
-                        Text("Set Baudrate")
-                            .font(.headline)
-                        Spacer()
-                        Text("\(readeract.BaudrateCmdinStr[readeract.SelectedBaudrate])")
-                            .font(.headline)
-                            .frame(width: 120, height: 30)
-                            .background(Color.gray.opacity(0.15))
-                            .cornerRadius(10)
-                            .onTapGesture {
-                                readeract.SelectedBaudrate_picker = true
-                            }
-                        Button(action: {
-                            let cmd : [UInt8] = reader.cmd_set_baudrate(baudrate_para: readeract.BaudrateCmdinByte[readeract.SelectedBaudrate])
-//                            var feedback = [UInt8]()
-                            cmdtransitor(cmd: cmd)
-//                            ble.cmd2reader(cmd: cmd)
-//                            reader.Btye_Recorder(defined: 1, byte: cmd)
-                        }) {
-                            Text("Set")
-                                .foregroundColor(.blue)
-                                .font(.headline)
-                        }
-                    }
-                    .frame(width: geometry.size.width - 20)
-                    Divider()
-                    HStack{
-                        Text("Set Power")
-                            .font(.headline)
-                            .frame(width: 120, height: 30,alignment: .leading)
-                        Spacer()
-                        Text("\(readeract.Outpower[readeract.SelectedPower])dBm")
-                            .font(.headline)
-                            .frame(width: 120, height: 30)
-                            .background(Color.gray.opacity(0.15))
-                            .cornerRadius(10)
-                            .onTapGesture {
-                                readeract.SelectedPower_picker = true
-                            }
-                        Button(action: {
-                            let cmd : [UInt8] = reader.cmd_set_output_power(output_power: readeract.Outpower[readeract.SelectedPower])
-                            cmdtransitor(cmd: cmd)
-                        }) {
-                            Text("Set")
-                                .foregroundColor(.blue)
-                                .font(.headline)
-                        }
-                    }
-                    .frame(width: geometry.size.width - 20)
-                    Divider()
-                    HStack{
-                        Text("Get Power")
-                            .font(.headline)
-                            .frame(width: 120, height: 30,alignment: .leading)
-                        Spacer()
-                        if Outpower_feedback != nil {
-                            Text("\(Outpower_feedback!)dBm")
-                                .frame(width: 120, height: 30, alignment: .center)
-                                .font(.headline)
-                        }
-                        else{
-                            Text("")
-                                .frame(width: 120, height: 30, alignment: .center)
-                        }
-                        Button(action: {
-                            let cmd : [UInt8] = reader.cmd_get_output_power()
-                            cmdtransitor(cmd: cmd)
-                        }) {
-                            Text("Get")
-                                .foregroundColor(.blue)
-                                .font(.headline)
-                        }
-                    }
-                    .frame(width: geometry.size.width - 20)
-                    Divider()
-                    ErrorList
+        ZStack{
+            VStack(alignment: .center){
+                HStack{
+                    Text("Reset Reader")
+                        .font(.headline)
                     Spacer()
+                    Button(action: {
+                        let cmd = reader.cmd_reset()
+                        cmdtransitor(cmd: cmd)
+                    }) {
+                        Text("Reset")
+                            .foregroundColor(.blue)
+                            .font(.headline)
+                    }
                 }
-//                .frame(width: geometry.size.width - 20)
+                .frame(width: geometry.size.width - 20)
+                Divider()
+                HStack{
+                    Text("Set Baudrate")
+                        .font(.headline)
+                    Spacer()
+                    Text("\(readeract.BaudrateCmdinStr[readeract.SelectedBaudrate])")
+                        .font(.headline)
+                        .frame(width: 120, height: 30)
+                        .background(Color.gray.opacity(0.15))
+                        .cornerRadius(10)
+                        .onTapGesture {
+                            readeract.SelectedBaudrate_picker = true
+                        }
+                    Button(action: {
+                        let cmd : [UInt8] = reader.cmd_set_baudrate(baudrate_para: readeract.BaudrateCmdinByte[readeract.SelectedBaudrate])
+                        //                            var feedback = [UInt8]()
+                        cmdtransitor(cmd: cmd)
+                        //                            ble.cmd2reader(cmd: cmd)
+                        //                            reader.Btye_Recorder(defined: 1, byte: cmd)
+                    }) {
+                        Text("Set")
+                            .foregroundColor(.blue)
+                            .font(.headline)
+                    }
+                }
+                .frame(width: geometry.size.width - 20)
+                Divider()
+                HStack{
+                    Text("Set Power")
+                        .font(.headline)
+                        .frame(width: 120, height: 30,alignment: .leading)
+                    Spacer()
+                    Text("\(readeract.Outpower[readeract.SelectedPower])dBm")
+                        .font(.headline)
+                        .frame(width: 120, height: 30)
+                        .background(Color.gray.opacity(0.15))
+                        .cornerRadius(10)
+                        .onTapGesture {
+                            readeract.SelectedPower_picker = true
+                        }
+                    Button(action: {
+                        let cmd : [UInt8] = reader.cmd_set_output_power(output_power: readeract.Outpower[readeract.SelectedPower])
+                        cmdtransitor(cmd: cmd)
+                    }) {
+                        Text("Set")
+                            .foregroundColor(.blue)
+                            .font(.headline)
+                    }
+                }
+                .frame(width: geometry.size.width - 20)
+                Divider()
+                HStack{
+                    Text("Get Power")
+                        .font(.headline)
+                        .frame(width: 120, height: 30,alignment: .leading)
+                    Spacer()
+                    if Outpower_feedback != nil {
+                        Text("\(Outpower_feedback!)dBm")
+                            .frame(width: 120, height: 30, alignment: .center)
+                            .font(.headline)
+                    }
+                    else{
+                        Text("")
+                            .frame(width: 120, height: 30, alignment: .center)
+                    }
+                    Button(action: {
+                        let cmd : [UInt8] = reader.cmd_get_output_power()
+                        cmdtransitor(cmd: cmd)
+                    }) {
+                        Text("Get")
+                            .foregroundColor(.blue)
+                            .font(.headline)
+                    }
+                }
+                .frame(width: geometry.size.width - 20)
+                Divider()
+                ErrorList
+                Spacer()
             }
-            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+            //                .frame(width: geometry.size.width - 20)
+        }
+        .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
     }
     
     var ErrorList: some View {
@@ -235,122 +234,131 @@ struct ReaderInventory: View{
     @State var ErrorString = "nil"
     @State var ErrorStr : String = ""
     var body: some View {
-            ZStack{
-                VStack(alignment: .center){
-                    Toggle(isOn: $Realtime_Inventory_Toggle) {
-                        Text("Realtime Inventory")
+        ZStack{
+            VStack(alignment: .center){
+                Toggle(isOn: $Realtime_Inventory_Toggle) {
+                    Text("Realtime Inventory")
+                        .font(.headline)
+                }
+                .disabled(isInventory)
+                Divider()
+                HStack{
+                    Text("Inventory Speed:")
+                        .font(.headline)
+                    Divider()
+                        .frame(height: 30)
+                    //                        Text("\(readeract.inventorySpeed[readeract.inventorySpeed_Selected])")
+                    //                            .font(.headline)
+                    //                            .frame(width: 60, height: 30)
+                    //                            .background(Color.gray.opacity(0.5))
+                    //                            .cornerRadius(10)
+                    //                            .onTapGesture {
+                    //                                readeract.inventorySpeed_picker = true
+                    //                            }
+                    Button(action: {self.readeract.inventorySpeed -= 1}) {
+                        Text("-")
+                            .bold()
                             .font(.headline)
                     }
-                    .disabled(isInventory)
-                    Divider()
-                    HStack{
-                        Text("Inventory Speed:")
+                    .frame(width: 30)
+                    .disabled(readeract.inventorySpeed < 1)
+                    TextField("", value: $readeract.inventorySpeed, formatter: NumberFormatter())
+                        .onReceive(Just(readeract.inventorySpeed), perform: {_ in
+                            if readeract.inventorySpeed > 255 {
+                                self.readeract.inventorySpeed = 255
+                            }
+                            else if readeract.inventorySpeed < 0 {
+                                self.readeract.inventorySpeed = 0
+                            }
+                        })
+                        .multilineTextAlignment(.center)
+                        .keyboardType(.numbersAndPunctuation)
+                        .frame(maxWidth: 50)
+                    Button(action: {self.readeract.inventorySpeed += 1}) {
+                        Text("+")
+                            .bold()
                             .font(.headline)
-                        Divider()
-                            .frame(height: 30)
-//                        Text("\(readeract.inventorySpeed[readeract.inventorySpeed_Selected])")
-//                            .font(.headline)
-//                            .frame(width: 60, height: 30)
-//                            .background(Color.gray.opacity(0.5))
-//                            .cornerRadius(10)
-//                            .onTapGesture {
-//                                readeract.inventorySpeed_picker = true
-//                            }
-                            Button(action: {self.readeract.inventorySpeed -= 1}) {
-                                Text("-")
-                                    .bold()
-                                    .font(.headline)
-                            }
-                            .frame(width: 30)
-                            .disabled(readeract.inventorySpeed < 1)
-                            TextField("", value: $readeract.inventorySpeed, formatter: NumberFormatter())
-                                .onReceive(Just(readeract.inventorySpeed), perform: {_ in
-                                    if readeract.inventorySpeed > 255 {
-                                        self.readeract.inventorySpeed = 255
-                                    }
-                                    else if readeract.inventorySpeed < 0 {
-                                        self.readeract.inventorySpeed = 0
-                                    }
-                                })
-                                .multilineTextAlignment(.center)
-                                .keyboardType(.numbersAndPunctuation)
-                                .frame(maxWidth: 50)
-                            Button(action: {self.readeract.inventorySpeed += 1}) {
-                                Text("+")
-                                    .bold()
-                                    .font(.headline)
-                            }
-                            .disabled(readeract.inventorySpeed > 255)
-                            .frame(width: 30)
-                        Spacer()
-                        Button(action: {
+                    }
+                    .disabled(readeract.inventorySpeed > 255)
+                    .frame(width: 30)
+                    Spacer()
+                    Button(action: {
+                        if !(ble.peripherals.filter({$0.State == 2}).count < 1){
                             isInventory.toggle()
+                        }
+                        else {
+                            isInventory = false
+                        }
+                        if isInventory
+                        {
                             if !Realtime_Inventory_Toggle{
-//                                EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
+                                //                                EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
                                 EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readeract.inventorySpeed)))
                             }
                             else {
-//                                EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
+                                //                                EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
                                 EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readeract.inventorySpeed)))
                             }
-                            Inventory_button_str = (isInventory ? "Stop" : "Start")
-                        }) {
-                            Text(Inventory_button_str)
-                                .bold()
                         }
+                        
+                        Inventory_button_str = (isInventory ? "Stop" : "Start")
+                    }) {
+                        Text(Inventory_button_str)
+                            .bold()
                     }
-                    .frame(height: 30, alignment: .center)
-                    Divider()
-                    HStack{
-                        Text("Inventoried:")
-                            .font(.headline)
-                        Spacer()
-                        if ErrorString != "nil" {
-                            Text("Error: \(ErrorString)")
-                                .font(.headline)
-                                .foregroundColor(.red)
-                        }
-                        else {
-                            Text("\(reader.tagsCount) Tags")
-                                .font(.headline)
-                        }
-                    }
-                    .frame(height: 30, alignment: .center)
-                    Divider()
-                    HStack{
-                        Text("Buffer:")
-                            .font(.headline)
-                        Spacer()
-                        Button(action: {
-                                get_Buffer()
-
-                        }) {
-                            Text(Buffer_button_str)
-                                .bold()
-                        }
-                        .disabled(Realtime_Inventory_Toggle || reader.tagsCount <= 0 || Buffer_button_Bool || isInventory)
-                        Divider()
-                        Button(action: {
-                            let cmd : [UInt8] = reader.cmd_clear_inventory_buffer()
-                            ble.cmd2reader(cmd: cmd)
-                            reader.Btye_Recorder(defined: 1, byte: cmd)
-                            reader.tagsCount = 0
-                        }) {
-                            Text("Clear")
-                                .bold()
-                        }
-                    }
-                    .frame(height: 30, alignment: .center)
-                    Divider()
-                    Bufferlist
-                    Spacer()
                 }
-                .frame(width: geometry.size.width - 20)
+                .frame(height: 30, alignment: .center)
+                Divider()
+                HStack{
+                    Text("Inventoried:")
+                        .font(.headline)
+                    Spacer()
+                    if ErrorString != "nil" {
+                        Text("Error: \(ErrorString)")
+                            .font(.headline)
+                            .foregroundColor(.red)
+                    }
+                    else {
+                        Text("\(reader.tagsCount) Tags")
+                            .font(.headline)
+                    }
+                }
+                .frame(height: 30, alignment: .center)
+                Divider()
+                HStack{
+                    Text("Buffer:")
+                        .font(.headline)
+                    Spacer()
+                    Button(action: {
+                        get_Buffer()
+                        
+                    }) {
+                        Text(Buffer_button_str)
+                            .bold()
+                    }
+                    .disabled(Realtime_Inventory_Toggle || reader.tagsCount <= 0 || Buffer_button_Bool || isInventory)
+                    Divider()
+                    Button(action: {
+                        let cmd : [UInt8] = reader.cmd_clear_inventory_buffer()
+                        ble.cmd2reader(cmd: cmd)
+                        reader.Btye_Recorder(defined: 1, byte: cmd)
+                        reader.tagsCount = 0
+                    }) {
+                        Text("Clear")
+                            .bold()
+                    }
+                }
+                .frame(height: 30, alignment: .center)
+                Divider()
+                Bufferlist
+                Spacer()
             }
-            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
-            .onAppear(perform: {
-                Inventory_button_str = (isInventory ? "Stop" : "Start")
-            })
+            .frame(width: geometry.size.width - 20)
+        }
+        .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+        .onAppear(perform: {
+            Inventory_button_str = (isInventory ? "Stop" : "Start")
+        })
     }
     
     var Bufferlist: some View {
@@ -472,30 +480,28 @@ struct Record_Monitor: View {
     @EnvironmentObject var reader:Reader
     var geometry : GeometryProxy
     var body: some View {
-//        GeometryReader{ geometry in
+        //        GeometryReader{ geometry in
         ZStack{
-            VStack(alignment: .center){
-                List{
-                    if !reader.BytesRecord.isEmpty {
-                        ForEach(0..<reader.BytesRecord.count, id: \.self){ index in
-//                            let Index = reader.Byte_Record.count - index
-                            let byte_record = reader.BytesRecord[reader.BytesRecord.count - 1 - index]
-                            let byte_str = Data(byte_record.Byte).hexEncodedString()
-                            VStack(alignment: .leading){
-                                Text(byte_record.Time)
-                                Text(byte_str)
-                                    .foregroundColor(byte_record.Defined == 1 ? .blue : .red)
-                            }
+            VStack{
+                if !reader.BytesRecord.isEmpty {
+                    ForEach (0..<reader.BytesRecord.count){ index in
+                        let record = reader.BytesRecord[reader.BytesRecord.count - 1 - index ]
+                        let byteStr = Data(record.Byte).hexEncodedString()
+                        HStack{
+                            Text("\(record.Time):")
+                            Spacer()
+                            Text(byteStr)
+                                .foregroundColor(record.Defined == 1 ? .blue : .red)
                         }
+                        Divider()
                     }
                 }
-                .listStyle(PlainListStyle())
-                Spacer()
             }
+            .frame(width: geometry.size.width - 20)
         }
         .frame(width: geometry.size.width, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
-//        }
     }
+    
 }
 
 struct ReadTags_data: View {
@@ -506,126 +512,126 @@ struct ReadTags_data: View {
     @State var ErrorStr : String = ""
     @State var list_show = false
     var body: some View {
-            ZStack{
-                VStack(alignment: .center){
-                    HStack{
-                        Text("Data Block")
-                            .font(.headline)
-                        Spacer()
-                        Text(readeract.DataCmdinStr[readeract.DataBlock_Selected])
-                            .font(.headline)
-                            .frame(width: 120, height: 30)
-                            .background(Color.gray.opacity(0.15))
-                            .cornerRadius(10)
-                            .onTapGesture {
-                                readeract.DataBlock_picker = true
-                            }
-                    }
-                    .frame(width: geometry.size.width - 20, height: 30)
-                    Divider()
-                    HStack{
-                        Text("Start Address:")
-                            .font(.headline)
-                        Spacer()
-//                        Text("\(readeract.DataByte[readeract.DataStart_Selected])bit")
-//                            .font(.headline)
-//                            .frame(width: 60, height: 30)
-//                            .background(Color.gray.opacity(0.15))
-//                            .cornerRadius(10)
-//                            .onTapGesture {
-//                                readeract.DataStart_picker = true
-//                            }
-                        Button(action: {self.readeract.DataStart -= 1}) {
-                            Text("-")
-                                .bold()
-                                .font(.headline)
+        ZStack{
+            VStack(alignment: .center){
+                HStack{
+                    Text("Data Block")
+                        .font(.headline)
+                    Spacer()
+                    Text(readeract.DataCmdinStr[readeract.DataBlock_Selected])
+                        .font(.headline)
+                        .frame(width: 120, height: 30)
+                        .background(Color.gray.opacity(0.15))
+                        .cornerRadius(10)
+                        .onTapGesture {
+                            readeract.DataBlock_picker = true
                         }
-                        .frame(width: 30)
-                        .disabled(readeract.DataStart < 1)
-                        TextField("", value: $readeract.DataStart, formatter: NumberFormatter())
-                            .onReceive(Just(readeract.DataStart), perform: {_ in
-                                if readeract.DataStart > 255 {
-                                    self.readeract.DataStart = 255
-                                }
-                                else if readeract.DataStart < 0 {
-                                    self.readeract.DataStart = 0
-                                }
-                            })
-                            .multilineTextAlignment(.center)
-                            .keyboardType(.numbersAndPunctuation)
-                            .frame(maxWidth: 50)
-                        Button(action: {self.readeract.DataStart += 1}) {
-                            Text("+")
-                                .bold()
-                                .font(.headline)
-                        }
-                        .disabled(readeract.DataStart > 255)
-                        .frame(width: 30)
-                    }
-                    .frame(width: geometry.size.width - 20, height: 30)
-                    Divider()
-                    HStack{
-                        Text("Data Len:")
+                }
+                .frame(width: geometry.size.width - 20, height: 30)
+                Divider()
+                HStack{
+                    Text("Start Address:")
+                        .font(.headline)
+                    Spacer()
+                    //                        Text("\(readeract.DataByte[readeract.DataStart_Selected])bit")
+                    //                            .font(.headline)
+                    //                            .frame(width: 60, height: 30)
+                    //                            .background(Color.gray.opacity(0.15))
+                    //                            .cornerRadius(10)
+                    //                            .onTapGesture {
+                    //                                readeract.DataStart_picker = true
+                    //                            }
+                    Button(action: {self.readeract.DataStart -= 1}) {
+                        Text("-")
                             .bold()
                             .font(.headline)
-                        Spacer()
-                        Button(action: {self.readeract.DataLen -= 1}) {
-                            Text("-")
-                                .bold()
-                                .font(.headline)
-                        }
-                        .frame(width: 30)
-                        .disabled(readeract.DataLen < 1)
-                        TextField("", value: $readeract.DataLen, formatter: NumberFormatter())
-                            .onReceive(Just(readeract.DataLen), perform: {_ in
-                                if readeract.DataLen > 255 {
-                                    self.readeract.DataLen = 255
-                                }
-                                else if readeract.DataLen < 0 {
-                                    self.readeract.DataLen = 0
-                                }
-                            })
-                            .multilineTextAlignment(.center)
-                            .keyboardType(.numbersAndPunctuation)
-                            .frame(maxWidth: 50)
-                        Button(action: {self.readeract.DataLen += 1}) {
-                            Text("+")
-                                .bold()
-                                .font(.headline)
-                        }
-                        .disabled(readeract.DataLen > 255)
-                        .frame(width: 30)
-//                        Text("\(readeract.DataByte[readeract.DataLen_Selected])bit")
-//                            .font(.headline)
-//                            .frame(width: 60, height: 30)
-//                            .background(Color.gray.opacity(0.15))
-//                            .cornerRadius(10)
-//                            .onTapGesture {
-//                                readeract.DataLen_picker = true
-//                            }
                     }
-                    Divider()
-                    HStack{
-                        Text("Data Read")
+                    .frame(width: 30)
+                    .disabled(readeract.DataStart < 1)
+                    TextField("", value: $readeract.DataStart, formatter: NumberFormatter())
+                        .onReceive(Just(readeract.DataStart), perform: {_ in
+                            if readeract.DataStart > 255 {
+                                self.readeract.DataStart = 255
+                            }
+                            else if readeract.DataStart < 0 {
+                                self.readeract.DataStart = 0
+                            }
+                        })
+                        .multilineTextAlignment(.center)
+                        .keyboardType(.numbersAndPunctuation)
+                        .frame(maxWidth: 50)
+                    Button(action: {self.readeract.DataStart += 1}) {
+                        Text("+")
+                            .bold()
                             .font(.headline)
-                        Spacer()
-                        Button(action: {
-                            ReadTags()
-                        }) {
-                            Text("Read")
-                        }
-                        .disabled(!(reader.tagsCount > 0))
                     }
-                    .frame(width: geometry.size.width - 20, height: 20, alignment: .center)
-                    Divider()
-                    Text("Data List")
-                        .bold()
-                    
-                    TagsList
+                    .disabled(readeract.DataStart > 255)
+                    .frame(width: 30)
                 }
-                .frame(width: geometry.size.width - 20)
+                .frame(width: geometry.size.width - 20, height: 30)
+                Divider()
+                HStack{
+                    Text("Data Len:")
+                        .bold()
+                        .font(.headline)
+                    Spacer()
+                    Button(action: {self.readeract.DataLen -= 1}) {
+                        Text("-")
+                            .bold()
+                            .font(.headline)
+                    }
+                    .frame(width: 30)
+                    .disabled(readeract.DataLen < 1)
+                    TextField("", value: $readeract.DataLen, formatter: NumberFormatter())
+                        .onReceive(Just(readeract.DataLen), perform: {_ in
+                            if readeract.DataLen > 255 {
+                                self.readeract.DataLen = 255
+                            }
+                            else if readeract.DataLen < 0 {
+                                self.readeract.DataLen = 0
+                            }
+                        })
+                        .multilineTextAlignment(.center)
+                        .keyboardType(.numbersAndPunctuation)
+                        .frame(maxWidth: 50)
+                    Button(action: {self.readeract.DataLen += 1}) {
+                        Text("+")
+                            .bold()
+                            .font(.headline)
+                    }
+                    .disabled(readeract.DataLen > 255)
+                    .frame(width: 30)
+                    //                        Text("\(readeract.DataByte[readeract.DataLen_Selected])bit")
+                    //                            .font(.headline)
+                    //                            .frame(width: 60, height: 30)
+                    //                            .background(Color.gray.opacity(0.15))
+                    //                            .cornerRadius(10)
+                    //                            .onTapGesture {
+                    //                                readeract.DataLen_picker = true
+                    //                            }
+                }
+                Divider()
+                HStack{
+                    Text("Data Read")
+                        .font(.headline)
+                    Spacer()
+                    Button(action: {
+                        ReadTags()
+                    }) {
+                        Text("Read")
+                    }
+                    .disabled(!(reader.tagsCount > 0))
+                }
+                .frame(width: geometry.size.width - 20, height: 20, alignment: .center)
+                Divider()
+                Text("Data List")
+                    .bold()
+                
+                TagsList
             }
-            .frame(width: geometry.size.width, height: geometry.size.height - 20, alignment: .center)
+            .frame(width: geometry.size.width - 20)
+        }
+        .frame(width: geometry.size.width, height: geometry.size.height - 20, alignment: .center)
     }
     
     var TagsList: some View {
@@ -659,7 +665,7 @@ struct ReadTags_data: View {
                         }
                     }
                 }
-
+                
             }
             .listStyle(PlainListStyle())
             .frame(width: geometry.size.width, height: geometry.size.height / 2 + 60)
@@ -732,19 +738,19 @@ struct Reader_WriteData: View{
                 }
                 .frame(width: geometry.size.width - 20)
                 Divider()
-//                HStack{
-//                    Text("Data Write")
-//                        .font(.headline)
-//                    Spacer()
-//                    Button(action: {
-//                        Match_ButtAct()
-//                    }){
-//                        Text("Write")
-//                    }
-//                    .disabled(readeract.MatchState != 2)
-//                }
-//                .frame(width: geometry.size.width - 20)
-//                Divider()
+                //                HStack{
+                //                    Text("Data Write")
+                //                        .font(.headline)
+                //                    Spacer()
+                //                    Button(action: {
+                //                        Match_ButtAct()
+                //                    }){
+                //                        Text("Write")
+                //                    }
+                //                    .disabled(readeract.MatchState != 2)
+                //                }
+                //                .frame(width: geometry.size.width - 20)
+                //                Divider()
                 feedbackStrList
                 TagData_Write(geometry: geometry)
                     .disabled(readeract.MatchState != 2)
@@ -778,7 +784,7 @@ struct Reader_WriteData: View{
         let cmd_Match : [UInt8] = reader.cmd_EPC_match(setEPC_mode: 0x00, EPC: EPC)
         let cmd_umMatch : [UInt8] = reader.cmd_EPC_match(setEPC_mode: 0x01, EPC: [])
         let cmd_getMatched : [UInt8] = [0xA0, 0x03, 0xFE, 0x86]
-//        ble.cmd2reader(cmd: cmd_Match)
+        //        ble.cmd2reader(cmd: cmd_Match)
         //        reader.Btye_Recorder(defined: 1, byte: cmd_Match)
         Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){ timer in
             if CmdState == 0 && readeract.MatchState == 0{ // Send Match Cmd
@@ -830,7 +836,7 @@ struct Reader_WriteData: View{
                     if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x86{
                         if feedback[4] == 0 {
                             if readeract.MatchState == 1 {
-//                                FeedbackStr.append("Matching Complete")
+                                //                                FeedbackStr.append("Matching Complete")
                             }
                             else {
                                 FeedbackStr.append("Unmatching EPC Fail")
@@ -842,7 +848,7 @@ struct Reader_WriteData: View{
                                 FeedbackStr.append("Matching EPC Fail")
                             }
                             else {
-//                                FeedbackStr.append("Unmatching Complete")
+                                //                                FeedbackStr.append("Unmatching Complete")
                             }
                             readeract.MatchState = 0
                         }
@@ -870,13 +876,13 @@ struct TagData_Write: View{
     @EnvironmentObject var location : LocationManager
     @EnvironmentObject var readeract : readerAct
     @State var funcSelected : Int = 4
-//    @State var floor : Int = 0
-//    @State var Seq : UInt = 0
+    //    @State var floor : Int = 0
+    //    @State var Seq : UInt = 0
     @State var inforSelected : Int = 4
     @State var Latitude : Float = 0
     @State var Longitude : Float = 0
-//    @State var Xcoordinate : String = "0.0"
-//    @State var Ycoordinate : String = "0.0"
+    //    @State var Xcoordinate : String = "0.0"
+    //    @State var Ycoordinate : String = "0.0"
     @State var writeAlert : Bool = false
     @State var AlertStr : String = ""
     @State var StartAdd : Int = 0
@@ -996,11 +1002,11 @@ struct TagData_Write: View{
                     .cancel(),
                 secondaryButton:
                     .default(
-                    Text("Confirm to Write"),
-                    action: {
-                        WirtetoTag()
-                    }
-                )
+                        Text("Confirm to Write"),
+                        action: {
+                            WirtetoTag()
+                        }
+                    )
             )}
     }
     
@@ -1091,10 +1097,10 @@ struct TagData_Write: View{
                     }
                     .disabled(Steps < 1)
                     .frame(width: 30)
-//                    Text("\(Steps)")
-//                        .bold()
-//                        .font(.headline)
-//                        .frame(width: 30)
+                    //                    Text("\(Steps)")
+                    //                        .bold()
+                    //                        .font(.headline)
+                    //                        .frame(width: 30)
                     TextField("", value: $Steps, formatter: NumberFormatter())
                         .onReceive(Just(Steps), perform: {_ in
                             if Steps > 255 {
@@ -1277,54 +1283,54 @@ struct Reader_Picker: View{
     @Binding var Selected : Int
     @Binding var enable : Bool
     var body: some View {
-//        ZStack{
-            let picker_text : [String] = picker.compactMap {String(describing: $0)}
-            VStack{
-                VStack(alignment: .center){
-                    Text(title)
-                        .font(.headline)
-                        .padding()
-                    Picker(selection: self.$Selected, label: Text(label)) {
-                        ForEach(picker_text.indices) { (index) in
-                            Text("\(picker_text[index])")
-                        }
-                    }
+        //        ZStack{
+        let picker_text : [String] = picker.compactMap {String(describing: $0)}
+        VStack{
+            VStack(alignment: .center){
+                Text(title)
+                    .font(.headline)
                     .padding()
-                    .clipped()
+                Picker(selection: self.$Selected, label: Text(label)) {
+                    ForEach(picker_text.indices) { (index) in
+                        Text("\(picker_text[index])")
+                    }
                 }
+                .padding()
+                .clipped()
+            }
+            .background(RoundedRectangle(cornerRadius: 10)
+                            .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
+            VStack{
+                Button(action: {self.enable = false}) {
+                    Text("OK")
+                        .bold()
+                        .font(.headline)
+                }
+                .padding()
+                .frame(maxWidth: geometry.size.width - 30)
                 .background(RoundedRectangle(cornerRadius: 10)
                                 .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
-                VStack{
-                    Button(action: {self.enable = false}) {
-                        Text("OK")
-                            .bold()
-                            .font(.headline)
-                    }
-                    .padding()
-                    .frame(maxWidth: geometry.size.width - 30)
-                    .background(RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
-                }
             }
-            .frame(maxWidth: geometry.size.width - 30)
-//        }
+        }
+        .frame(maxWidth: geometry.size.width - 30)
+        //        }
         .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
     }
 }
 
 
 struct ReaderTab_Previews: PreviewProvider {
-//    @State var floor = 0
+    //    @State var floor = 0
     static var previews: some View {
         Group {
-//            ReaderTab()
+            //            ReaderTab()
             GeometryReader {geometry in
                 TagData_Write(geometry: geometry)
                     .environmentObject(readerAct())
-//                Reader_WriteData(geometry: geometry)
-    //            ReaderInventory()
-//                ReaderSetting(geometry: geometry)
-//                ReaderInventory()
+                //                Reader_WriteData(geometry: geometry)
+                //            ReaderInventory()
+                //                ReaderSetting(geometry: geometry)
+                //                ReaderInventory()
                 //ReadTags_data()
             }
         }

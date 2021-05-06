@@ -213,6 +213,7 @@ class Reader: NSObject, ObservableObject{
             0x56:"Spectrum requlation wrong",
             0x57:"Output power is too low"
         ]
+        print(error_code[code] ?? "nil" )
         return error_code[code] ?? "nil"
     }
         
@@ -381,7 +382,7 @@ class Reader: NSObject, ObservableObject{
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "nl_NL")
 //        formatter.dateFormat = "(Z'Z')MM-dd_'T'HH:mm:ss.SSS"
-        formatter.dateFormat = "'T_'mm:ss.SSS"
+        formatter.dateFormat = "HH:mm:ss.SSS"
         let time_string = formatter.string(from: current_time)
         let record = byteRecord(id: BytesRecord.count, Time: time_string, Defined: defined, Byte: byte)
         BytesRecord.append(record)

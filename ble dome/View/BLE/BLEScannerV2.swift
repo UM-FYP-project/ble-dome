@@ -12,14 +12,11 @@ struct BLEScanner_Alert: View {
     @Binding var Enable : Bool
     var geometry : GeometryProxy
     var body: some View {
-        
         VStack(alignment:.center){
             Text("Scanner")
                 .bold()
                 .font(.title)
             Text("Scan and Connect Deivce")
-//            PeripheralList(geometry: geometry)
-//                .environmentObject(ble)
             PeripheralList
             Divider()
                 .frame(width: geometry.size.width - 60)
@@ -48,7 +45,7 @@ struct BLEScanner_Alert: View {
     var PeripheralList: some View {
         VStack{
             if !ble.peripherals.isEmpty {
-                List{
+                ScrollView{
                     ForEach(0..<ble.peripherals.count, id: \.self) { index in
                         let peripheral = ble.peripherals[index]
                         HStack{
@@ -61,14 +58,40 @@ struct BLEScanner_Alert: View {
                             BLEConnect_button(name: peripheral.name)
                                 .frame(alignment: .trailing)
                         }
-                        .listRowBackground(RoundedRectangle(cornerRadius: 0)
-                                            .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
+                        .padding()
+                        .frame(width: geometry.size.width - 80, height: 50)
+                        Divider()
+                            .frame(width: geometry.size.width - 60)
                     }
                 }
-                .colorMultiply(Color.white.opacity(0.8))
-                .shadow(radius: 1)
+                //                List{
+                //                    ForEach(0..<ble.peripherals.count, id: \.self) { index in
+                //                        let peripheral = ble.peripherals[index]
+                //                        HStack{
+                //                            VStack(alignment: .leading){
+                //                                Text(peripheral.name)
+                //                                    .bold()
+                //                                Text("Rssi: \(peripheral.rssi)")
+                //                            }
+                //                            Spacer()
+                //                            BLEConnect_button(name: peripheral.name)
+                //                                .frame(alignment: .trailing)
+                //                        }
+                //                        .listRowBackground(RoundedRectangle(cornerRadius: 0)
+                //                                            .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
+                //                    }
+                //                }
+                //                .colorMultiply(Color.white.opacity(0.8))
+                //                .shadow(radius: 1)
+            }
+            else {
+                Text("No Devices are Scranned")
+                    .font(.title2)
+                    .bold()
             }
         }
+        //        .background(Rectangle()
+        //                        .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
     }
 }
 
