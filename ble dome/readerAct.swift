@@ -31,7 +31,7 @@ class readerAct: ObservableObject{
     @Published var DataBlock_picker = false
     @Published var DataBlock_Selected = 1
     @Published var DataStart = 2
-    @Published var DataLen = 22
+    @Published var DataLen = 26
 //    @Published var DataStart_picker = false
 //    @Published var DataStart_Selected = 2
 //    @Published var DataLen_picker = false

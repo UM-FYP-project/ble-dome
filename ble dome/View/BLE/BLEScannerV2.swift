@@ -86,7 +86,7 @@ struct BLEScanner_Alert: View {
                 //                .shadow(radius: 1)
             }
             else {
-                Text("No Devices are Scranned")
+                Text("\nPlease Turn On  Device")
                     .font(.title2)
                     .bold()
             }

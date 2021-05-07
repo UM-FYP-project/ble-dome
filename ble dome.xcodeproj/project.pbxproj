@@ -18,6 +18,7 @@
 		95687E9226444FEB00C9116D /* ReaderInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E9126444FEB00C9116D /* ReaderInventory.swift */; };
 		95687E94264450B300C9116D /* RecordMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E93264450B300C9116D /* RecordMonitor.swift */; };
 		95687E96264450E600C9116D /* ReadTagsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E95264450E600C9116D /* ReadTagsData.swift */; };
+		95687E98264464FC00C9116D /* ReaderWriteData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E97264464FC00C9116D /* ReaderWriteData.swift */; };
 		9580C65F262574B8008EA64D /* readerAct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9580C65E262574B8008EA64D /* readerAct.swift */; };
 		95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */; };
 		95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368B825BF2F700026EC88 /* Assets.xcassets */; };
@@ -37,6 +38,7 @@
 		95687E9126444FEB00C9116D /* ReaderInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderInventory.swift; sourceTree = "<group>"; };
 		95687E93264450B300C9116D /* RecordMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMonitor.swift; sourceTree = "<group>"; };
 		95687E95264450E600C9116D /* ReadTagsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadTagsData.swift; sourceTree = "<group>"; };
+		95687E97264464FC00C9116D /* ReaderWriteData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderWriteData.swift; sourceTree = "<group>"; };
 		9580C65E262574B8008EA64D /* readerAct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readerAct.swift; sourceTree = "<group>"; };
 		95B368B125BF2F6D0026EC88 /* ble dome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ble dome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ble_domeApp.swift; sourceTree = "<group>"; };
@@ -94,6 +96,7 @@
 				95687E9126444FEB00C9116D /* ReaderInventory.swift */,
 				95687E95264450E600C9116D /* ReadTagsData.swift */,
 				95687E93264450B300C9116D /* RecordMonitor.swift */,
+				95687E97264464FC00C9116D /* ReaderWriteData.swift */,
 			);
 			path = Reader;
 			sourceTree = "<group>";
@@ -213,6 +216,7 @@
 				9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */,
 				95492EB825E3DEF900ECE3FF /* reader_cmd.swift in Sources */,
 				95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */,
+				95687E98264464FC00C9116D /* ReaderWriteData.swift in Sources */,
 				95DF4D91263D65E40022EC92 /* location.swift in Sources */,
 				9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */,
 				9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */,

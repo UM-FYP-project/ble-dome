@@ -87,17 +87,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     }
     //Discover device
     func scan_devices(){
-//        if Connected_Peripheral != nil {
-//            if Connected_Peripheral!.State == 2 {
-//                peripherals.removeAll()
-//                peripherals.append(Connected_Peripheral!)
-//                peripherals[0].id = 0
-//            }
-//            else {
-//                Connected_Peripheral = nil
-//                peripherals.removeAll()
-//            }
-//        }
         if let index = peripherals.firstIndex(where: {$0.State != 0}){
             let peripheral : Peripheral = peripherals[index]
             peripherals.removeAll()

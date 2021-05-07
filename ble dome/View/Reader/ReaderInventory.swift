@@ -76,18 +76,14 @@ struct ReaderInventory: View{
                         else {
                             isInventory = false
                         }
-                        if isInventory
-                        {
-                            if !Realtime_Inventory_Toggle{
-                                //                                EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
-                                EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readeract.inventorySpeed)))
-                            }
-                            else {
-                                //                                EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
-                                EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readeract.inventorySpeed)))
-                            }
+                        if !Realtime_Inventory_Toggle{
+                            //                                EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
+                            EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readeract.inventorySpeed)))
                         }
-                        
+                        else {
+                            //                                EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
+                            EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readeract.inventorySpeed)))
+                        }
                         Inventory_button_str = (isInventory ? "Stop" : "Start")
                     }) {
                         Text(Inventory_button_str)
@@ -179,10 +175,7 @@ struct ReaderInventory: View{
                                     Text("RSSI:\(tag.RSSI)")
                                 }
                                 if NavTag != nil {
-                                    HStack{
-                                        Text("Floor:\(NavTag!.floor)/F")
-                                        Text("Infor:\(NavTag!.Infor)\(NavTag!.Seq) \(NavTag!.Step)")
-                                    }
+                                    Text("Floor:\(NavTag!.floor)/F\t\tInfor:\(NavTag!.Infor)\(NavTag!.Seq) \(NavTag!.Step)")
                                 }
                             }
                         }
@@ -226,7 +219,8 @@ struct ReaderInventory: View{
             }
             counter += 1
             LoopCount = 0
-            if !isInventory {
+            if !isInventory || ble.peripherals.filter({$0.State == 2}).count < 1 {
+                isInventory = false
                 timer.invalidate()
             }
         }

@@ -129,6 +129,11 @@ struct ContentView: View {
                         //                        notConnectedAlert_trigged = true
                         //                    }
                         if (ble.peripherals.filter({$0.State == 2}).count < 1) && !isScanner_trigged{
+                            Scanner_longpressed = false
+                            reader.TagsData.removeAll()
+                            reader.Tags.removeAll()
+                            reader.tagsCount = 0
+                            reader.BytesRecord.removeAll()
                             notConnectedAlert_trigged = true
                         }
                         else{

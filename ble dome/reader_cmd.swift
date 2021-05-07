@@ -274,7 +274,7 @@ class Reader: NSObject, ObservableObject{
                     let feedbackRow : [UInt8] = Array(feedback[index...(Int(feedback[index + 1]) + 1 + index)])
                     Btye_Recorder(defined: 2, byte: feedbackRow)
                     //print("\(feedback2D.count)| BufferLen:\(Int(feedback[index + 1]) + 2) | \(Data(feedbackof2D).hexEncodedString())")
-                    if feedbackRow[3] == 0x90 {
+                    if feedbackRow[3] == 0x90 && feedbackRow[1] + 2 == feedbackRow.count{
                         handled = 0x90
                         let EPClen = feedbackRow[6]
                         let PC : [UInt8] = [feedbackRow[7], feedbackRow[8]]
@@ -293,7 +293,7 @@ class Reader: NSObject, ObservableObject{
                             }
                         }
                     }
-                    else if feedbackRow[3] == 0x81{
+                    else if feedbackRow[3] == 0x81 && feedbackRow[1] + 2 == feedbackRow.count{
                         handled = 0x81
                         let totalData_len = feedbackRow[6]
 //                        print("totalData_len: \(totalData_len)")
@@ -328,12 +328,12 @@ class Reader: NSObject, ObservableObject{
                             }
                         }
                     }
-                    else if feedbackRow[3] == 0x89 && feedbackRow[1] > 8 {
+                    else if feedbackRow[3] == 0x89 && feedbackRow[1] > 8 && feedbackRow[1] + 2 == feedbackRow.count{
                         let PC : [UInt8] = [feedbackRow[5], feedbackRow[6]]
                         let Len  = feedbackRow[1] + 1
                         let RSSI = feedbackRow[Int(Len) - 1]
                         let EPC : [UInt8] = Array(feedbackRow[7...Int(Len) - 2])
-                        if PC != [00,00] {
+                        if PC != [00,00] && EPC != [00,00,00]{
                             if Tags.filter({$0.EPC == EPC}).count < 1 {
                                 let Tag = tag(id: Tags.count, EPClen: Len - 4, PC: PC, EPC: EPC, CRC: [00,00], RSSI: Int(RSSI) - 130)
                                 Tags.append(Tag)
@@ -396,8 +396,8 @@ class Reader: NSObject, ObservableObject{
             if EPC[0] == 0x4E && EPC[1] == 0x56{
                 let floor : Int = Int(Int16(bigEndian: Data(Array(EPC[2...3])).withUnsafeBytes{$0.load(as: Int16.self)}))
                 var inform : String = ""
-                if Array(EPC[4...6]) == [0x00,0x00,0x00] {
-                    switch EPC[7] {
+                if EPC[4] == 0x00 {
+                    switch EPC[5] {
                     case 1:
                         inform = "Entrance"
                     case 2:
@@ -410,18 +410,19 @@ class Reader: NSObject, ObservableObject{
                         inform = "Stairs"
                     }
                 }
-                let seq : Int = Int(EPC[8])
-                let steps : Int = Int(EPC[9])
+                let seq : Int = Int(Int16(bigEndian: Data(Array(EPC[6...7])).withUnsafeBytes{$0.load(as: Int16.self)}))
+                let steps : Int = Int(EPC[8])
                 navtag = NavTag(floor: floor, Infor: inform, Seq: seq, Step: steps, Xcoordinate: nil, Ycoordinate: nil, Latitude: nil, Longitude: nil)
             }
         }
         else if TagData != nil {
             let EPC = TagData!.Data
-            if EPC[0] == 0x4E && EPC[1] == 0x56{
+            let Len = TagData!.DataLen
+            if EPC[0] == 0x4E && EPC[1] == 0x56 && Len > 24{
                 let floor : Int = Int(Int16(bigEndian: Data(Array(EPC[2...3])).withUnsafeBytes{$0.load(as: Int16.self)}))
                 var inform : String = ""
-                if Array(EPC[4...6]) == [0x00,0x00,0x00] {
-                    switch EPC[7] {
+                if EPC[4] == 0x00 {
+                    switch EPC[5] {
                     case 1:
                         inform = "Entrance"
                     case 2:
@@ -434,12 +435,12 @@ class Reader: NSObject, ObservableObject{
                         inform = "Stairs"
                     }
                 }
-                let seq : Int = Int(EPC[8])
-                let steps : Int = Int(EPC[9])
-                let x : Float = Data(Array(EPC[10...13])).withUnsafeBytes{$0.load(as: Float.self)}
-                let y : Float = Data(Array(EPC[14...17])).withUnsafeBytes{$0.load(as: Float.self)}
-                let lat : Float = Data(Array(EPC[17...21])).withUnsafeBytes{$0.load(as: Float.self)}
-                let long : Float = Data(Array(EPC[22...25])).withUnsafeBytes{$0.load(as: Float.self)}
+                let seq : Int = Int(Int16(bigEndian: Data(Array(EPC[6...7])).withUnsafeBytes{$0.load(as: Int16.self)}))
+                let steps : Int = Int(EPC[8])
+                let x : Float = Data(Array(EPC[9...12])).withUnsafeBytes{$0.load(as: Float.self)}
+                let y : Float = Data(Array(EPC[13...16])).withUnsafeBytes{$0.load(as: Float.self)}
+                let lat : Float = Data(Array(EPC[17...20])).withUnsafeBytes{$0.load(as: Float.self)}
+                let long : Float = Data(Array(EPC[21...24])).withUnsafeBytes{$0.load(as: Float.self)}
                 navtag = NavTag(floor: floor, Infor: inform, Seq: seq, Step: steps, Xcoordinate: x, Ycoordinate: y, Latitude: lat, Longitude: long)
             }
         }

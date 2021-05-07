@@ -105,14 +105,6 @@ struct ReadTagsData: View {
                     }
                     .disabled(readeract.DataLen > 255)
                     .frame(width: 30)
-                    //                        Text("\(readeract.DataByte[readeract.DataLen_Selected])bit")
-                    //                            .font(.headline)
-                    //                            .frame(width: 60, height: 30)
-                    //                            .background(Color.gray.opacity(0.15))
-                    //                            .cornerRadius(10)
-                    //                            .onTapGesture {
-                    //                                readeract.DataLen_picker = true
-                    //                            }
                 }
                 Divider()
                 HStack{
@@ -152,6 +144,7 @@ struct ReadTagsData: View {
                         let PCstr = Data(TagData.PC).hexEncodedString()
                         let CRCstr = Data(TagData.CRC).hexEncodedString()
                         let Datastr = Data(TagData.Data).hexEncodedString()
+                        let NavTag : NavTag? = reader.TagtoNav(Tag:nil, TagData: TagData)
                         HStack{
                             Text("\(TagData.id + 1)")
                                 .frame(width: 20)
@@ -164,6 +157,11 @@ struct ReadTagsData: View {
                                     Text("CRC:\(CRCstr)")
                                     Text("Len:\(Int(TagData.DataLen))")
                                     Text("RSSI:\(TagData.RSSI)")
+                                }
+                                if NavTag != nil {
+                                    Text("Floor:\(NavTag!.floor)/F\t\tInfor:\(NavTag!.Infor)\(NavTag!.Seq) \(NavTag!.Step)")
+                                    Text("X:\(NavTag!.Xcoordinate!)\t\tY:\(NavTag!.Ycoordinate!)")
+                                    Text("Lag:\(NavTag!.Latitude!)\t\tLong:\(NavTag!.Longitude!)")
                                 }
                             }
                         }

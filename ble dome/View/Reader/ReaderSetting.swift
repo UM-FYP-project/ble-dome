@@ -88,7 +88,7 @@ struct ReaderSetting: View {
                         .frame(width: 120, height: 30,alignment: .leading)
                     Spacer()
                     if Outpower_feedback != nil {
-                        Text("\(Outpower_feedback!)dBm")
+                        Text(ble.peripherals.filter({$0.State == 2}).count < 1 ? "" : "\(Outpower_feedback!)dBm")
                             .frame(width: 120, height: 30, alignment: .center)
                             .font(.headline)
                     }
