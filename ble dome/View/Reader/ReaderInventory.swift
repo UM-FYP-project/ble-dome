@@ -43,9 +43,7 @@ struct ReaderInventory: View{
                     //                                readeract.inventorySpeed_picker = true
                     //                            }
                     Button(action: {self.readeract.inventorySpeed -= 1}) {
-                        Text("-")
-                            .bold()
-                            .font(.headline)
+                        Image(systemName: "minus")
                     }
                     .frame(width: 30)
                     .disabled(readeract.inventorySpeed < 1)
@@ -62,9 +60,8 @@ struct ReaderInventory: View{
                         .keyboardType(.numbersAndPunctuation)
                         .frame(maxWidth: 50)
                     Button(action: {self.readeract.inventorySpeed += 1}) {
-                        Text("+")
-                            .bold()
-                            .font(.headline)
+
+                        Image(systemName: "plus")
                     }
                     .disabled(readeract.inventorySpeed > 255)
                     .frame(width: 30)

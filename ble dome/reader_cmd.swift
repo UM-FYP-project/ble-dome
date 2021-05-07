@@ -270,11 +270,15 @@ class Reader: NSObject, ObservableObject{
         var handled : UInt8 = 0
         if feedback[1] != 4 {
             for var index in 0..<feedback.count {
-                if feedback[index] == 0xA0 && feedback[index + 2] == 0xFE{
-                    let feedbackRow : [UInt8] = Array(feedback[index...(Int(feedback[index + 1]) + 1 + index)])
+                if feedback[index] == 0xA0 && feedback[index + 2] == 0xFE {
+//                    let feedbackRow : [UInt8] = Array(feedback[index...(Int(feedback[index + 1]) + 1 + index)])
+                    let feedbackLen = Int(feedback[index + 1])
+                    let test = (feedback.count - index - 2)
+                    let toIndex : Int = feedback.count - index - 1 > Int(feedback[index + 1]) ? (Int(feedback[index + 1]) + 1 + index) : feedback.count - 1
+                    let feedbackRow : [UInt8] = Array(feedback[index...toIndex])
                     Btye_Recorder(defined: 2, byte: feedbackRow)
                     //print("\(feedback2D.count)| BufferLen:\(Int(feedback[index + 1]) + 2) | \(Data(feedbackof2D).hexEncodedString())")
-                    if feedbackRow[3] == 0x90 && feedbackRow[1] + 2 == feedbackRow.count{
+                    if feedbackRow[3] == 0x90 && (Int(feedbackRow[1]) + 2 == feedbackRow.count){
                         handled = 0x90
                         let EPClen = feedbackRow[6]
                         let PC : [UInt8] = [feedbackRow[7], feedbackRow[8]]
@@ -418,7 +422,7 @@ class Reader: NSObject, ObservableObject{
         else if TagData != nil {
             let EPC = TagData!.Data
             let Len = TagData!.DataLen
-            if EPC[0] == 0x4E && EPC[1] == 0x56 && Len > 24{
+            if EPC[0] == 0x4E && EPC[1] == 0x56 && Len > 25{
                 let floor : Int = Int(Int16(bigEndian: Data(Array(EPC[2...3])).withUnsafeBytes{$0.load(as: Int16.self)}))
                 var inform : String = ""
                 if EPC[4] == 0x00 {

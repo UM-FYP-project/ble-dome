@@ -46,9 +46,7 @@ struct ReadTagsData: View {
                     //                                readeract.DataStart_picker = true
                     //                            }
                     Button(action: {self.readeract.DataStart -= 1}) {
-                        Text("-")
-                            .bold()
-                            .font(.headline)
+                        Image(systemName: "minus")
                     }
                     .frame(width: 30)
                     .disabled(readeract.DataStart < 1)
@@ -65,9 +63,7 @@ struct ReadTagsData: View {
                         .keyboardType(.numbersAndPunctuation)
                         .frame(maxWidth: 50)
                     Button(action: {self.readeract.DataStart += 1}) {
-                        Text("+")
-                            .bold()
-                            .font(.headline)
+                        Image(systemName: "plus")
                     }
                     .disabled(readeract.DataStart > 255)
                     .frame(width: 30)
@@ -80,9 +76,7 @@ struct ReadTagsData: View {
                         .font(.headline)
                     Spacer()
                     Button(action: {self.readeract.DataLen -= 1}) {
-                        Text("-")
-                            .bold()
-                            .font(.headline)
+                        Image(systemName: "minus")
                     }
                     .frame(width: 30)
                     .disabled(readeract.DataLen < 1)
@@ -99,9 +93,7 @@ struct ReadTagsData: View {
                         .keyboardType(.numbersAndPunctuation)
                         .frame(maxWidth: 50)
                     Button(action: {self.readeract.DataLen += 1}) {
-                        Text("+")
-                            .bold()
-                            .font(.headline)
+                        Image(systemName: "plus")
                     }
                     .disabled(readeract.DataLen > 255)
                     .frame(width: 30)

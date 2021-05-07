@@ -53,15 +53,11 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     var centralManager:CBCentralManager!
     @Published var isInit : Bool = false
     @Published var isBluetoothON : Bool = false
-//    @Published var isConnected : Bool = false
     @Published var peripherals = [Peripheral]()
     @Published var Peripheral_characteristics = [Peripheral_characteristic]()
     @Published var Peripheral_Services = [Peripheral_Service]()
     @Published var ValueUpated_2A68 : Bool = false
-//    @Published var isScanned : Bool = false
-//    @Published var wasScanned : Bool = false
-//    @Published var Connected_Peripheral :Peripheral?
-    
+    @Published var ValueUpated_5677 : Bool = false
     //Bluetooth init
     func initBLE(){
         self.centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -96,7 +92,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         else{
             peripherals.removeAll()
         }
-        centralManager.scanForPeripherals(withServices: nil, options: nil)
+        centralManager.scanForPeripherals(withServices: [CBUUID(string: "2A68")], options: nil)
 //        isScanned = true
 //        wasScanned = true
         print("Scanning")
@@ -264,6 +260,9 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         if let index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == characteristic.service.uuid && $0.Characteristic_UUID == characteristic.uuid}){
             if characteristic.uuid == CBUUID(string: "726F"){
                 ValueUpated_2A68 = true
+            }
+            else if characteristic.uuid == CBUUID(string: "5677"){
+                ValueUpated_5677 = true
             }
             Peripheral_characteristics[index].value = byteValue
             Peripheral_characteristics[index].valueStr = value.hexEncodedString()

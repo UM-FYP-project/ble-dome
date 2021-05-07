@@ -42,6 +42,8 @@ class readerAct: ObservableObject{
     //Write tag
     @Published var Xcoordinate : String = "0.0"
     @Published var Ycoordinate : String = "0.0"
+    @Published var Latitude : Float = 0
+    @Published var Longitude : Float = 0
     @Published var floor : Int = 0
     @Published var Seq : UInt = 0
 }

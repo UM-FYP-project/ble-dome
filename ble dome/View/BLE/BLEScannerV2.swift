@@ -59,31 +59,11 @@ struct BLEScanner_Alert: View {
                                 .frame(alignment: .trailing)
                         }
                         .padding()
-                        .frame(width: geometry.size.width - 80, height: 50)
+                        .frame(height: 50)
                         Divider()
-                            .frame(width: geometry.size.width - 60)
+                            .frame(width: geometry.size.width - 80)
                     }
-//                    .onDrag(<#T##data: () -> NSItemProvider##() -> NSItemProvider#>)
                 }
-                //                List{
-                //                    ForEach(0..<ble.peripherals.count, id: \.self) { index in
-                //                        let peripheral = ble.peripherals[index]
-                //                        HStack{
-                //                            VStack(alignment: .leading){
-                //                                Text(peripheral.name)
-                //                                    .bold()
-                //                                Text("Rssi: \(peripheral.rssi)")
-                //                            }
-                //                            Spacer()
-                //                            BLEConnect_button(name: peripheral.name)
-                //                                .frame(alignment: .trailing)
-                //                        }
-                //                        .listRowBackground(RoundedRectangle(cornerRadius: 0)
-                //                                            .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
-                //                    }
-                //                }
-                //                .colorMultiply(Color.white.opacity(0.8))
-                //                .shadow(radius: 1)
             }
             else {
                 Text("\nPlease Turn On  Device")
@@ -91,8 +71,9 @@ struct BLEScanner_Alert: View {
                     .bold()
             }
         }
-        //        .background(Rectangle()
-        //                        .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
+        .background(RoundedRectangle(cornerRadius: 20)
+                        .foregroundColor(Color.white.opacity(0.5)).shadow(radius: 1))
+        .frame(width: geometry.size.width - 100)
     }
 }
 

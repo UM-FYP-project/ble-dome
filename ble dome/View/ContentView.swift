@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreBluetooth
 
 struct ContentView: View {
     @ObservedObject var ble = BLE()
@@ -28,14 +29,20 @@ struct ContentView: View {
                                 if !ble.peripherals.isEmpty && !(ble.peripherals.filter({$0.State == 2}).count < 1){
                                     NavigationLink(
                                         destination:
-//                                            DetailTabView(geometry: geometry, peripheral: ble.peripherals[Conncetedperipheral_index])
                                             DetailTabView(peripheral: ble.peripherals[Conncetedperipheral_index])
                                             .environmentObject(ble)
                                             .environmentObject(reader)
                                             .environmentObject(readeract)
                                             .environmentObject(location)
                                             .disabled(ble.isBluetoothON && isScanner_trigged)
-                                            .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil),
+                                            .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
+                                            .navigationBarItems(trailing:
+                                                                    Button(action: {isScanner_trigged = true}) {
+                                                                        Text("Scanner")
+                                                                    }
+                                                                    .padding()
+                                                                    .disabled(!ble.isBluetoothON)
+                                            ),
                                         isActive: $Scanner_longpressed,
                                         label: {
                                             EmptyView()
@@ -49,62 +56,6 @@ struct ContentView: View {
                                         }
                                     })
                             }
-//                            Button(action: {
-//                                self.location.start()
-//                                var counter : Int = 0
-//                                Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
-//                                    Latitude = Float(self.location.lastLocation?.coordinate.latitude ?? 00)
-//                                    Longitude = Float(self.location.lastLocation?.coordinate.longitude ?? 00)
-//                                    counter += 1
-//                                    if location.LocationIsUpdate || counter > 10 {
-//                                        self.location.stop()
-//                                        timer.invalidate()
-//                                        if !(counter > 10){
-//                                            print("LatitudeInByte: \(Data(Latitude.bytes).hexEncodedString()) LongitudeInByte: \(Data(Longitude.bytes).hexEncodedString())")
-//                                        }
-//                                    }
-//                                }
-//                            }) {
-//                                Text("Get Location")
-//                                    .bold()
-//                                    .font(.headline)
-//                            }
-//                            Divider()
-//                            HStack{
-//                                Text("Latitude:")
-//                                    .font(.headline)
-//                                Text("\(Data(Latitude.bytes).hexEncodedString())")
-//                                Spacer()
-//                                Divider()
-//                                    .frame(height: 20)
-//                                Text("\(Data(Latitude.bytes).withUnsafeBytes{$0.load(fromByteOffset: 0, as: Float.self)})")
-//                                Spacer()
-//                            }
-//                            .frame(width: geometry.size.width - 20)
-//                            Divider()
-//                            HStack{
-//                                Text("Longitude:")
-//                                    .font(.headline)
-//                                Text("\(Data(Longitude.bytes).hexEncodedString())")
-//                                Spacer()
-//                                Divider()
-//                                    .frame(height: 20)
-//                                Text("\(Data(Longitude.bytes).withUnsafeBytes{$0.load(as: Float.self)})")
-//                                Spacer()
-//                            }
-//                            .frame(width: geometry.size.width - 20)
-//                            Divider()
-//                            HStack{
-//                                Text("Num:")
-//                                    .font(.headline)
-//                                Text("\(Data(Int16(-255).bytes).hexEncodedString())")
-//                                Spacer()
-//                                Divider()
-//                                    .frame(height: 20)
-//                                Text("\(Int16(bigEndian: Data(Int16(-255).bytes).withUnsafeBytes{$0.load(as: Int16.self)}))")
-//                                Spacer()
-//
-//                            }
                         }
                         .tabItem{
                             Image(systemName: "house")
@@ -125,9 +76,6 @@ struct ContentView: View {
                         if !ble.isInit{
                             ble.initBLE()
                         }
-                        //                    if !ble.isConnected{
-                        //                        notConnectedAlert_trigged = true
-                        //                    }
                         if (ble.peripherals.filter({$0.State == 2}).count < 1) && !isScanner_trigged{
                             Scanner_longpressed = false
                             reader.TagsData.removeAll()
@@ -139,6 +87,13 @@ struct ContentView: View {
                         else{
                             notConnectedAlert_trigged = false
                         }
+                    }
+                    if ble.peripherals.filter({$0.State == 2 && $0.Service.contains("2A68")}).count > 1 {
+                        let peripheralIndex = ble.peripherals.firstIndex(where: {$0.State == 2 && $0.Service.contains("2A68")})
+                        let peripheral = ble.peripherals[peripheralIndex!].Peripheral
+                        let characteristicIndex = ble.Peripheral_characteristics.firstIndex(where: {$0.Characteristic_UUID == CBUUID(string: "4676")})
+                        let characteristic = ble.Peripheral_characteristics[characteristicIndex!].Characteristic
+                        ble.writeValue(value: Data([0x00]), characteristic: characteristic, peripheral: peripheral)
                     }
                 })
                 .alert(isPresented: $notConnectedAlert_trigged) {

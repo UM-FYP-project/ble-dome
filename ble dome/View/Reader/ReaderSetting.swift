@@ -32,32 +32,32 @@ struct ReaderSetting: View {
                 }
                 .frame(width: geometry.size.width - 20)
                 Divider()
-                HStack{
-                    Text("Set Baudrate")
-                        .font(.headline)
-                    Spacer()
-                    Text("\(readeract.BaudrateCmdinStr[readeract.SelectedBaudrate])")
-                        .font(.headline)
-                        .frame(width: 120, height: 30)
-                        .background(Color.gray.opacity(0.15))
-                        .cornerRadius(10)
-                        .onTapGesture {
-                            readeract.SelectedBaudrate_picker = true
-                        }
-                    Button(action: {
-                        let cmd : [UInt8] = reader.cmd_set_baudrate(baudrate_para: readeract.BaudrateCmdinByte[readeract.SelectedBaudrate])
-                        //                            var feedback = [UInt8]()
-                        cmdtransitor(cmd: cmd)
-                        //                            ble.cmd2reader(cmd: cmd)
-                        //                            reader.Btye_Recorder(defined: 1, byte: cmd)
-                    }) {
-                        Text("Set")
-                            .foregroundColor(.blue)
-                            .font(.headline)
-                    }
-                }
-                .frame(width: geometry.size.width - 20)
-                Divider()
+//                HStack{
+//                    Text("Set Baudrate")
+//                        .font(.headline)
+//                    Spacer()
+//                    Text("\(readeract.BaudrateCmdinStr[readeract.SelectedBaudrate])")
+//                        .font(.headline)
+//                        .frame(width: 120, height: 30)
+//                        .background(Color.gray.opacity(0.15))
+//                        .cornerRadius(10)
+//                        .onTapGesture {
+//                            readeract.SelectedBaudrate_picker = true
+//                        }
+//                    Button(action: {
+//                        let cmd : [UInt8] = reader.cmd_set_baudrate(baudrate_para: readeract.BaudrateCmdinByte[readeract.SelectedBaudrate])
+//                        //                            var feedback = [UInt8]()
+//                        cmdtransitor(cmd: cmd)
+//                        //                            ble.cmd2reader(cmd: cmd)
+//                        //                            reader.Btye_Recorder(defined: 1, byte: cmd)
+//                    }) {
+//                        Text("Set")
+//                            .foregroundColor(.blue)
+//                            .font(.headline)
+//                    }
+//                }
+//                .frame(width: geometry.size.width - 20)
+//                Divider()
                 HStack{
                     Text("Set Power")
                         .font(.headline)

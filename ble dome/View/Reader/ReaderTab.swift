@@ -16,12 +16,11 @@ struct ReaderTab: View {
     @EnvironmentObject var location : LocationManager
     var geometry : GeometryProxy
     @State var Selected = 0
-    //    @State var isInventory = false // Reader Inverntorying or not
-    // data Write
-    //    @State var MatchState : Int = 0
     var body: some View {
         ZStack() {
             VStack{
+                Spacer()
+                    .frame(height : 10)
                 Picker(selection: $Selected, label: Text("Reader Picker")) {
                     Text("Setting").tag(0)
                     Text("Inventory").tag(1)
