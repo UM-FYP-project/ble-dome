@@ -72,7 +72,7 @@ struct ContentView: View {
                     )
                 }
                 .onAppear(perform: {
-                    Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
+                    Timer.scheduledTimer(withTimeInterval: 2, repeats: true){_ in
                         if !ble.isInit{
                             ble.initBLE()
                         }
@@ -82,7 +82,23 @@ struct ContentView: View {
                             reader.Tags.removeAll()
                             reader.tagsCount = 0
                             reader.BytesRecord.removeAll()
-                            notConnectedAlert_trigged = true
+                            let previousConntection : String? = rememberConntion.object(forKey: "PreviousName") as? String ?? nil
+                            if previousConntection != nil {
+                                print("Conntect with \(previousConntection!)")
+                                ble.scan_devices()
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    if let index = ble.peripherals.firstIndex(where: {$0.name == previousConntection!}){
+                                        ble.connect(peripheral: ble.peripherals[index].Peripheral)
+                                    }
+                                    else{
+                                        ble.stopscan_device()
+                                        notConnectedAlert_trigged = true
+                                    }
+                                }
+                            }
+                            else {
+                                notConnectedAlert_trigged = true
+                            }
                         }
                         else{
                             notConnectedAlert_trigged = false

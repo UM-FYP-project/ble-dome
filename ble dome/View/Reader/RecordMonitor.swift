@@ -15,7 +15,7 @@ struct RecordMonitor: View {
         ZStack{
             VStack{
                 if !reader.BytesRecord.isEmpty {
-                    ForEach (0..<reader.BytesRecord.count){ index in
+                    ForEach (0..<reader.BytesRecord.count, id: \.self){ index in
                         let record = reader.BytesRecord[reader.BytesRecord.count - 1 - index ]
                         let byteStr = Data(record.Byte).hexEncodedString()
                         HStack{

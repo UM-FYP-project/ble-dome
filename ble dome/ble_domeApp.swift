@@ -48,6 +48,7 @@ struct Peripheral_Service: Identifiable{
     var Services : CBService
 }
 
+let rememberConntion = UserDefaults.standard
 
 class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate{
     var centralManager:CBCentralManager!
@@ -93,15 +94,12 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             peripherals.removeAll()
         }
         centralManager.scanForPeripherals(withServices: [CBUUID(string: "2A68")], options: nil)
-//        isScanned = true
-//        wasScanned = true
         print("Scanning")
     }
     
     // Stop discoving device
     func stopscan_device() {
         self.centralManager.stopScan()
-//        isScanned = false
         print("Scan Stopped")
     }
     
@@ -129,11 +127,15 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         print("Connect to Peripheral:\(peripheral.name!)")
         centralManager.connect(peripheral, options: nil)
         stopscan_device()
+        let previousConntection : String? = rememberConntion.object(forKey: "PreviousName") as? String ?? nil
+        if previousConntection != peripheral.name {
+            print("Add \(peripheral.name!) to Userdefault")
+            rememberConntion.set(peripheral.name, forKey: "PreviousName")
+        }
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 1
-//            peripherals[index].isConnected = false
-//            isConnected = false
         }
+        
      }
     
     func disconnect(peripheral: CBPeripheral){
@@ -218,7 +220,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             peripheral.readValue(for: characteristic)
             peripheral.setNotifyValue(true, for: characteristic)
             let properties = Characteristic_Properties(properties: characteristic.properties)
-            print("\(peripheral.name!) : \(service.uuid): \(characteristic.uuid) | \(String(describing: characteristic.value)) | \(properties.0) | isWritable: \(properties.1) | isNotifying: \(characteristic.isNotifying)")
+            print("\(peripheral.name!) : \(service.uuid): \(characteristic.uuid) | \(characteristic.properties.rawValue) |\(properties.0) | isWritable: \(properties.1) | isNotifying: \(characteristic.isNotifying)")
             if let value = characteristic.value{
                 if let name = peripheral.name{
                     let byteValue = [UInt8](value)
@@ -305,37 +307,59 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     }
     
     func Characteristic_Properties (properties: CBCharacteristicProperties) -> (String, Bool) {
-        var Properties_str = [String]()
+        var PropertiesStr = [String]()
         let properties_digis:UInt8 = UInt8(properties.rawValue) % 0x10
         let properties_tens:UInt8 = UInt8(properties.rawValue) / 0x10
         var iswritable = false
-        switch properties_digis{
-        case 0x01:
-            Properties_str.append("Broadcast")
-        case 0x02:
-            Properties_str.append("Read")
-        case 0x04:
-            Properties_str.append("WriteWithoutResponse")
-            iswritable = true
-        case 0x08:
-            Properties_str.append("Write")
-            iswritable = true
-        default:
-            break
+//        switch properties {
+//        case _ where properties.contains(.authenticatedSignedWrites):
+//            PropertiesStr.append("AuthenticatedSignedWrites")
+//        case _ where properties.contains(.broadcast):
+//            PropertiesStr.append("Broadcast")
+//        case _ where properties.contains(.extendedProperties):
+//            PropertiesStr.append("ExtendedProperties")
+//        case _ where properties.contains(.indicate):
+//            PropertiesStr.append("Indicate")
+//        case _ where properties.contains(.notify):
+//            PropertiesStr.append("Notify")
+//        case _ where properties.contains(.read):
+//            PropertiesStr.append("Read")
+//        case _ where properties.contains(.write):
+//            PropertiesStr.append("Write")
+//            iswritable = true
+//        case _ where properties.contains(.writeWithoutResponse):
+//            PropertiesStr.append("WriteWithoutResponse")
+//            iswritable = true
+//        default:
+//            break
+//        }
+        if properties.contains(.authenticatedSignedWrites){
+            PropertiesStr.append("AuthenticatedSignedWrites")
         }
-        switch properties_tens{
-        case 0x01:
-            Properties_str.append("Notify")
-        case 0x02:
-            Properties_str.append("Indicate")
-        case 0x04:
-            Properties_str.append("AuthenticatedSignedWrites")
-        case 0x08:
-            Properties_str.append("ExtendedProperties")
-        default:
-            break
+        if properties.contains(.broadcast){
+            PropertiesStr.append("Broadcast")
         }
-        let joined = Properties_str.joined(separator: ", ")
+        if properties.contains(.extendedProperties){
+            PropertiesStr.append("ExtendedProperties")
+        }
+        if properties.contains(.indicate){
+            PropertiesStr.append("Indicate")
+        }
+        if properties.contains(.notify){
+            PropertiesStr.append("Notify")
+        }
+        if properties.contains(.read){
+            PropertiesStr.append("Read")
+        }
+        if properties.contains(.write){
+            PropertiesStr.append("Write")
+            iswritable = true
+        }
+        if properties.contains(.writeWithoutResponse){
+            PropertiesStr.append("WriteWithoutResponse")
+            iswritable = true
+        }
+        let joined = PropertiesStr.joined(separator: ", ")
         return (joined, iswritable)
     }
 }

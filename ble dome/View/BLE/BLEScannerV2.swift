@@ -64,6 +64,8 @@ struct BLEScanner_Alert: View {
                             .frame(width: geometry.size.width - 80)
                     }
                 }
+                .background(RoundedRectangle(cornerRadius: 20)
+                                .foregroundColor(Color.white.opacity(0.5)).shadow(radius: 1))
             }
             else {
                 Text("\nPlease Turn On  Device")
@@ -71,8 +73,6 @@ struct BLEScanner_Alert: View {
                     .bold()
             }
         }
-        .background(RoundedRectangle(cornerRadius: 20)
-                        .foregroundColor(Color.white.opacity(0.5)).shadow(radius: 1))
         .frame(width: geometry.size.width - 100)
     }
 }

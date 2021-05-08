@@ -377,9 +377,9 @@ class Reader: NSObject, ObservableObject{
 
 
     func Btye_Recorder(defined: Int, byte:[UInt8]){
-//        if Byte_Record.count > 50 {
-//            Byte_Record.removeAll()
-//        }
+        if BytesRecord.count > 500 {
+            BytesRecord.removeAll()
+        }
         let current_time = Date()
 //        let millis : Double = current_time.timeIntervalSince1970
         let _ : Double = current_time.timeIntervalSince1970
