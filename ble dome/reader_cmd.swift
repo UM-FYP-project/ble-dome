@@ -272,8 +272,6 @@ class Reader: NSObject, ObservableObject{
             for var index in 0..<feedback.count {
                 if feedback[index] == 0xA0 && feedback[index + 2] == 0xFE {
 //                    let feedbackRow : [UInt8] = Array(feedback[index...(Int(feedback[index + 1]) + 1 + index)])
-                    let feedbackLen = Int(feedback[index + 1])
-                    let test = (feedback.count - index - 2)
                     let toIndex : Int = feedback.count - index - 1 > Int(feedback[index + 1]) ? (Int(feedback[index + 1]) + 1 + index) : feedback.count - 1
                     let feedbackRow : [UInt8] = Array(feedback[index...toIndex])
                     Btye_Recorder(defined: 2, byte: feedbackRow)

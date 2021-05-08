@@ -71,15 +71,6 @@ struct DetailTabView: View {
 //            .navigationTitle("Reader Setting")
             .navigationBarTitle("\(peripheral.name)", displayMode: .inline)
         }
-        .onAppear(perform: {
-            if ble.peripherals.filter({$0.State == 2 && $0.Service.contains("2A68")}).count > 1 {
-                let peripheralIndex = ble.peripherals.firstIndex(where: {$0.State == 2 && $0.Service.contains("2A68")})
-                let peripheral = ble.peripherals[peripheralIndex!].Peripheral
-                let characteristicIndex = ble.Peripheral_characteristics.firstIndex(where: {$0.Characteristic_UUID == CBUUID(string: "4676")})
-                let characteristic = ble.Peripheral_characteristics[characteristicIndex!].Characteristic
-                ble.writeValue(value: Data([0x01]), characteristic: characteristic, peripheral: peripheral)
-            }
-        })
     }
 }
 
