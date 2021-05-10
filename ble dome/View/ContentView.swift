@@ -72,12 +72,11 @@ struct ContentView: View {
                     )
                 }
                 .onAppear(perform: {
-                    Timer.scheduledTimer(withTimeInterval: 2, repeats: true){_ in
+                    Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
                         if !ble.isInit{
                             ble.initBLE()
                         }
                         if (ble.peripherals.filter({$0.State == 2}).count < 1) && !isScanner_trigged{
-                            Scanner_longpressed = false
                             reader.TagsData.removeAll()
                             reader.Tags.removeAll()
                             reader.tagsCount = 0
@@ -93,7 +92,9 @@ struct ContentView: View {
                                     else{
                                         ble.stopscan_device()
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                            notConnectedAlert_trigged = true
+                                            if !isScanner_trigged{
+                                                notConnectedAlert_trigged = true
+                                            }
                                         }
                                     }
                                 }
@@ -125,14 +126,18 @@ struct ContentView: View {
     }
     
     func isNavorSet(){
-        if ble.peripherals.contains(where: {$0.State == 2 && $0.Service.contains("2A68")}){
-            let peripheralIndex = ble.peripherals.firstIndex(where: {$0.State == 2 && $0.Service.contains("2A68")})
-            let peripheral = ble.peripherals[peripheralIndex!].Peripheral
-            let characteristicIndex = ble.Peripheral_characteristics.firstIndex(where: {$0.Characteristic_UUID == CBUUID(string: "4676")})
-            let characteristic = ble.Peripheral_characteristics[characteristicIndex!].Characteristic
-            let data : UInt8 = Scanner_longpressed ? 1 : 0
-            ble.writeValue(value: Data([data]), characteristic: characteristic, peripheral: peripheral)
-//            longpressedChanged = false
+        if !ble.peripherals.isEmpty{
+            if ble.peripherals.contains(where: {$0.State == 2 && $0.Service.contains("2A68")}){
+                let peripheralIndex = ble.peripherals.firstIndex(where: {$0.State == 2 && $0.Service.contains("2A68")})
+                let peripheral = ble.peripherals[peripheralIndex!].Peripheral
+                if !ble.Peripheral_characteristics.isEmpty{
+                    if let characteristicIndex = ble.Peripheral_characteristics.firstIndex(where: {$0.Characteristic_UUID == CBUUID(string: "4676")}){
+                        let characteristic = ble.Peripheral_characteristics[characteristicIndex].Characteristic
+                        let data : UInt8 = Scanner_longpressed ? 1 : 0
+                        ble.writeValue(value: Data([data]), characteristic: characteristic, peripheral: peripheral)
+                    }
+                }
+            }
         }
     }
 }

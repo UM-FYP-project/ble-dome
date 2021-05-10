@@ -17,9 +17,8 @@ struct ReaderWriteData: View{
     @State var EPC_Match_Error : String = ""
     @State var FeedbackStr = [String]()
     @State var funcSelected : Int = 4
-    @State var inforSelected : Int = 4
-//    @State var Latitude : Float = 0
-//    @State var Longitude : Float = 0
+    @State var HazardSelected : Int = 4
+    @State var RoomSelected : Int = 0
     @State var writeAlert : Bool = false
     @State var fillPasswd : Bool = false
     @State var AlertStr : String = ""
@@ -28,7 +27,7 @@ struct ReaderWriteData: View{
     @State var PasswdStr : String = ""
     @State var Steps : Int = 0
     @State var ErrorStr = [String]()
-    let InforStrArray : [String] = ["Stairs","Entrance","Elevator","Crossroad","Straight"]
+    let HazardStrArray : [String] = ["Stairs","Entrance","Elevator","Crossroad","Straight"]
     var body: some View {
         ZStack{
             VStack(alignment: .center){
@@ -64,7 +63,7 @@ struct ReaderWriteData: View{
                 Divider()
                 feedbackStrList
 //                TagData_Write(geometry: geometry)
-                ScrollView {
+//                ScrollView {
                     WriteDataSection
                         .alert(isPresented: $writeAlert){
                             switch fillPasswd {
@@ -94,7 +93,7 @@ struct ReaderWriteData: View{
 //                                title: Text("Write Data to Tag"),
 //                                message: Text("Please Check the Password")
 //                            )}
-                }
+//                }
                 .disabled(readeract.MatchState != 2)
 //                Spacer()
             }
@@ -130,10 +129,25 @@ struct ReaderWriteData: View{
                     writeAlert = true
                     fillPasswd = (PasswdStr.count > 6 ? false : true)
                     if funcSelected == 4{
-                        AlertStr = "Password: \(String(PasswdStr.prefix(8)).hexaData.hexEncodedString())\nFloor: \(readeract.floor == 0 ? "G/F" : "\(readeract.floor)/F")\nInformation: \(InforStrArray[inforSelected])\(inforSelected != 4 ? readeract.Seq < 10 ? "0\(readeract.Seq)" : "\(readeract.Seq)" : "")\n\(inforSelected == 0 ? "Num of Steps: \(Steps)\n" : "")Indoor: \(Float(readeract.Xcoordinate) ?? 0) : \(Float(readeract.Ycoordinate) ?? 0)\nLocation: \(readeract.Latitude) : \(readeract.Longitude)"
+//                        AlertStr = "Password: \(String(PasswdStr.prefix(8)).hexaData.hexEncodedString())\nFloor: \(readeract.floor == 0 ? "G/F" : "\(readeract.floor)/F")\nHazard: \(HazardStrArray[HazardSelected])\(HazardSelected != 4 ? readeract.Seq < 10 ? "0\(readeract.Seq)" : "\(readeract.Seq)" : "")\n\(HazardSelected == 0 ? "Num of Steps: \(Steps)\n" : "")\n\(RoomSelected == 0 ? "Room" : RoomSelected == 1 ? "Restroom" : "Aisle")\(readeract.RoomSeq)\nIndoor: \(Float(readeract.Xcoordinate) ?? 0) : \(Float(readeract.Ycoordinate) ?? 0)\nLocation: \(readeract.Latitude) : \(readeract.Longitude)"
+                        AlertStr = String(
+                            "Password: \(String(PasswdStr.prefix(8)).hexaData.hexEncodedString())\n" +
+                                "Floor: \(readeract.floor == 0 ? "G/F" : "\(readeract.floor)/F")" +
+                            ": (\(Data(Array(Int16(readeract.floor).bytes)).hexEncodedString()))\n" +
+                                "Hazard\n\(HazardStrArray[HazardSelected])\(HazardSelected != 4 ? readeract.Seq < 10 ? "0\(readeract.Seq)" : "\(readeract.Seq)" : "")\(HazardSelected == 0 ? "Num of Steps: \(Steps)" : "")" +
+                                ": (\(Data([UInt8(HazardSelected)]).hexEncodedString()), \(Data(Int16(readeract.Seq).bytes).hexEncodedString()), \(Data([UInt8(Steps)]).hexEncodedString()))\n" +
+                                "Place\n\(RoomSelected == 0 ? "Room" : RoomSelected == 1 ? "Restroom" : "Aisle")\(readeract.RoomSeq)" + ": (\(Data([UInt8(RoomSelected)]).hexEncodedString()), \(Data(Int16(readeract.RoomSeq).bytes).hexEncodedString()))\n" +
+                                "Indoor\nX:\(Float(readeract.Xcoordinate) ?? 0) : (\(Data((Float(readeract.Xcoordinate) ?? 0).bytes).hexEncodedString()))\nY: \(Float(readeract.Ycoordinate) ?? 0) : (\(Data((Float(readeract.Ycoordinate) ?? 0).bytes).hexEncodedString()))\n" +
+                                "Location\nLat:\(readeract.LatitudeStr) : (\(Data((Float(readeract.LatitudeStr) ?? 0).bytes).hexEncodedString()))\nLong:\(readeract.LongitudeStr) : (\(Data((Float(readeract.LongitudeStr) ?? 0).bytes).hexEncodedString())) "
+                        )
                     }
                     else{
-                        AlertStr = "Password: \(PasswdStr.hexaData.hexEncodedString())\nWrite Data to: \(readeract.DataCmdinStr[funcSelected])\nData: \(WriteByteStr.hexaData.hexEncodedString())\nStartAddress: \(StartAdd)"
+                        AlertStr = String(
+                            "Password: \(PasswdStr.hexaData.hexEncodedString())\n" +
+                            "Write Data to: \(readeract.DataCmdinStr[Int(funcSelected)])\n" +
+                            "Data: \(WriteByteStr.hexaData.hexEncodedString())\nStartAddress: \(StartAdd)"
+                        )
+
                     }
                 }) {
                     Text("Write")
@@ -181,7 +195,8 @@ struct ReaderWriteData: View{
                     Button(action: {self.StartAdd -= 1}) {
                         Image(systemName: "minus")
                     }
-                    .frame(width: 30)
+                    .padding()
+                    .frame(width: 30, height: 30)
                     .disabled(StartAdd < 1)
                     TextField("", value: $StartAdd, formatter: NumberFormatter())
                         .onReceive(Just(StartAdd), perform: {_ in
@@ -199,7 +214,8 @@ struct ReaderWriteData: View{
                         Image(systemName: "plus")
                     }
                     .disabled(StartAdd > 255)
-                    .frame(width: 30)
+                    .padding()
+                    .frame(width: 30, height: 30)
                 }
                 .frame(width: geometry.size.width - 20)
                 Divider()
@@ -253,9 +269,9 @@ struct ReaderWriteData: View{
             .frame(width: geometry.size.width - 20)
             Divider()
             VStack{
-                Text("Information")
+                Text("Hazard")
                     .font(.headline)
-                Picker(selection: $inforSelected, label: Text("Hazard Picker")) {
+                Picker(selection: $HazardSelected, label: Text("Hazard Picker")) {
                     Text("Stairs").tag(0)
                     Text("Entrance").tag(1)
                     Text("Elevator").tag(2)
@@ -265,60 +281,139 @@ struct ReaderWriteData: View{
                 .pickerStyle(SegmentedPickerStyle())
             }
             .frame(width: geometry.size.width - 20)
-            Divider()
-            if inforSelected != 4{
+            Cooradintion
+            if HazardSelected != 4{
                 HStack{
-                    Text("Sequence")
+                    Text("Seq")
                         .font(.headline)
                     Spacer()
                     Button(action: {readeract.Seq -= 1}) {
                         Image(systemName: "minus")
                     }
                     .disabled(readeract.Seq < 1)
-                    .frame(width: 30)
-                    Text(readeract.Seq < 10 ? "0\(readeract.Seq)" : "\(readeract.Seq)")
-                        .bold()
-                        .font(.headline)
-                        .frame(width: 30)
+                    .padding()
+                    .frame(width: 30, height: 30)
+//                    Text(readeract.Seq < 10 ? "0\(readeract.Seq)" : "\(readeract.Seq)")
+//                        .bold()
+//                        .font(.headline)
+//                        .frame(width: 30)
+                    TextField("", value: $readeract.Seq, formatter: NumberFormatter())
+                        .onReceive(Just(Steps), perform: {_ in
+                            if readeract.Seq > 32767 {
+                                readeract.Seq = 32767
+                            }
+                        })
+                        .multilineTextAlignment(.center)
+                        .keyboardType(.numbersAndPunctuation)
+                        .frame(width: 50)
                     Button(action: {readeract.Seq += 1}) {
                         Image(systemName: "plus")
                     }
-                    .frame(width: 30)
+                    .padding()
+                    .frame(width: 30, height: 30)
+                    if HazardSelected == 0{
+                        Spacer()
+                        Divider()
+                        Text("Steps")
+                            .font(.headline)
+                        Spacer()
+                        Button(action: {self.Steps -= 1}) {
+                            Image(systemName: "minus")
+                        }
+                        .disabled(Steps < 1)
+                        .padding()
+                        .frame(width: 30, height: 30)
+                        TextField("", value: $Steps, formatter: NumberFormatter())
+                            .onReceive(Just(Steps), perform: {_ in
+                                if Steps > 255 {
+                                    self.Steps = 255
+                                }
+                                else if Steps < 0 {
+                                    self.Steps = 0
+                                }
+                            })
+                            .multilineTextAlignment(.center)
+                            .frame(width: 50)
+                        Button(action: {self.Steps += 1}) {
+                            Image(systemName: "plus")
+                        }
+                        .disabled(Steps > 255)
+                        .padding()
+                        .frame(width: 30, height: 30)
+                    }
                 }
                 .frame(width: geometry.size.width - 20)
                 Divider()
             }
-            if inforSelected == 0{
-                HStack{
-                    Text("Num of Step")
-                        .font(.headline)
-                    Spacer()
-                    Button(action: {self.Steps -= 1}) {
-                        Image(systemName: "minus")
-                    }
-                    .disabled(Steps < 1)
-                    .frame(width: 30)
-                    TextField("", value: $Steps, formatter: NumberFormatter())
-                        .onReceive(Just(Steps), perform: {_ in
-                            if Steps > 255 {
-                                self.Steps = 255
-                            }
-                            else if Steps < 0 {
-                                self.Steps = 0
-                            }
-                        })
-                    Button(action: {self.Steps += 1}) {
-                        Image(systemName: "plus")
-                    }
-                    .disabled(Steps > 255)
-                    .frame(width: 30)
-                }
-                .frame(width: geometry.size.width - 20)
-                Divider()
-            }
-            Cooradintion
+//            if HazardSelected == 0{
+//                Divider()
+//                HStack{
+//                    Text("Num of Step")
+//                        .font(.headline)
+//                    Spacer()
+//                    Button(action: {self.Steps -= 1}) {
+//                        Image(systemName: "minus")
+//                    }
+//                    .disabled(Steps < 1)
+//                    .frame(width: 30)
+//                    TextField("", value: $Steps, formatter: NumberFormatter())
+//                        .onReceive(Just(Steps), perform: {_ in
+//                            if Steps > 255 {
+//                                self.Steps = 255
+//                            }
+//                            else if Steps < 0 {
+//                                self.Steps = 0
+//                            }
+//                        })
+//                    Button(action: {self.Steps += 1}) {
+//                        Image(systemName: "plus")
+//                    }
+//                    .disabled(Steps > 255)
+//                    .frame(width: 30)
+//                }
+//                .frame(width: geometry.size.width - 20)
+//            }
+            RoomView
             ErrorList
+            Spacer()
         }
+    }
+    
+    var RoomView: some View{
+        VStack(alignment: .center){
+            HStack{
+                Text("Place")
+                Picker(selection: $RoomSelected, label: Text("Room Picker")) {
+                    Text("Room").tag(0)
+                    Text("Toilet").tag(1)
+                    Text("Aisle").tag(2)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                Button(action: {readeract.RoomSeq -= 1}) {
+                    Image(systemName: "minus")
+                }
+                .disabled(Steps < 1)
+                .padding()
+                .frame(width: 30, height: 30)
+                TextField("", value: $readeract.RoomSeq, formatter: NumberFormatter())
+                    .onReceive(Just(Steps), perform: {_ in
+                        if readeract.RoomSeq > 32767 {
+                            readeract.RoomSeq = 32767
+                        }
+                    })
+                    .multilineTextAlignment(.center)
+                    .keyboardType(.numbersAndPunctuation)
+                    .frame(width: 50)
+                Button(action: {readeract.RoomSeq += 1}) {
+                    Image(systemName: "plus")
+                }
+                .disabled(Steps > 255)
+                .padding()
+                .frame(width: 30, height: 30)
+            }
+            
+        }
+        .frame(width: geometry.size.width - 20)
     }
     
     var Cooradintion: some View{
@@ -340,16 +435,42 @@ struct ReaderWriteData: View{
             .frame(width: geometry.size.width - 20)
             Divider()
             HStack{
-                Text("Latitude:")
+                Text("Lat:")
                     .font(.headline)
                 Spacer()
-                Text("\(readeract.Latitude)")
+//                Text("\(readeract.Latitude)")
+                TextField("Latitude", text: $readeract.LatitudeStr)
+                    .keyboardType(.numbersAndPunctuation)
+                    .onReceive(Just(readeract.LatitudeStr), perform: { newValue in
+                        let filtered = newValue.filter { "0123456789.-".contains($0) }
+                        if filtered != newValue {
+                            let float : Float = Float(filtered) ?? 00
+                            readeract.LatitudeStr = String(float)
+                        }
+                    })
+                    .multilineTextAlignment(.center)
+                    .frame(width:100, height: 30)
+                    .background(Color.gray.opacity(0.15))
+                    .cornerRadius(10)
                 Divider()
                     .frame(height: 20)
-                Text("Longitude:")
+                Text("Long:")
                     .font(.headline)
                 Spacer()
-                Text("\(readeract.Longitude)")
+//                Text("\(readeract.Longitude)")
+                TextField("Longitude", text: $readeract.LongitudeStr)
+                    .keyboardType(.numbersAndPunctuation)
+                    .onReceive(Just(readeract.LongitudeStr), perform: { newValue in
+                        let filtered = newValue.filter { "0123456789.-".contains($0) }
+                        if filtered != newValue {
+                            let float : Float = Float(filtered) ?? 00
+                            readeract.LongitudeStr = String(float)
+                        }
+                    })
+                    .multilineTextAlignment(.center)
+                    .frame(width:100, height: 30)
+                    .background(Color.gray.opacity(0.15))
+                    .cornerRadius(10)
             }
             .frame(width: geometry.size.width - 20)
             Divider()
@@ -369,7 +490,7 @@ struct ReaderWriteData: View{
                         }
                     })
                     .multilineTextAlignment(.center)
-                    .frame(width:150, height: 30)
+                    .frame(width:100, height: 30)
                     .background(Color.gray.opacity(0.15))
                     .cornerRadius(10)
                 Divider()
@@ -387,7 +508,7 @@ struct ReaderWriteData: View{
                         }
                     })
                     .multilineTextAlignment(.center)
-                    .frame(width:150, height: 30)
+                    .frame(width:100, height: 30)
                     .background(Color.gray.opacity(0.15))
                     .cornerRadius(10)
             }
@@ -506,13 +627,12 @@ struct ReaderWriteData: View{
         Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
             readeract.Latitude = Float(self.location.lastLocation?.coordinate.latitude ?? 00)
             readeract.Longitude = Float(self.location.lastLocation?.coordinate.longitude ?? 00)
+            readeract.LatitudeStr = String(Float(self.location.lastLocation?.coordinate.latitude ?? 00))
+            readeract.LongitudeStr = String(Float(self.location.lastLocation?.coordinate.longitude ?? 00))
             counter += 1
             if location.LocationIsUpdate || counter > 10 {
                 self.location.stop()
                 timer.invalidate()
-//                if !(counter > 10){
-//                    print("LatitudeInByte: \(Data(readeract.Latitude.bytes).hexEncodedString()) LongitudeInByte: \(Data(readeract.Longitude.bytes).hexEncodedString())")
-//                }
             }
         }
     }
@@ -524,13 +644,15 @@ struct ReaderWriteData: View{
         var cmd = [UInt8]()
         let PasswdBytes : [UInt8] = [UInt8](PasswdStr.hexaData)
         if funcSelected == 4{
-            let infor : [UInt8] = [0x00,UInt8(inforSelected)] + Array(Int16(readeract.Seq).bytes) + [UInt8(Steps)]
-            let coordinate : [UInt8] = (Float(readeract.Xcoordinate) ?? 0).bytes + (Float(readeract.Ycoordinate) ?? 0).bytes + readeract.Latitude.bytes + readeract.Longitude.bytes
-            let Data : [UInt8] = [0x4E,0x56] + Array(Int16(readeract.floor).bytes) + infor + coordinate + [0xEC]
+//            let Hazard : [UInt8] = [UInt8(HazardSelected)] + Array(Int16(readeract.Seq).bytes) + [UInt8(Steps)]
+            let Information : [UInt8] = [UInt8(HazardSelected)] + Array(Int16(readeract.Seq).bytes) + [UInt8(Steps)] + [UInt8(RoomSelected)] + Array(Int16(readeract.RoomSeq).bytes)
+//            let Infor : [UInt8] = Hazard + Information
+            let Coordinate : [UInt8] = (Float(readeract.Xcoordinate) ?? 0).bytes + (Float(readeract.Ycoordinate) ?? 0).bytes + (Float(readeract.LatitudeStr) ?? 0).bytes  + (Float(readeract.LongitudeStr) ?? 0).bytes
+            let Data : [UInt8] = [0x4E,0x56] + Array(Int16(readeract.floor).bytes) + Information + Coordinate + [0xEC]
             cmd = reader.cmd_data_write(passwd: PasswdBytes, data_block: UInt8(1), data_start: UInt8(2), data: Data)
         }
         else{
-            cmd = reader.cmd_data_write(passwd: PasswdBytes, data_block: readeract.DataCmdinByte[funcSelected], data_start: UInt8(StartAdd), data: [UInt8](WriteByteStr.hexaData))
+            cmd = reader.cmd_data_write(passwd: PasswdBytes, data_block: readeract.DataCmdinByte[Int(funcSelected)], data_start: UInt8(StartAdd), data: [UInt8](WriteByteStr.hexaData))
         }
         Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){timer in
             if !flag {
@@ -543,7 +665,6 @@ struct ReaderWriteData: View{
                 if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x82{
                     if feedback[1] != 4 {
                         ErrorStr.append("Write Tag Succeeded")
-                        readeract.MatchState = 0
                     }
                     else {
                         ErrorStr.append(reader.reader_error_code(code: feedback[4]))
@@ -555,8 +676,16 @@ struct ReaderWriteData: View{
             counter += 1
             if counter > 30 || completed {
                 timer.invalidate()
+                Match_ButtAct()
             }
         }
     }
 }
 
+//struct ReaderWriteData_Previews: PreviewProvider {
+//    static var previews: some View {
+//        Group {
+//
+//        }
+//    }
+//}

@@ -45,7 +45,8 @@ struct ReaderInventory: View{
                     Button(action: {self.readeract.inventorySpeed -= 1}) {
                         Image(systemName: "minus")
                     }
-                    .frame(width: 30)
+                    .padding()
+                    .frame(width: 30, height: 30)
                     .disabled(readeract.inventorySpeed < 1)
                     TextField("", value: $readeract.inventorySpeed, formatter: NumberFormatter())
                         .onReceive(Just(readeract.inventorySpeed), perform: {_ in
@@ -64,7 +65,8 @@ struct ReaderInventory: View{
                         Image(systemName: "plus")
                     }
                     .disabled(readeract.inventorySpeed > 255)
-                    .frame(width: 30)
+                    .padding()
+                    .frame(width: 30, height: 30)
                     Spacer()
                     Button(action: {
                         if !(ble.peripherals.filter({$0.State == 2}).count < 1){
@@ -172,7 +174,7 @@ struct ReaderInventory: View{
                                     Text("RSSI:\(tag.RSSI)")
                                 }
                                 if NavTag != nil {
-                                    Text("Floor:\(NavTag!.floor)/F\t\tInfor:\(NavTag!.Infor)\(NavTag!.Seq) \(NavTag!.Step)")
+                                    Text("Floor: \(NavTag!.Floor)/F\tHazard: \(NavTag!.HazardStr)\tInformation: \((NavTag!.InformationStr))")
                                 }
                             }
                         }

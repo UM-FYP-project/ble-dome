@@ -30,8 +30,8 @@ class readerAct: ObservableObject{
 //    let DataByte = Array(0...255)
     @Published var DataBlock_picker = false
     @Published var DataBlock_Selected = 1
-    @Published var DataStart = 2
-    @Published var DataLen = 26
+    @Published var DataStart = 8
+    @Published var DataLen = 16
 //    @Published var DataStart_picker = false
 //    @Published var DataStart_Selected = 2
 //    @Published var DataLen_picker = false
@@ -44,6 +44,9 @@ class readerAct: ObservableObject{
     @Published var Ycoordinate : String = "0.0"
     @Published var Latitude : Float = 0
     @Published var Longitude : Float = 0
+    @Published var LatitudeStr : String = ""
+    @Published var LongitudeStr : String = ""
     @Published var floor : Int = 0
     @Published var Seq : UInt = 0
+    @Published var RoomSeq : UInt = 0
 }

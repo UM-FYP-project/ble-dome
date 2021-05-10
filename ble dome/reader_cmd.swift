@@ -18,17 +18,6 @@ struct byteRecord: Identifiable{
     let Byte : [UInt8]
 }
 
-//struct tag: Identifiable{
-//    let id : Int
-//    let EPC_Len : UInt8
-//    let EPC : [UInt8]
-//    let EPC_str : String
-//    var RSSI_byte : UInt8
-//    var RSSI_int : Int
-//    var Count : Int
-//    var Data_Len : UInt8?
-//    var Data : [UInt8]
-//}
 
 struct tag: Identifiable{
     var id : Int
@@ -43,16 +32,18 @@ struct tagData: Identifiable{
     var id : Int
     let PC : [UInt8]
     let CRC : [UInt8]
+    let EPC : [UInt8]
     var RSSI: Int
     let DataLen : UInt8
-    let Data : [UInt8]
+    let DataBL : [UInt8]
 }
 
 struct NavTag{
-    let floor : Int
-    let Infor : String
-    let Seq : Int
-    let Step : Int
+    let Floor : Int
+    let Hazard : [UInt8]
+    let HazardStr : String
+    let Information : [UInt8]
+    let InformationStr : String
     let Xcoordinate : Float?
     let Ycoordinate : Float?
     let Latitude : Float?
@@ -313,19 +304,19 @@ class Reader: NSObject, ObservableObject{
 //                        print("Data: \(Data)")
                         if let i = Tags.firstIndex(where: {$0.EPC == EPC}){
                             let RSSI = Tags[i].RSSI
-                            if TagsData.filter({$0.CRC == CRC && $0.Data == DataBL}).count < 1{
-                                let TagData = tagData(id: Tags[i].id, PC: PC, CRC: CRC, RSSI: RSSI, DataLen: ReadData_len, Data: DataBL)
+                            if TagsData.filter({$0.EPC == EPC && $0.DataBL == DataBL}).count < 1{
+                                let TagData = tagData(id: Tags[i].id, PC: PC, CRC: CRC, EPC: EPC, RSSI: RSSI, DataLen: ReadData_len, DataBL: DataBL)
                                 TagsData.append(TagData)
                             }
                             else {
-                                if let j = TagsData.firstIndex(where: {$0.CRC == CRC && $0.Data == DataBL}){
+                                if let j = TagsData.firstIndex(where: {$0.CRC == CRC && $0.DataBL == DataBL}){
                                     TagsData[j].RSSI = RSSI
                                 }
                             }
                         }
                         else{
-                            if TagsData.filter({$0.CRC == CRC && $0.Data == DataBL}).count < 1{
-                                let TagData = tagData(id: TagsData.count, PC: PC, CRC: CRC, RSSI: 0, DataLen: ReadData_len, Data: DataBL)
+                            if TagsData.filter({$0.CRC == CRC && $0.DataBL == DataBL}).count < 1{
+                                let TagData = tagData(id: TagsData.count, PC: PC, CRC: CRC, EPC: EPC, RSSI: 0, DataLen: ReadData_len, DataBL: DataBL)
                                 TagsData.append(TagData)
                             }
                         }
@@ -396,58 +387,76 @@ class Reader: NSObject, ObservableObject{
         if Tag != nil {
             let EPC = Tag!.EPC
             if EPC[0] == 0x4E && EPC[1] == 0x56{
-                let floor : Int = Int(Int16(bigEndian: Data(Array(EPC[2...3])).withUnsafeBytes{$0.load(as: Int16.self)}))
-                var inform : String = ""
-                if EPC[4] == 0x00 {
-                    switch EPC[5] {
+                let Floor : Int = Int(Int16(bigEndian: Data(Array(EPC[2...3])).withUnsafeBytes{$0.load(as: Int16.self)}))
+                let Hazard : [UInt8] = Array(EPC[4...7])
+                var HazardStr : String = ""
+                    switch EPC[4] {
                     case 1:
-                        inform = "Entrance"
+                        HazardStr = "Entrance"
                     case 2:
-                        inform = "Elevator"
+                        HazardStr = "Elevator"
                     case 3:
-                        inform = "Crossroad"
+                        HazardStr = "Crossroad"
                     case 4:
-                        inform = "Straight"
+                        HazardStr = "Straight"
                     default:
-                        inform = "Stairs"
+                        HazardStr = "Stairs"
                     }
-                }
-                let seq : Int = Int(Int16(bigEndian: Data(Array(EPC[6...7])).withUnsafeBytes{$0.load(as: Int16.self)}))
-                let steps : Int = Int(EPC[8])
-                navtag = NavTag(floor: floor, Infor: inform, Seq: seq, Step: steps, Xcoordinate: nil, Ycoordinate: nil, Latitude: nil, Longitude: nil)
+                HazardStr += "\(Int(Int16(bigEndian: Data(Array(EPC[5...6])).withUnsafeBytes{$0.load(as: Int16.self)}))) \(Int(EPC[7]))"
+                let Information : [UInt8] = Array(EPC[8...10])
+                let InformationStr = "\(EPC[8] == 0 ? "Room" : EPC[8] == 1 ? "Restroom" : "Aisle")" + "\(Int(Int16(bigEndian: Data(Array(EPC[9...10])).withUnsafeBytes{$0.load(as: Int16.self)})))"
+                navtag = NavTag(Floor: Floor, Hazard: Hazard, HazardStr: HazardStr, Information: Information, InformationStr: InformationStr, Xcoordinate: nil, Ycoordinate: nil, Latitude: nil, Longitude: nil)
+                return navtag
             }
         }
         else if TagData != nil {
-            let EPC = TagData!.Data
+            let DataBL = TagData!.DataBL
+            let EPC = TagData!.EPC
             let Len = TagData!.DataLen
-            if EPC[0] == 0x4E && EPC[1] == 0x56 && Len > 25{
-                let floor : Int = Int(Int16(bigEndian: Data(Array(EPC[2...3])).withUnsafeBytes{$0.load(as: Int16.self)}))
-                var inform : String = ""
-                if EPC[4] == 0x00 {
-                    switch EPC[5] {
-                    case 1:
-                        inform = "Entrance"
-                    case 2:
-                        inform = "Elevator"
-                    case 3:
-                        inform = "Crossroad"
-                    case 4:
-                        inform = "Straight"
-                    default:
-                        inform = "Stairs"
+            if EPC[0] == 0x4E && EPC[1] == 0x56{
+                if DataBL[Int(Len) - 1] == 0xEC{
+                    let Floor : Int = Int(Int16(bigEndian: Data(Array(EPC[2...3])).withUnsafeBytes{$0.load(as: Int16.self)}))
+                    let Hazard : [UInt8] = Array(EPC[4...7])
+                    var HazardStr : String = ""
+                        switch EPC[4] {
+                        case 1:
+                            HazardStr = "Entrance"
+                        case 2:
+                            HazardStr = "Elevator"
+                        case 3:
+                            HazardStr = "Crossroad"
+                        case 4:
+                            HazardStr = "Straight"
+                        default:
+                            HazardStr = "Stairs"
+                        }
+                    let Information : [UInt8] = Array(EPC[8...10])
+                    let InformationStr = "\(EPC[8] == 0 ? "Room" : EPC[8] == 1 ? "Restroom" : "Aisle")" + "\(Int(Int16(bigEndian: Data(Array(EPC[9...10])).withUnsafeBytes{$0.load(as: Int16.self)})))"
+                    HazardStr += "\(Int(Int16(bigEndian: Data(Array(EPC[5...6])).withUnsafeBytes{$0.load(as: Int16.self)}))) \(Int(EPC[7]))"
+                    var X : Float = 0
+                    var Y : Float = 0
+                    var Lat : Float = 0
+                    var Long : Float = 0
+                    if EPC == Array(DataBL[0...11]){
+                        X = Data(Array(DataBL[9...12])).withUnsafeBytes{$0.load(as: Float.self)}
+                        Y = Data(Array(DataBL[13...16])).withUnsafeBytes{$0.load(as: Float.self)}
+                        Lat = Data(Array(DataBL[17...20])).withUnsafeBytes{$0.load(as: Float.self)}
+                        Long = Data(Array(DataBL[21...24])).withUnsafeBytes{$0.load(as: Float.self)}
                     }
+                    else{
+//                        let Xarr : [UInt8] = [EPC[11]] + Array(DataBL[0...2])
+//                        print(Xarr)
+                        X = Data([EPC[11]] + Array(DataBL[0...2])).withUnsafeBytes{$0.load(as: Float.self)}
+                        Y = Data(Array(DataBL[3...6])).withUnsafeBytes{$0.load(as: Float.self)}
+                        Lat = Data(Array(DataBL[7...10])).withUnsafeBytes{$0.load(as: Float.self)}
+                        Long = Data(Array(DataBL[11...14])).withUnsafeBytes{$0.load(as: Float.self)}
+                    }
+                    navtag = NavTag(Floor: Floor, Hazard: Hazard, HazardStr: HazardStr, Information: Information, InformationStr: InformationStr, Xcoordinate: X, Ycoordinate: Y, Latitude: Lat, Longitude: Long)
+                    return navtag
                 }
-                let seq : Int = Int(Int16(bigEndian: Data(Array(EPC[6...7])).withUnsafeBytes{$0.load(as: Int16.self)}))
-                let steps : Int = Int(EPC[8])
-                let x : Float = Data(Array(EPC[9...12])).withUnsafeBytes{$0.load(as: Float.self)}
-                let y : Float = Data(Array(EPC[13...16])).withUnsafeBytes{$0.load(as: Float.self)}
-                let lat : Float = Data(Array(EPC[17...20])).withUnsafeBytes{$0.load(as: Float.self)}
-                let long : Float = Data(Array(EPC[21...24])).withUnsafeBytes{$0.load(as: Float.self)}
-                navtag = NavTag(floor: floor, Infor: inform, Seq: seq, Step: steps, Xcoordinate: x, Ycoordinate: y, Latitude: lat, Longitude: long)
             }
         }
-        
-        return navtag
+        return nil
     }
 }
 

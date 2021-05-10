@@ -52,12 +52,12 @@ struct ReaderTab: View {
                         }
                     }
                     else if Selected == 3{
-//                        ScrollView {
+                        ScrollView {
                         ReaderWriteData(geometry: geometry)
                             .environmentObject(reader)
                             .environmentObject(readeract)
                             .disabled(reader.Tags.isEmpty)
-//                        }
+                        }
                     }
                     else if Selected == 4{
                         ScrollView {

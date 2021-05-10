@@ -48,7 +48,8 @@ struct ReadTagsData: View {
                     Button(action: {self.readeract.DataStart -= 1}) {
                         Image(systemName: "minus")
                     }
-                    .frame(width: 30)
+                    .padding()
+                    .frame(width: 30, height: 30)
                     .disabled(readeract.DataStart < 1)
                     TextField("", value: $readeract.DataStart, formatter: NumberFormatter())
                         .onReceive(Just(readeract.DataStart), perform: {_ in
@@ -66,7 +67,8 @@ struct ReadTagsData: View {
                         Image(systemName: "plus")
                     }
                     .disabled(readeract.DataStart > 255)
-                    .frame(width: 30)
+                    .padding()
+                    .frame(width: 30, height: 30)
                 }
                 .frame(width: geometry.size.width - 20, height: 30)
                 Divider()
@@ -78,7 +80,8 @@ struct ReadTagsData: View {
                     Button(action: {self.readeract.DataLen -= 1}) {
                         Image(systemName: "minus")
                     }
-                    .frame(width: 30)
+                    .padding()
+                    .frame(width: 30, height: 30)
                     .disabled(readeract.DataLen < 1)
                     TextField("", value: $readeract.DataLen, formatter: NumberFormatter())
                         .onReceive(Just(readeract.DataLen), perform: {_ in
@@ -96,7 +99,8 @@ struct ReadTagsData: View {
                         Image(systemName: "plus")
                     }
                     .disabled(readeract.DataLen > 255)
-                    .frame(width: 30)
+                    .padding()
+                    .frame(width: 30, height: 30)
                 }
                 Divider()
                 HStack{
@@ -135,14 +139,15 @@ struct ReadTagsData: View {
                         let TagData = reader.TagsData[index]
                         let PCstr = Data(TagData.PC).hexEncodedString()
                         let CRCstr = Data(TagData.CRC).hexEncodedString()
-                        let Datastr = Data(TagData.Data).hexEncodedString()
+                        let EPCStr = Array(TagData.DataBL[0...11]) == TagData.EPC ? "" : Data(TagData.EPC).hexEncodedString() + "\n"
+                        let Datastr = Data(TagData.DataBL).hexEncodedString()
                         let NavTag : NavTag? = reader.TagtoNav(Tag:nil, TagData: TagData)
                         HStack{
                             Text("\(TagData.id + 1)")
                                 .frame(width: 20)
                             Divider()
                             VStack(alignment: .leading){
-                                Text("\(Datastr)")
+                                Text("\(EPCStr)\(Datastr)")
                                     .font(.headline)
                                 HStack{
                                     Text("PC:\(PCstr)")
@@ -151,9 +156,11 @@ struct ReadTagsData: View {
                                     Text("RSSI:\(TagData.RSSI)")
                                 }
                                 if NavTag != nil {
-                                    Text("Floor:\(NavTag!.floor)/F\t\tInfor:\(NavTag!.Infor)\(NavTag!.Seq) \(NavTag!.Step)")
+                                    Text("Floor: \(NavTag!.Floor)/F\tHazard: \(NavTag!.HazardStr)\nInformation: \((NavTag!.InformationStr))")
                                     Text("X:\(NavTag!.Xcoordinate!)\t\tY:\(NavTag!.Ycoordinate!)")
-                                    Text("Lag:\(NavTag!.Latitude!)\t\tLong:\(NavTag!.Longitude!)")
+                                    if NavTag!.Latitude != nil && NavTag!.Longitude != nil {
+                                        Text("Lag:\(NavTag!.Latitude!)\t\tLong:\(NavTag!.Longitude!)")
+                                    }
                                 }
                             }
                         }

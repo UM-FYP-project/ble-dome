@@ -308,31 +308,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func Characteristic_Properties (properties: CBCharacteristicProperties) -> (String, Bool) {
         var PropertiesStr = [String]()
-        let properties_digis:UInt8 = UInt8(properties.rawValue) % 0x10
-        let properties_tens:UInt8 = UInt8(properties.rawValue) / 0x10
         var iswritable = false
-//        switch properties {
-//        case _ where properties.contains(.authenticatedSignedWrites):
-//            PropertiesStr.append("AuthenticatedSignedWrites")
-//        case _ where properties.contains(.broadcast):
-//            PropertiesStr.append("Broadcast")
-//        case _ where properties.contains(.extendedProperties):
-//            PropertiesStr.append("ExtendedProperties")
-//        case _ where properties.contains(.indicate):
-//            PropertiesStr.append("Indicate")
-//        case _ where properties.contains(.notify):
-//            PropertiesStr.append("Notify")
-//        case _ where properties.contains(.read):
-//            PropertiesStr.append("Read")
-//        case _ where properties.contains(.write):
-//            PropertiesStr.append("Write")
-//            iswritable = true
-//        case _ where properties.contains(.writeWithoutResponse):
-//            PropertiesStr.append("WriteWithoutResponse")
-//            iswritable = true
-//        default:
-//            break
-//        }
         if properties.contains(.authenticatedSignedWrites){
             PropertiesStr.append("AuthenticatedSignedWrites")
         }
