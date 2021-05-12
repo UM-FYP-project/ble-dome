@@ -13,26 +13,28 @@ struct BLEScanner_Alert: View {
     var geometry : GeometryProxy
     var body: some View {
         VStack(alignment:.center){
-            Text("Scanner")
-                .bold()
-                .font(.title)
-            Text("Scan and Connect Deivce")
+            VStack{
+                Text("Scanner")
+                    .bold()
+                    .font(.title2)
+                Text("Scan and Connect Deivce")
+            }
+            .padding()
+            .clipped()
             PeripheralList
             Divider()
-                .frame(width: geometry.size.width - 60)
             Button(action: {
                 self.Enable = false
                 ble.stopscan_device()
             }) {
                 Text("Close")
-                    .font(.title2)
+                    .font(.title3)
                     .foregroundColor(.blue)
             }
-            .frame(width: geometry.size.width - 60, height: 40)
+            .padding()
         }
-        .padding()
         .background(RoundedRectangle(cornerRadius: 20)
-                        .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
+                        .foregroundColor(Color(UIColor.systemGray6)).shadow(radius: 1))
         .frame(maxWidth: geometry.size.width - 60, maxHeight: geometry.size.height - 300)
         .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
         .onAppear(perform: {
@@ -61,19 +63,18 @@ struct BLEScanner_Alert: View {
                         .padding()
                         .frame(height: 50)
                         Divider()
-                            .frame(width: geometry.size.width - 80)
                     }
                 }
                 .background(RoundedRectangle(cornerRadius: 20)
-                                .foregroundColor(Color.white.opacity(0.5)).shadow(radius: 1))
+                                .foregroundColor(Color(UIColor.systemGray5)).shadow(radius: 1))
             }
             else {
                 Text("\nPlease Turn On  Device")
-                    .font(.title2)
+//                    .font(.title2)
                     .bold()
             }
         }
-        .frame(width: geometry.size.width - 100)
+        .frame(maxWidth: geometry.size.width - 100)
     }
 }
 

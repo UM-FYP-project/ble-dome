@@ -444,8 +444,6 @@ class Reader: NSObject, ObservableObject{
                         Long = Data(Array(DataBL[21...24])).withUnsafeBytes{$0.load(as: Float.self)}
                     }
                     else{
-//                        let Xarr : [UInt8] = [EPC[11]] + Array(DataBL[0...2])
-//                        print(Xarr)
                         X = Data([EPC[11]] + Array(DataBL[0...2])).withUnsafeBytes{$0.load(as: Float.self)}
                         Y = Data(Array(DataBL[3...6])).withUnsafeBytes{$0.load(as: Float.self)}
                         Lat = Data(Array(DataBL[7...10])).withUnsafeBytes{$0.load(as: Float.self)}

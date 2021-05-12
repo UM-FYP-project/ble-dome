@@ -14,14 +14,13 @@ struct DetailTabView: View {
     @EnvironmentObject var reader : Reader
     @EnvironmentObject var readeract : readerAct
     @EnvironmentObject var location : LocationManager
-    @State private var selectedTab = 0
 //    @Binding var Enable : Bool
     var peripheral : Peripheral
     var body: some View {
         GeometryReader { geometry in
             ZStack{
                 //                NavigationView{
-                TabView(selection: $selectedTab) {
+                TabView() {
                     if peripheral.Service.contains("2A68"){
                         GeometryReader{ geom in
                             ReaderTab(geometry: geom)

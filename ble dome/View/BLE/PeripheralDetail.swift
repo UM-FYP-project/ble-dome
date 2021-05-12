@@ -106,7 +106,7 @@ struct CharacteristicProperties: View {
                         .foregroundColor(.blue)
                         .frame(width: 50, height: 30)
                         .background(RoundedRectangle(cornerRadius: 10)
-                                        .foregroundColor(Color.white.opacity(0.7)).shadow(radius: 1))
+                                        .foregroundColor(Color.white.opacity(0.15)).shadow(radius: 1))
                         .onTapGesture(perform: {
                             WriteValueBool = true
                             peripheralForWirte = peripheral
@@ -122,20 +122,16 @@ struct CharacteristicProperties: View {
                     }
                     .frame(width: 50, height: 30)
                     .background(RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(Color.white.opacity(0.7)).shadow(radius: 1))
+                                    .foregroundColor(Color.white.opacity(0.15)).shadow(radius: 1))
                 }
             }
         }
-        .onAppear(perform: {
-            WriteValueBool = false
-        })
     }
 }
 
 
 struct WriteValuetoChar: View {
     @EnvironmentObject var ble:BLE
-//    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
     @State var WrtieValueBox : Bool = false
     @State var WriteValueStr : String = ""
     @State var WriteWithoutResponse_toggel : Bool = false
@@ -155,6 +151,7 @@ struct WriteValuetoChar: View {
                         Text("Value wrote: \(WriteValueStr)")
                     }
                     .padding()
+                    .clipped()
                     TextField("Value in Byte without 0x and Space", text: $WriteValueStr)
                         .onReceive(Just(WriteValueStr), perform: { newValue in
                             let filtered = newValue.filter { "0123456789ABCDEFabcdef".contains($0) }
@@ -168,7 +165,7 @@ struct WriteValuetoChar: View {
                         Toggle(isOn: $WriteWithoutResponse) {
                             Text("WithoutResponse")
                         }
-                        .frame(width: geometry.size.width - 60)
+                        .frame(width: geometry.size.width - 80)
                         .disabled(!WriteWithoutResponse_toggel)
                     Divider()
                     HStack(alignment:.center){
@@ -180,14 +177,12 @@ struct WriteValuetoChar: View {
                             else {
                                 ble.writeValue(value: WriteValue, characteristic: characteristic!.Characteristic, peripheral: peripheral!.Peripheral)
                             }
-//                            self.presentationMode.wrappedValue.dismiss()
                         }) {
                             Text("Write")
                         }
                         .frame(width: geometry.size.width / 2, alignment: .center)
                         Divider()
                         Button(action: {
-//                            self.presentationMode.wrappedValue.dismiss()
                             WriteValueBool = false
                         }) {
                             Text("close")
@@ -196,9 +191,9 @@ struct WriteValuetoChar: View {
                     }
                     .frame(height: 40)
                 }
-                .frame(width: geometry.size.width - 40, height: 220)
-                .background(RoundedRectangle(cornerRadius: 10)
-                .foregroundColor(Color.white.opacity(0.7)).shadow(radius: 1))
+                .frame(maxWidth: geometry.size.width - 40, maxHeight: 220)
+                .background(RoundedRectangle(cornerRadius: 20)
+                                .foregroundColor(Color(UIColor.systemGray6)).shadow(radius: 1))
                 .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
 //            }
 //            .navigationBarHidden(true)

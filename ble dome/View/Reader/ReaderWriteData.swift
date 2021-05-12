@@ -129,7 +129,6 @@ struct ReaderWriteData: View{
                     writeAlert = true
                     fillPasswd = (PasswdStr.count > 6 ? false : true)
                     if funcSelected == 4{
-//                        AlertStr = "Password: \(String(PasswdStr.prefix(8)).hexaData.hexEncodedString())\nFloor: \(readeract.floor == 0 ? "G/F" : "\(readeract.floor)/F")\nHazard: \(HazardStrArray[HazardSelected])\(HazardSelected != 4 ? readeract.Seq < 10 ? "0\(readeract.Seq)" : "\(readeract.Seq)" : "")\n\(HazardSelected == 0 ? "Num of Steps: \(Steps)\n" : "")\n\(RoomSelected == 0 ? "Room" : RoomSelected == 1 ? "Restroom" : "Aisle")\(readeract.RoomSeq)\nIndoor: \(Float(readeract.Xcoordinate) ?? 0) : \(Float(readeract.Ycoordinate) ?? 0)\nLocation: \(readeract.Latitude) : \(readeract.Longitude)"
                         AlertStr = String(
                             "Password: \(String(PasswdStr.prefix(8)).hexaData.hexEncodedString())\n" +
                                 "Floor: \(readeract.floor == 0 ? "G/F" : "\(readeract.floor)/F")" +
@@ -311,7 +310,7 @@ struct ReaderWriteData: View{
                     }
                     .padding()
                     .frame(width: 30, height: 30)
-                    if HazardSelected == 0{
+                    if HazardSelected == 0 || HazardSelected == 2{
                         Spacer()
                         Divider()
                         Text("Steps")
@@ -345,34 +344,6 @@ struct ReaderWriteData: View{
                 .frame(width: geometry.size.width - 20)
                 Divider()
             }
-//            if HazardSelected == 0{
-//                Divider()
-//                HStack{
-//                    Text("Num of Step")
-//                        .font(.headline)
-//                    Spacer()
-//                    Button(action: {self.Steps -= 1}) {
-//                        Image(systemName: "minus")
-//                    }
-//                    .disabled(Steps < 1)
-//                    .frame(width: 30)
-//                    TextField("", value: $Steps, formatter: NumberFormatter())
-//                        .onReceive(Just(Steps), perform: {_ in
-//                            if Steps > 255 {
-//                                self.Steps = 255
-//                            }
-//                            else if Steps < 0 {
-//                                self.Steps = 0
-//                            }
-//                        })
-//                    Button(action: {self.Steps += 1}) {
-//                        Image(systemName: "plus")
-//                    }
-//                    .disabled(Steps > 255)
-//                    .frame(width: 30)
-//                }
-//                .frame(width: geometry.size.width - 20)
-//            }
             RoomView
             ErrorList
             Spacer()

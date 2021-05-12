@@ -12,7 +12,8 @@ let NodesDict : [GeoPos : [Node]] = [
 ]
 
 let TestNodes : [Node] = [
-    Node(id: 0, X: Float(1.3), Y: Float(3.1), Hazard: [], Infor: [], Neighbors: []),
-    Node(id: 1, X: Float(3.2), Y: Float(5.2), Hazard: [], Infor: [], Neighbors: [])
+    Node(id: 0, X: Float(1.3), Y: Float(3.1), Hazard: [], Information: [], Neighbors: []),
+    Node(id: 1, X: Float(3.2), Y: Float(5.2), Hazard: [], Information: [], Neighbors: [])
 ]
+
 

@@ -18,10 +18,8 @@ struct Node: Identifiable, Hashable {
     let X : Float
     let Y : Float
     let Hazard : [UInt8]
-    let Infor : [UInt8]
+    let Information : [UInt8]
     let Neighbors : [Int]
-    
-    
 }
 
 var MapDict = [GeoPos : GKGraph]()
