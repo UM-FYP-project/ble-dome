@@ -26,9 +26,11 @@ struct ContentView: View {
                 NavigationView {
                     VStack{
                         Spacer()
-                        HStack{
-                            Text("Setting")
-                        }
+                        NavMain(geometry: geometry)
+                            .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
+                            .environmentObject(ble)
+                            .environmentObject(reader)
+                            .environmentObject(path)
                         Spacer()
                         VStack{
                             Divider()
@@ -61,10 +63,10 @@ struct ContentView: View {
                                         .scaledToFit()
                                         .frame(width: 25, height: 20)
                                         .padding(.top, 10)
-                                        .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                                        .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
                                     Text("Home")
                                         .font(.system(size: 12))
-                                        .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                                        .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
                                     Spacer()
                                 }
                                 .onLongPressGesture(minimumDuration: 2) {
@@ -79,10 +81,8 @@ struct ContentView: View {
                         .background(Color("TabBarColor"))
                         .frame(width: geometry.size.width, height: geometry.size.height/9.2)
                     }
-                    
-                    
                     .edgesIgnoringSafeArea(.bottom)
-                    .navigationTitle("Home")
+                    .navigationBarTitle("Main", displayMode: .inline)
                     .navigationBarItems(trailing:
                                             Button(action: {isScanner_trigged = true}) {
                                                 Text("Scanner")
@@ -92,46 +92,8 @@ struct ContentView: View {
                     )
                 }
                 .onAppear(perform: {
-                    Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
-                        if !ble.isInit{
-                            ble.initBLE()
-                        }
-                        if (ble.peripherals.filter({$0.State == 2}).count < 1) && !isScanner_trigged{
-                            reader.TagsData.removeAll()
-                            reader.Tags.removeAll()
-                            reader.tagsCount = 0
-                            reader.BytesRecord.removeAll()
-                            let previousConntection : String? = rememberConntion.object(forKey: "PreviousName") as? String ?? nil
-                            if previousConntection != nil {
-                                print("Conntect with \(previousConntection!)")
-                                ble.scan_devices()
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                    if let index = ble.peripherals.firstIndex(where: {$0.name == previousConntection!}){
-                                        ble.connect(peripheral: ble.peripherals[index].Peripheral)
-                                    }
-                                    else{
-                                        ble.stopscan_device()
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                            if !isScanner_trigged{
-                                                notConnectedAlert_trigged = true
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                    if !isScanner_trigged{
-                                        notConnectedAlert_trigged = true
-                                    }
-                                }
-                            }
-                        }
-                        else{
-                            notConnectedAlert_trigged = false
-                        }
-                        isNavorSet()
-                    }
+                    BLEConnect()
+                    isNavorSet()
                 })
                 .alert(isPresented: $notConnectedAlert_trigged) {
                     Alert(
@@ -149,16 +111,60 @@ struct ContentView: View {
         }
     }
     
+    func BLEConnect(){
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
+            if !ble.isInit{
+                ble.initBLE()
+            }
+            if (ble.peripherals.filter({$0.State == 2}).count < 1) && !isScanner_trigged{
+                reader.TagsData.removeAll()
+                reader.Tags.removeAll()
+                reader.tagsCount = 0
+                reader.BytesRecord.removeAll()
+                let previousConntection : String? = rememberConntion.object(forKey: "PreviousName") as? String ?? nil
+                if previousConntection != nil {
+                    print("Conntect with \(previousConntection!)")
+                    ble.scan_devices()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        if let index = ble.peripherals.firstIndex(where: {$0.name == previousConntection!}){
+                            ble.connect(peripheral: ble.peripherals[index].Peripheral)
+                        }
+                        else{
+                            ble.stopscan_device()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                if !isScanner_trigged{
+                                    notConnectedAlert_trigged = true
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        if !isScanner_trigged{
+                            notConnectedAlert_trigged = true
+                        }
+                    }
+                }
+            }
+            else{
+                notConnectedAlert_trigged = false
+            }
+        }
+
+    }
+    
     func isNavorSet(){
-        if !ble.peripherals.isEmpty{
-            if ble.peripherals.contains(where: {$0.State == 2 && $0.Service.contains("2A68")}){
-                let peripheralIndex = ble.peripherals.firstIndex(where: {$0.State == 2 && $0.Service.contains("2A68")})
-                let peripheral = ble.peripherals[peripheralIndex!].Peripheral
+        Timer.scheduledTimer(withTimeInterval: 5, repeats: true){_ in
+            let Serivce : CBUUID = CBUUID(string: "2A68")
+            let Char : CBUUID = CBUUID(string: "4676")
+            let data : UInt8 = Scanner_longpressed ? 1 : 0
+            if !ble.peripherals.isEmpty{
                 if !ble.Peripheral_characteristics.isEmpty{
-                    if let characteristicIndex = ble.Peripheral_characteristics.firstIndex(where: {$0.Characteristic_UUID == CBUUID(string: "4676")}){
-                        let characteristic = ble.Peripheral_characteristics[characteristicIndex].Characteristic
-                        let data : UInt8 = Scanner_longpressed ? 1 : 0
-                        ble.writeValue(value: Data([data]), characteristic: characteristic, peripheral: peripheral)
+                    if let CharIndex = ble.Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == Serivce && $0.Characteristic_UUID == Char}){
+                        if let PeripheralIndex = ble.peripherals.firstIndex(where: {$0.name == ble.Peripheral_characteristics[CharIndex].name && $0.State == 2}){
+                            ble.writeValue(value: Data([data]), characteristic: ble.Peripheral_characteristics[CharIndex].Characteristic, peripheral: ble.peripherals[PeripheralIndex].Peripheral)
+                        }
                     }
                 }
             }

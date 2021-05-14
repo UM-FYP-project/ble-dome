@@ -55,16 +55,16 @@ struct DetailTabView: View {
                 .disabled(readeract.SelectedBaudrate_picker || readeract.SelectedPower_picker ||  readeract.DataBlock_picker || readeract.EPC_picker)
                 .overlay(readeract.SelectedBaudrate_picker || readeract.SelectedPower_picker || readeract.DataBlock_picker ||  readeract.EPC_picker ? Color.black.opacity(0.3).ignoresSafeArea(): nil)
                 if readeract.SelectedBaudrate_picker{
-                    Reader_Picker(picker: readeract.BaudrateCmdinStr,title: "Select Baudrate", label: "Baudrate", geometry: geometry, Selected: $readeract.SelectedBaudrate, enable: $readeract.SelectedBaudrate_picker)
+                    AlertPicker(picker: readeract.BaudrateCmdinStr,title: "Select Baudrate", label: "Baudrate", geometry: geometry, Selected: $readeract.SelectedBaudrate, enable: $readeract.SelectedBaudrate_picker)
                 }
                 if readeract.SelectedPower_picker{
-                    Reader_Picker(picker: readeract.Outpower,title: "Select Output Power", label: "Output Power", geometry: geometry, Selected: $readeract.SelectedPower, enable: $readeract.SelectedPower_picker)
+                    AlertPicker(picker: readeract.Outpower,title: "Select Output Power", label: "Output Power", geometry: geometry, Selected: $readeract.SelectedPower, enable: $readeract.SelectedPower_picker)
                 }
                 if readeract.DataBlock_picker{
-                    Reader_Picker(picker: readeract.DataCmdinStr,title: "Select DataBlock", label: "DataBlock", geometry: geometry, Selected: $readeract.DataBlock_Selected, enable: $readeract.DataBlock_picker)
+                    AlertPicker(picker: readeract.DataCmdinStr,title: "Select DataBlock", label: "DataBlock", geometry: geometry, Selected: $readeract.DataBlock_Selected, enable: $readeract.DataBlock_picker)
                 }
                 if readeract.EPC_picker{
-                    Reader_Picker(picker: reader.EPCstr, title: "Select Tag EPC", label: "EPC Matching", geometry: geometry, Selected: $readeract.EPC_Selected, enable: $readeract.EPC_picker)
+                    AlertPicker(picker: reader.EPCstr, title: "Select Tag EPC", label: "EPC Matching", geometry: geometry, Selected: $readeract.EPC_Selected, enable: $readeract.EPC_picker)
                 }
             }
 //            .navigationTitle("Reader Setting")

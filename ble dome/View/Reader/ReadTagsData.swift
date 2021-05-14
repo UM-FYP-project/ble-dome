@@ -61,7 +61,7 @@ struct ReadTagsData: View {
                             }
                         })
                         .multilineTextAlignment(.center)
-                        .keyboardType(.numbersAndPunctuation)
+                        .keyboardType(.numberPad)
                         .frame(maxWidth: 50)
                     Button(action: {self.readeract.DataStart += 1}) {
                         Image(systemName: "plus")
@@ -93,7 +93,7 @@ struct ReadTagsData: View {
                             }
                         })
                         .multilineTextAlignment(.center)
-                        .keyboardType(.numbersAndPunctuation)
+                        .keyboardType(.numberPad)
                         .frame(maxWidth: 50)
                     Button(action: {self.readeract.DataLen += 1}) {
                         Image(systemName: "plus")
@@ -187,7 +187,7 @@ struct ReadTagsData: View {
             if ble.ValueUpated_2A68{
                 let feedback = ble.reader2BLE()
                 if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x81{
-                    ErrorStr = reader.feedback2Tags(feedback: feedback)
+                    ErrorStr = reader.feedback2Tags(feedback: feedback).0
                     completed = true
                 }
                 ble.ValueUpated_2A68 = false

@@ -42,6 +42,7 @@ struct ReaderSetting: View {
 //                        .background(Color.gray.opacity(0.15))
 //                        .cornerRadius(10)
 //                        .onTapGesture {
+                
 //                            readeract.SelectedBaudrate_picker = true
 //                        }
 //                    Button(action: {

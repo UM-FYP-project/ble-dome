@@ -255,9 +255,10 @@ class Reader: NSObject, ObservableObject{
         return (tagcount, Error_String)
     }
     
-    func feedback2Tags(feedback:[UInt8]) -> String{
+    func feedback2Tags(feedback:[UInt8]) -> (String, [tag], [tagData]){
+        var TagArr = [tag]()
+        var TagsDataArr = [tagData]()
         var Error_String : String = ""
-//        var CMD : UInt8 = 0
         var handled : UInt8 = 0
         if feedback[1] != 4 {
             for var index in 0..<feedback.count {
@@ -348,20 +349,21 @@ class Reader: NSObject, ObservableObject{
                     Tags[index].id = index
                     EPCstr.append(Data(Tags[index].EPC).hexEncodedString())
                 }
-                
+                TagArr = Tags
             }
             if handled == 0x81{
                 TagsData.sort{($0.RSSI >= $1.RSSI)}
                 for index in 0..<TagsData.count{
                     TagsData[index].id = index
                 }
+                TagsDataArr = TagsData
             }
         }
         if feedback[1] == 0x04{
 //            CMD = (feedback[3] == 0x90 ? 0x90 : feedback[3] == 0x81 ? 0x81 : 0)
             Error_String = reader_error_code(code: feedback[4])
         }
-        return Error_String
+        return (Error_String, TagArr, TagsDataArr)
     }
 
 
@@ -485,13 +487,11 @@ extension BLE{
         if let char_index = Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == reader_serivce && $0.Characteristic_UUID == reader_write_char}){
             feedback = Peripheral_characteristics[char_index].value
         }
-//        if record{
-//            print("*****Reader Feedback*****")
-//            Reader().Btye_Recorder(defined: 2, byte: feedback)
-//        }
         return feedback
     }
-
+    func writeMotorChar(){
+        
+    }
 }
 
 

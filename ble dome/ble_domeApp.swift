@@ -13,6 +13,7 @@ struct ble_domeApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .onAppear(perform: UIApplication.shared.addTapGestureRecognizer)
         }
     }
     
@@ -182,9 +183,6 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         print("\(peripheral.name!) Device Disconnected")
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 0
-//            Connected_Peripheral!.State = 0
-//            peripherals[index].isConnected = false
-//            isConnected = false
         }
         Peripheral_characteristics.removeAll()
         Peripheral_Services.removeAll()
@@ -346,6 +344,8 @@ extension Data {
             .joined(separator: ",")
             .uppercased()
     }
+    
+    
 }
 
 extension StringProtocol {
@@ -375,3 +375,19 @@ extension Int16 {
 }
 
 
+extension UIApplication {
+    func addTapGestureRecognizer() {
+        guard let window = windows.first else { return }
+        let tapGesture = UITapGestureRecognizer(target: window, action: #selector(UIView.endEditing))
+        tapGesture.requiresExclusiveTouchType = false
+        tapGesture.cancelsTouchesInView = false
+        tapGesture.delegate = self
+        window.addGestureRecognizer(tapGesture)
+    }
+}
+
+extension UIApplication: UIGestureRecognizerDelegate {
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return !otherGestureRecognizer.isKind(of: UILongPressGestureRecognizer.self)
+    }
+}

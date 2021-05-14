@@ -197,7 +197,7 @@ struct ReaderWriteData: View{
                     .padding()
                     .frame(width: 30, height: 30)
                     .disabled(StartAdd < 1)
-                    TextField("", value: $StartAdd, formatter: NumberFormatter())
+                    TextField("Start Address", value: $StartAdd, formatter: NumberFormatter())
                         .onReceive(Just(StartAdd), perform: {_ in
                             if StartAdd > 255 {
                                 self.StartAdd = 255
@@ -207,7 +207,7 @@ struct ReaderWriteData: View{
                             }
                         })
                         .multilineTextAlignment(.center)
-                        .keyboardType(.numbersAndPunctuation)
+                        .keyboardType(.numberPad)
                         .frame(maxWidth: 50)
                     Button(action: {self.StartAdd += 1}) {
                         Image(systemName: "plus")
@@ -247,7 +247,7 @@ struct ReaderWriteData: View{
                 }
                 .disabled(readeract.floor < -255)
                 .frame(width: 30)
-                TextField("", value: $readeract.floor, formatter: NumberFormatter())
+                TextField("Floor", value: $readeract.floor, formatter: NumberFormatter())
                     .onReceive(Just(readeract.floor), perform: {_ in
                         if readeract.floor > 255 {
                             readeract.floor = 255
@@ -296,14 +296,14 @@ struct ReaderWriteData: View{
 //                        .bold()
 //                        .font(.headline)
 //                        .frame(width: 30)
-                    TextField("", value: $readeract.Seq, formatter: NumberFormatter())
+                    TextField("Hazard Seq", value: $readeract.Seq, formatter: NumberFormatter())
                         .onReceive(Just(Steps), perform: {_ in
                             if readeract.Seq > 32767 {
                                 readeract.Seq = 32767
                             }
                         })
                         .multilineTextAlignment(.center)
-                        .keyboardType(.numbersAndPunctuation)
+                        .keyboardType(.numberPad)
                         .frame(width: 50)
                     Button(action: {readeract.Seq += 1}) {
                         Image(systemName: "plus")
@@ -322,7 +322,7 @@ struct ReaderWriteData: View{
                         .disabled(Steps < 1)
                         .padding()
                         .frame(width: 30, height: 30)
-                        TextField("", value: $Steps, formatter: NumberFormatter())
+                        TextField("Steps of the Stair", value: $Steps, formatter: NumberFormatter())
                             .onReceive(Just(Steps), perform: {_ in
                                 if Steps > 255 {
                                     self.Steps = 255
@@ -331,6 +331,7 @@ struct ReaderWriteData: View{
                                     self.Steps = 0
                                 }
                             })
+                            .keyboardType(.numberPad)
                             .multilineTextAlignment(.center)
                             .frame(width: 50)
                         Button(action: {self.Steps += 1}) {
@@ -356,7 +357,7 @@ struct ReaderWriteData: View{
                 Text("Place")
                 Picker(selection: $RoomSelected, label: Text("Room Picker")) {
                     Text("Room").tag(0)
-                    Text("Toilet").tag(1)
+                    Text("W.C.").tag(1)
                     Text("Aisle").tag(2)
                 }
                 .pickerStyle(SegmentedPickerStyle())
@@ -366,14 +367,14 @@ struct ReaderWriteData: View{
                 .disabled(Steps < 1)
                 .padding()
                 .frame(width: 30, height: 30)
-                TextField("", value: $readeract.RoomSeq, formatter: NumberFormatter())
+                TextField("Room Seq", value: $readeract.RoomSeq, formatter: NumberFormatter())
+                    .keyboardType(.numberPad)
                     .onReceive(Just(Steps), perform: {_ in
                         if readeract.RoomSeq > 32767 {
                             readeract.RoomSeq = 32767
                         }
                     })
                     .multilineTextAlignment(.center)
-                    .keyboardType(.numbersAndPunctuation)
                     .frame(width: 50)
                 Button(action: {readeract.RoomSeq += 1}) {
                     Image(systemName: "plus")

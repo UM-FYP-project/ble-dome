@@ -71,49 +71,44 @@ struct ReaderTab: View {
     }
 }
 
-struct Reader_Picker: View{
-    var picker : [Any]
-    var title : String
-    var label : String
-    var geometry : GeometryProxy
-    @Binding var Selected : Int
-    @Binding var enable : Bool
-    var body: some View {
-        //        ZStack{
-        let picker_text : [String] = picker.compactMap {String(describing: $0)}
-        VStack{
-            VStack(alignment: .center){
-                Text(title)
-                    .font(.headline)
-                    .padding()
-                Picker(selection: self.$Selected, label: Text(label)) {
-                    ForEach(picker_text.indices) { (index) in
-                        Text("\(picker_text[index])")
-                    }
-                }
-                .padding()
-                .clipped()
-            }
-            Divider()
-            VStack{
-                Button(action: {self.enable = false}) {
-                    Text("OK")
-                        .bold()
-                        .font(.headline)
-                }
-                .padding()
-//                .frame(maxWidth: geometry.size.width - 30)
-//                .background(RoundedRectangle(cornerRadius: 10)
-//                                .foregroundColor(Color.white.opacity(0.8)).shadow(radius: 1))
-            }
-        }
-        .background(RoundedRectangle(cornerRadius: 10)
-                        .foregroundColor(Color(UIColor.systemGray6)).shadow(radius: 1))
-        .frame(maxWidth: geometry.size.width - 30)
-        //        }
-        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-    }
-}
+//struct Reader_Picker: View{
+//    var picker : [Any]
+//    var title : String
+//    var label : String
+//    var geometry : GeometryProxy
+//    @Binding var Selected : Int
+//    @Binding var enable : Bool
+//    var body: some View {
+//        let picker_text : [String] = picker.compactMap {String(describing: $0)}
+//        VStack{
+//            VStack(alignment: .center){
+//                Text(title)
+//                    .font(.headline)
+//                    .padding()
+//                Picker(selection: self.$Selected, label: Text(label)) {
+//                    ForEach(picker_text.indices) { (index) in
+//                        Text("\(picker_text[index])")
+//                    }
+//                }
+//                .padding()
+//                .clipped()
+//            }
+//            Divider()
+//            VStack{
+//                Button(action: {self.enable = false}) {
+//                    Text("OK")
+//                        .bold()
+//                        .font(.headline)
+//                }
+//                .padding()
+//            }
+//        }
+//        .background(RoundedRectangle(cornerRadius: 10)
+//                        .foregroundColor(Color(UIColor.systemGray6)).shadow(radius: 1))
+//        .frame(maxWidth: geometry.size.width - 30)
+//        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+//    }
+//}
 
 
 //struct ReaderTab_Previews: PreviewProvider {
