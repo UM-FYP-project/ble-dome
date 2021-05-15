@@ -11,9 +11,9 @@ import Combine
 struct ReadTagsData: View {
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader:Reader
-    @EnvironmentObject var readeract : readerAct
+    @EnvironmentObject var readerconfig : ReaderConfig
     var geometry : GeometryProxy
-    @State var ErrorStr : String = ""
+    @State var ErrorStr : String = "nil"
     @State var list_show = false
     var body: some View {
         ZStack{
@@ -22,13 +22,13 @@ struct ReadTagsData: View {
                     Text("Data Block")
                         .font(.headline)
                     Spacer()
-                    Text(readeract.DataCmdinStr[readeract.DataBlock_Selected])
+                    Text(readerconfig.DataCmdinStr[readerconfig.DataBlock_Selected])
                         .font(.headline)
                         .frame(width: 120, height: 30)
                         .background(Color.gray.opacity(0.15))
                         .cornerRadius(10)
                         .onTapGesture {
-                            readeract.DataBlock_picker = true
+                            readerconfig.DataBlock_picker = true
                         }
                 }
                 .frame(width: geometry.size.width - 20, height: 30)
@@ -37,36 +37,36 @@ struct ReadTagsData: View {
                     Text("Start Address:")
                         .font(.headline)
                     Spacer()
-                    //                        Text("\(readeract.DataByte[readeract.DataStart_Selected])bit")
+                    //                        Text("\(readerconfig.DataByte[readerconfig.DataStart_Selected])bit")
                     //                            .font(.headline)
                     //                            .frame(width: 60, height: 30)
                     //                            .background(Color.gray.opacity(0.15))
                     //                            .cornerRadius(10)
                     //                            .onTapGesture {
-                    //                                readeract.DataStart_picker = true
+                    //                                readerconfig.DataStart_picker = true
                     //                            }
-                    Button(action: {self.readeract.DataStart -= 1}) {
+                    Button(action: {self.readerconfig.DataStart -= 1}) {
                         Image(systemName: "minus")
                     }
                     .padding()
                     .frame(width: 30, height: 30)
-                    .disabled(readeract.DataStart < 1)
-                    TextField("", value: $readeract.DataStart, formatter: NumberFormatter())
-                        .onReceive(Just(readeract.DataStart), perform: {_ in
-                            if readeract.DataStart > 255 {
-                                self.readeract.DataStart = 255
+                    .disabled(readerconfig.DataStart < 1)
+                    TextField("", value: $readerconfig.DataStart, formatter: NumberFormatter())
+                        .onReceive(Just(readerconfig.DataStart), perform: {_ in
+                            if readerconfig.DataStart > 255 {
+                                self.readerconfig.DataStart = 255
                             }
-                            else if readeract.DataStart < 0 {
-                                self.readeract.DataStart = 0
+                            else if readerconfig.DataStart < 0 {
+                                self.readerconfig.DataStart = 0
                             }
                         })
                         .multilineTextAlignment(.center)
                         .keyboardType(.numberPad)
                         .frame(maxWidth: 50)
-                    Button(action: {self.readeract.DataStart += 1}) {
+                    Button(action: {self.readerconfig.DataStart += 1}) {
                         Image(systemName: "plus")
                     }
-                    .disabled(readeract.DataStart > 255)
+                    .disabled(readerconfig.DataStart > 255)
                     .padding()
                     .frame(width: 30, height: 30)
                 }
@@ -77,28 +77,28 @@ struct ReadTagsData: View {
                         .bold()
                         .font(.headline)
                     Spacer()
-                    Button(action: {self.readeract.DataLen -= 1}) {
+                    Button(action: {self.readerconfig.DataLen -= 1}) {
                         Image(systemName: "minus")
                     }
                     .padding()
                     .frame(width: 30, height: 30)
-                    .disabled(readeract.DataLen < 1)
-                    TextField("", value: $readeract.DataLen, formatter: NumberFormatter())
-                        .onReceive(Just(readeract.DataLen), perform: {_ in
-                            if readeract.DataLen > 255 {
-                                self.readeract.DataLen = 255
+                    .disabled(readerconfig.DataLen < 1)
+                    TextField("", value: $readerconfig.DataLen, formatter: NumberFormatter())
+                        .onReceive(Just(readerconfig.DataLen), perform: {_ in
+                            if readerconfig.DataLen > 255 {
+                                self.readerconfig.DataLen = 255
                             }
-                            else if readeract.DataLen < 0 {
-                                self.readeract.DataLen = 0
+                            else if readerconfig.DataLen < 0 {
+                                self.readerconfig.DataLen = 0
                             }
                         })
                         .multilineTextAlignment(.center)
                         .keyboardType(.numberPad)
                         .frame(maxWidth: 50)
-                    Button(action: {self.readeract.DataLen += 1}) {
+                    Button(action: {self.readerconfig.DataLen += 1}) {
                         Image(systemName: "plus")
                     }
-                    .disabled(readeract.DataLen > 255)
+                    .disabled(readerconfig.DataLen > 255)
                     .padding()
                     .frame(width: 30, height: 30)
                 }
@@ -112,7 +112,7 @@ struct ReadTagsData: View {
                     }) {
                         Text("Read")
                     }
-                    .disabled(!(reader.tagsCount > 0))
+                    .disabled(!(readerconfig.tagsCount > 0))
                 }
                 .frame(width: geometry.size.width - 20, height: 20, alignment: .center)
                 Divider()
@@ -130,13 +130,13 @@ struct ReadTagsData: View {
         VStack{
             Divider()
             List{
-                if ErrorStr != "" {
+                if ErrorStr != "nil" {
                     Text(ErrorStr)
                         .foregroundColor(.red)
                 }
-                if !reader.TagsData.isEmpty {
-                    ForEach(0..<reader.TagsData.count, id: \.self ){ index in
-                        let TagData = reader.TagsData[index]
+                if !readerconfig.TagsData.isEmpty {
+                    ForEach(0..<readerconfig.TagsData.count, id: \.self ){ index in
+                        let TagData = readerconfig.TagsData[index]
                         let PCstr = Data(TagData.PC).hexEncodedString()
                         let CRCstr = Data(TagData.CRC).hexEncodedString()
                         let EPCStr = Array(TagData.DataBL[0...11]) == TagData.EPC ? "" : Data(TagData.EPC).hexEncodedString() + "\n"
@@ -177,7 +177,7 @@ struct ReadTagsData: View {
         var flag : Bool = false
         var completed : Bool = false
         var counter : Int = 0
-        let cmd : [UInt8] = reader.cmd_data_read(data_block: readeract.DataCmdinByte[readeract.DataBlock_Selected], data_start: UInt8(readeract.DataStart), data_len: UInt8(readeract.DataLen))
+        let cmd : [UInt8] = reader.cmd_data_read(data_block: readerconfig.DataCmdinByte[readerconfig.DataBlock_Selected], data_start: UInt8(readerconfig.DataStart), data_len: UInt8(readerconfig.DataLen))
         Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){timer in
             if !flag {
                 ble.cmd2reader(cmd: cmd)
@@ -187,7 +187,9 @@ struct ReadTagsData: View {
             if ble.ValueUpated_2A68{
                 let feedback = ble.reader2BLE()
                 if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x81{
-                    ErrorStr = reader.feedback2Tags(feedback: feedback).0
+                    let funcfeeback = reader.feedback2Tags(feedback: feedback, Tags : readerconfig.Tags, TagsData : readerconfig.TagsData)
+                    ErrorStr = funcfeeback.0
+                    readerconfig.TagsData = funcfeeback.2
                     completed = true
                 }
                 ble.ValueUpated_2A68 = false

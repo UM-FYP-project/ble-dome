@@ -11,7 +11,7 @@ import CoreBluetooth
 struct ContentView: View {
     @ObservedObject var ble = BLE()
     @ObservedObject var reader = Reader()
-    @ObservedObject var readeract = readerAct()
+    @ObservedObject var readerconfig = ReaderConfig()
     @ObservedObject var location = LocationManager()
     @ObservedObject var path = PathFinding()
     @State var isScanner_trigged = false
@@ -42,7 +42,7 @@ struct ContentView: View {
                                                 DetailTabView(peripheral: ble.peripherals[Conncetedperipheral_index])
                                                 .environmentObject(ble)
                                                 .environmentObject(reader)
-                                                .environmentObject(readeract)
+                                                .environmentObject(readerconfig)
                                                 .environmentObject(location)
                                                 .disabled(ble.isBluetoothON && isScanner_trigged)
                                                 .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
@@ -117,10 +117,10 @@ struct ContentView: View {
                 ble.initBLE()
             }
             if (ble.peripherals.filter({$0.State == 2}).count < 1) && !isScanner_trigged{
-                reader.TagsData.removeAll()
-                reader.Tags.removeAll()
-                reader.tagsCount = 0
-                reader.BytesRecord.removeAll()
+                readerconfig.TagsData.removeAll()
+                readerconfig.Tags.removeAll()
+                readerconfig.tagsCount = 0
+                BytesRecord.removeAll()
                 let previousConntection : String? = rememberConntion.object(forKey: "PreviousName") as? String ?? nil
                 if previousConntection != nil {
                     print("Conntect with \(previousConntection!)")
@@ -159,15 +159,16 @@ struct ContentView: View {
             let Serivce : CBUUID = CBUUID(string: "2A68")
             let Char : CBUUID = CBUUID(string: "4676")
             let data : UInt8 = Scanner_longpressed ? 1 : 0
-            if !ble.peripherals.isEmpty{
-                if !ble.Peripheral_characteristics.isEmpty{
-                    if let CharIndex = ble.Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == Serivce && $0.Characteristic_UUID == Char}){
-                        if let PeripheralIndex = ble.peripherals.firstIndex(where: {$0.name == ble.Peripheral_characteristics[CharIndex].name && $0.State == 2}){
-                            ble.writeValue(value: Data([data]), characteristic: ble.Peripheral_characteristics[CharIndex].Characteristic, peripheral: ble.peripherals[PeripheralIndex].Peripheral)
-                        }
-                    }
-                }
-            }
+            ble.BLEWrtieValue(Serivce: Serivce, Characteristic: Char, ByteData: [data])
+//            if !ble.peripherals.isEmpty{
+//                if !ble.Peripheral_characteristics.isEmpty{
+//                    if let CharIndex = ble.Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == Serivce && $0.Characteristic_UUID == Char}){
+//                        if let PeripheralIndex = ble.peripherals.firstIndex(where: {$0.name == ble.Peripheral_characteristics[CharIndex].name && $0.State == 2}){
+//                            ble.writeValue(value: Data([data]), characteristic: ble.Peripheral_characteristics[CharIndex].Characteristic, peripheral: ble.peripherals[PeripheralIndex].Peripheral)
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 }

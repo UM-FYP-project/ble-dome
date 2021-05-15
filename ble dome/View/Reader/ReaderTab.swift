@@ -12,7 +12,7 @@ struct ReaderTab: View {
     @State var menuButton :Bool = false
     @State var Reader_disable : Bool = false
     @EnvironmentObject var reader:Reader
-    @EnvironmentObject var readeract : readerAct
+    @EnvironmentObject var readerconfig : ReaderConfig
     @EnvironmentObject var location : LocationManager
     var geometry : GeometryProxy
     @State var Selected = 0
@@ -34,13 +34,13 @@ struct ReaderTab: View {
                     if Selected == 0{
                         ReaderSetting(geometry: geometry)
                             .environmentObject(reader)
-                            .environmentObject(readeract)
+                            .environmentObject(readerconfig)
                     }
                     else if Selected == 1{
                         ScrollView {
-                        ReaderInventory(geometry: geometry, isInventory: $readeract.isInventory, Realtime_Inventory_Toggle: $readeract.RealtimeInventory_Toggle)
+                        ReaderInventory(geometry: geometry, isInventory: $readerconfig.isInventory, Realtime_Inventory_Toggle: $readerconfig.RealtimeInventory_Toggle)
                             .environmentObject(reader)
-                            .environmentObject(readeract)
+                            .environmentObject(readerconfig)
                         }
                         
                     }
@@ -48,15 +48,15 @@ struct ReaderTab: View {
                         ScrollView {
                         ReadTagsData(geometry: geometry)
                             .environmentObject(reader)
-                            .environmentObject(readeract)
+                            .environmentObject(readerconfig)
                         }
                     }
                     else if Selected == 3{
                         ScrollView {
                         ReaderWriteData(geometry: geometry)
                             .environmentObject(reader)
-                            .environmentObject(readeract)
-                            .disabled(reader.Tags.isEmpty)
+                            .environmentObject(readerconfig)
+                            .disabled(readerconfig.Tags.isEmpty)
                         }
                     }
                     else if Selected == 4{
@@ -118,7 +118,7 @@ struct ReaderTab: View {
 //            //            ReaderTab()
 //            GeometryReader {geometry in
 //                TagData_Write(geometry: geometry)
-//                    .environmentObject(readerAct())
+//                    .environmentObject(readerconfig())
 //                //                Reader_WriteData(geometry: geometry)
 //                //            ReaderInventory()
 //                //                ReaderSetting(geometry: geometry)

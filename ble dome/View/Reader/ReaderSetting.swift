@@ -10,7 +10,7 @@ import SwiftUI
 struct ReaderSetting: View {
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader:Reader
-    @EnvironmentObject var readeract : readerAct
+    @EnvironmentObject var readerconfig : ReaderConfig
     var geometry : GeometryProxy
     @State var Outpower_feedback : Int?
     @State var ErrorStr = [String]()
@@ -36,17 +36,17 @@ struct ReaderSetting: View {
 //                    Text("Set Baudrate")
 //                        .font(.headline)
 //                    Spacer()
-//                    Text("\(readeract.BaudrateCmdinStr[readeract.SelectedBaudrate])")
+//                    Text("\(readerconfig.BaudrateCmdinStr[readerconfig.SelectedBaudrate])")
 //                        .font(.headline)
 //                        .frame(width: 120, height: 30)
 //                        .background(Color.gray.opacity(0.15))
 //                        .cornerRadius(10)
 //                        .onTapGesture {
                 
-//                            readeract.SelectedBaudrate_picker = true
+//                            readerconfig.SelectedBaudrate_picker = true
 //                        }
 //                    Button(action: {
-//                        let cmd : [UInt8] = reader.cmd_set_baudrate(baudrate_para: readeract.BaudrateCmdinByte[readeract.SelectedBaudrate])
+//                        let cmd : [UInt8] = reader.cmd_set_baudrate(baudrate_para: readerconfig.BaudrateCmdinByte[readerconfig.SelectedBaudrate])
 //                        //                            var feedback = [UInt8]()
 //                        cmdtransitor(cmd: cmd)
 //                        //                            ble.cmd2reader(cmd: cmd)
@@ -64,16 +64,16 @@ struct ReaderSetting: View {
                         .font(.headline)
                         .frame(width: 120, height: 30,alignment: .leading)
                     Spacer()
-                    Text("\(readeract.Outpower[readeract.SelectedPower])dBm")
+                    Text("\(readerconfig.Outpower[readerconfig.SelectedPower])dBm")
                         .font(.headline)
                         .frame(width: 120, height: 30)
                         .background(Color.gray.opacity(0.15))
                         .cornerRadius(10)
                         .onTapGesture {
-                            readeract.SelectedPower_picker = true
+                            readerconfig.SelectedPower_picker = true
                         }
                     Button(action: {
-                        let cmd : [UInt8] = reader.cmd_set_output_power(output_power: readeract.Outpower[readeract.SelectedPower])
+                        let cmd : [UInt8] = reader.cmd_set_output_power(output_power: readerconfig.Outpower[readerconfig.SelectedPower])
                         cmdtransitor(cmd: cmd)
                     }) {
                         Text("Set")

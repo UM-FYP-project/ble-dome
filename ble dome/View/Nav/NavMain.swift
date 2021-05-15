@@ -133,22 +133,34 @@ struct NavMain: View {
             let Serivce : CBUUID = CBUUID(string: "2A68")
             let Char : CBUUID = CBUUID(string: "5677")
             var Pos = [UInt8]()
-            if !ble.peripherals.isEmpty{
-                if !ble.Peripheral_characteristics.isEmpty{
-                    if let CharIndex = ble.Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == Serivce && $0.Characteristic_UUID == Char}){
-                        Pos = ble.Peripheral_characteristics[CharIndex].value
-                        if Pos.count > 11 {
-                            let floor = Data(Array(Pos[0...1])).withUnsafeBytes({$0.load(as: Int.self)}).bigEndian
-                            Floor = floor
-                            InformationStr = "\(Pos[2] == 0 ? "Room" : Pos[2] == 1 ? "Restroom" : "Aisle")" +
-                                "\(Data(Array(Pos[3...4])).withUnsafeBytes({$0.load(as: Int.self)}))"
-                            geoPos = GeoPos(Floor: floor, Lag: Data(Array(Pos[5...8])).withUnsafeBytes({$0.load(as: Float.self)}), Long: Data(Array(Pos[9...12])).withUnsafeBytes({$0.load(as: Float.self)}))
-                            let fileName = String(geoPos!.Lag) + "," + String(geoPos!.Long)
-                            path.CSV2Dict(fileName: fileName)
-                        }
-                    }
+            Pos = ble.BLEReadValue(Serivce: Serivce, Characteristic: Char)
+            if !Pos.isEmpty{
+                if Pos.count > 11 {
+                    let floor = Data(Array(Pos[0...1])).withUnsafeBytes({$0.load(as: Int.self)}).bigEndian
+                    Floor = floor
+                    InformationStr = "\(Pos[2] == 0 ? "Room" : Pos[2] == 1 ? "Restroom" : "Aisle")" +
+                        "\(Data(Array(Pos[3...4])).withUnsafeBytes({$0.load(as: Int.self)}))"
+                    geoPos = GeoPos(Floor: floor, Lag: Data(Array(Pos[5...8])).withUnsafeBytes({$0.load(as: Float.self)}), Long: Data(Array(Pos[9...12])).withUnsafeBytes({$0.load(as: Float.self)}))
+                    let fileName = String(geoPos!.Lag) + "," + String(geoPos!.Long)
+                    path.CSV2Dict(fileName: fileName)
                 }
             }
+//            if !ble.peripherals.isEmpty{
+//                if !ble.Peripheral_characteristics.isEmpty{
+//                    if let CharIndex = ble.Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == Serivce && $0.Characteristic_UUID == Char}){
+//                        Pos = ble.Peripheral_characteristics[CharIndex].value
+//                        if Pos.count > 11 {
+//                            let floor = Data(Array(Pos[0...1])).withUnsafeBytes({$0.load(as: Int.self)}).bigEndian
+//                            Floor = floor
+//                            InformationStr = "\(Pos[2] == 0 ? "Room" : Pos[2] == 1 ? "Restroom" : "Aisle")" +
+//                                "\(Data(Array(Pos[3...4])).withUnsafeBytes({$0.load(as: Int.self)}))"
+//                            geoPos = GeoPos(Floor: floor, Lag: Data(Array(Pos[5...8])).withUnsafeBytes({$0.load(as: Float.self)}), Long: Data(Array(Pos[9...12])).withUnsafeBytes({$0.load(as: Float.self)}))
+//                            let fileName = String(geoPos!.Lag) + "," + String(geoPos!.Long)
+//                            path.CSV2Dict(fileName: fileName)
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 }

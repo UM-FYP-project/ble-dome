@@ -11,7 +11,7 @@ import Combine
 struct ReaderInventory: View{
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader:Reader
-    @EnvironmentObject var readeract : readerAct
+    @EnvironmentObject var readerconfig : ReaderConfig
     var geometry : GeometryProxy
     @Binding var isInventory : Bool
     @Binding var Realtime_Inventory_Toggle : Bool
@@ -34,37 +34,37 @@ struct ReaderInventory: View{
                         .font(.headline)
                     Divider()
                         .frame(height: 30)
-                    //                        Text("\(readeract.inventorySpeed[readeract.inventorySpeed_Selected])")
+                    //                        Text("\(readerconfig.inventorySpeed[readerconfig.inventorySpeed_Selected])")
                     //                            .font(.headline)
                     //                            .frame(width: 60, height: 30)
                     //                            .background(Color.gray.opacity(0.5))
                     //                            .cornerRadius(10)
                     //                            .onTapGesture {
-                    //                                readeract.inventorySpeed_picker = true
+                    //                                readerconfig.inventorySpeed_picker = true
                     //                            }
-                    Button(action: {self.readeract.inventorySpeed -= 1}) {
+                    Button(action: {self.readerconfig.inventorySpeed -= 1}) {
                         Image(systemName: "minus")
                     }
                     .padding()
                     .frame(width: 30, height: 30)
-                    .disabled(readeract.inventorySpeed < 1)
-                    TextField("", value: $readeract.inventorySpeed, formatter: NumberFormatter())
-                        .onReceive(Just(readeract.inventorySpeed), perform: {_ in
-                            if readeract.inventorySpeed > 255 {
-                                self.readeract.inventorySpeed = 255
+                    .disabled(readerconfig.inventorySpeed < 1)
+                    TextField("", value: $readerconfig.inventorySpeed, formatter: NumberFormatter())
+                        .onReceive(Just(readerconfig.inventorySpeed), perform: {_ in
+                            if readerconfig.inventorySpeed > 255 {
+                                self.readerconfig.inventorySpeed = 255
                             }
-                            else if readeract.inventorySpeed < 0 {
-                                self.readeract.inventorySpeed = 0
+                            else if readerconfig.inventorySpeed < 0 {
+                                self.readerconfig.inventorySpeed = 0
                             }
                         })
                         .multilineTextAlignment(.center)
                         .keyboardType(.numberPad)
                         .frame(maxWidth: 50)
-                    Button(action: {self.readeract.inventorySpeed += 1}) {
+                    Button(action: {self.readerconfig.inventorySpeed += 1}) {
 
                         Image(systemName: "plus")
                     }
-                    .disabled(readeract.inventorySpeed > 255)
+                    .disabled(readerconfig.inventorySpeed > 255)
                     .padding()
                     .frame(width: 30, height: 30)
                     Spacer()
@@ -76,12 +76,12 @@ struct ReaderInventory: View{
                             isInventory = false
                         }
                         if !Realtime_Inventory_Toggle{
-                            //                                EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
-                            EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readeract.inventorySpeed)))
+                            //                                EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readerconfig.inventorySpeed[readerconfig.inventorySpeed_Selected])))
+                            EnableInventory(cmd: reader.cmd_inventory(inventory_speed: UInt8(readerconfig.inventorySpeed)))
                         }
                         else {
-                            //                                EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readeract.inventorySpeed[readeract.inventorySpeed_Selected])))
-                            EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readeract.inventorySpeed)))
+                            //                                EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readerconfig.inventorySpeed[readerconfig.inventorySpeed_Selected])))
+                            EnableInventory(cmd: reader.cmd_real_time_inventory(inventory_speed: UInt8(readerconfig.inventorySpeed)))
                         }
                         Inventory_button_str = (isInventory ? "Stop" : "Start")
                     }) {
@@ -101,7 +101,7 @@ struct ReaderInventory: View{
                             .foregroundColor(.red)
                     }
                     else {
-                        Text("\(reader.tagsCount) Tags")
+                        Text("\(readerconfig.tagsCount) Tags")
                             .font(.headline)
                     }
                 }
@@ -118,13 +118,16 @@ struct ReaderInventory: View{
                         Text(Buffer_button_str)
                             .bold()
                     }
-                    .disabled(Realtime_Inventory_Toggle || reader.tagsCount <= 0 || Buffer_button_Bool || isInventory)
+                    .disabled(Realtime_Inventory_Toggle || readerconfig.tagsCount <= 0 || Buffer_button_Bool || isInventory)
                     Divider()
                     Button(action: {
                         let cmd : [UInt8] = reader.cmd_clear_inventory_buffer()
                         ble.cmd2reader(cmd: cmd)
                         reader.Btye_Recorder(defined: 1, byte: cmd)
-                        reader.tagsCount = 0
+                        readerconfig.tagsCount = 0
+                        readerconfig.Tags.removeAll()
+                        readerconfig.TagsData.removeAll()
+                        readerconfig.EPCstr.removeAll()
                     }) {
                         Text("Clear")
                             .bold()
@@ -153,11 +156,11 @@ struct ReaderInventory: View{
                     Text(ErrorStr)
                         .foregroundColor(.red)
                 }
-                if !reader.Tags.isEmpty {
-                    ForEach(0..<reader.Tags.count, id: \.self){ index in
-                        let tag = reader.Tags[index]
+                if !readerconfig.Tags.isEmpty {
+                    ForEach(0..<readerconfig.Tags.count, id: \.self){ index in
+                        let tag = readerconfig.Tags[index]
                         let PCstr = Data(tag.PC).hexEncodedString()
-                        let EPCstr = Data(tag.EPC).hexEncodedString()
+                        let EPCstr = tag.EPCStr
                         let CRCstr = Data(tag.CRC).hexEncodedString()
                         let NavTag : NavTag? = reader.TagtoNav(Tag:tag, TagData: nil)
                         HStack{
@@ -203,12 +206,20 @@ struct ReaderInventory: View{
                     reader.Btye_Recorder(defined: 2, byte: feedback)
                     if feedback[0] == 0xA0 && feedback[2] == 0xFE{
                         if feedback[3] == 0x80 && cmd[3] == 0x80{
-                            reader.tagsCount = reader.feedback_Inventory(feedback: feedback).0
-                            ErrorString = reader.feedback_Inventory(feedback: feedback).1
+                            let funcFeedback = reader.feedback_Inventory(feedback: feedback)
+                            readerconfig.tagsCount = funcFeedback.0
+                            ErrorString = funcFeedback.1
                             flag = false
                         }
                         if feedback[3] == 0x89 && cmd[3] == 0x89{
-                            ErrorString = reader.feedback2Tags(feedback: feedback).0
+                            let funcfeeback = reader.feedback2Tags(feedback: feedback, Tags : readerconfig.Tags, TagsData : readerconfig.TagsData)
+                            ErrorString = funcfeeback.0
+                            readerconfig.Tags = funcfeeback.1
+                            if !readerconfig.Tags.isEmpty{
+                                for tag in readerconfig.Tags{
+                                    readerconfig.EPCstr.append(tag.EPCStr)
+                                }
+                            }
                             flag = false
                         }
                     }
@@ -241,7 +252,14 @@ struct ReaderInventory: View{
             if ble.ValueUpated_2A68{
                 let feedback = ble.reader2BLE()
                 if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x90{
-                    ErrorStr = reader.feedback2Tags(feedback: feedback).0
+                    let funcfeeback = reader.feedback2Tags(feedback: feedback, Tags : readerconfig.Tags, TagsData : readerconfig.TagsData)
+                    ErrorString = funcfeeback.0
+                    readerconfig.Tags = funcfeeback.1
+                    if !readerconfig.Tags.isEmpty{
+                        for tag in readerconfig.Tags{
+                            readerconfig.EPCstr.append(tag.EPCStr)
+                        }
+                    }
                     completed = true
                 }
                 ble.ValueUpated_2A68 = false

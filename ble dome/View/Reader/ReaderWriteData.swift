@@ -11,7 +11,7 @@ import Combine
 struct ReaderWriteData: View{
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader:Reader
-    @EnvironmentObject var readeract : readerAct
+    @EnvironmentObject var readerconfig : ReaderConfig
     @EnvironmentObject var location : LocationManager
     var geometry : GeometryProxy
     @State var EPC_Match_Error : String = ""
@@ -35,16 +35,16 @@ struct ReaderWriteData: View{
                     Text("Tag")
                         .font(.headline)
                     Spacer()
-                    Text(reader.Tags.isEmpty ? "" : Data(reader.Tags[readeract.EPC_Selected].EPC).hexEncodedString())
+                    Text(readerconfig.Tags.isEmpty ? "" : readerconfig.Tags[readerconfig.EPC_Selected].EPCStr)
                         .font(.headline)
                         .frame(height: 30)
                         .frame(maxWidth: 350)
                         .background(Color.gray.opacity(0.15))
                         .cornerRadius(10)
                         .onTapGesture {
-                            readeract.EPC_picker = (reader.Tags.isEmpty ? false : true)
+                            readerconfig.EPC_picker = (readerconfig.Tags.isEmpty ? false : true)
                         }
-                        .disabled(readeract.MatchState == 2)
+                        .disabled(readerconfig.MatchState == 2)
                 }
                 .frame(width: geometry.size.width - 20)
                 Divider()
@@ -55,7 +55,7 @@ struct ReaderWriteData: View{
                     Button(action: {
                         Match_ButtAct()
                     }){
-                        Text(readeract.MatchState == 0 ? "Match" : readeract.MatchState == 1 ? "Matching" : readeract.MatchState == 2 ? "Unmatch" : "Unmatching")
+                        Text(readerconfig.MatchState == 0 ? "Match" : readerconfig.MatchState == 1 ? "Matching" : readerconfig.MatchState == 2 ? "Unmatch" : "Unmatching")
                             .bold()
                     }
                 }
@@ -94,7 +94,7 @@ struct ReaderWriteData: View{
 //                                message: Text("Please Check the Password")
 //                            )}
 //                }
-                .disabled(readeract.MatchState != 2)
+                .disabled(readerconfig.MatchState != 2)
 //                Spacer()
             }
             .frame(width: geometry.size.width - 20)
@@ -131,19 +131,19 @@ struct ReaderWriteData: View{
                     if funcSelected == 4{
                         AlertStr = String(
                             "Password: \(String(PasswdStr.prefix(8)).hexaData.hexEncodedString())\n" +
-                                "Floor: \(readeract.floor == 0 ? "G/F" : "\(readeract.floor)/F")" +
-                            ": (\(Data(Array(Int16(readeract.floor).bytes)).hexEncodedString()))\n" +
-                                "Hazard\n\(HazardStrArray[HazardSelected])\(HazardSelected != 4 ? readeract.Seq < 10 ? "0\(readeract.Seq)" : "\(readeract.Seq)" : "")\(HazardSelected == 0 ? "Num of Steps: \(Steps)" : "")" +
-                                ": (\(Data([UInt8(HazardSelected)]).hexEncodedString()), \(Data(Int16(readeract.Seq).bytes).hexEncodedString()), \(Data([UInt8(Steps)]).hexEncodedString()))\n" +
-                                "Place\n\(RoomSelected == 0 ? "Room" : RoomSelected == 1 ? "Restroom" : "Aisle")\(readeract.RoomSeq)" + ": (\(Data([UInt8(RoomSelected)]).hexEncodedString()), \(Data(Int16(readeract.RoomSeq).bytes).hexEncodedString()))\n" +
-                                "Indoor\nX:\(Float(readeract.Xcoordinate) ?? 0) : (\(Data((Float(readeract.Xcoordinate) ?? 0).bytes).hexEncodedString()))\nY: \(Float(readeract.Ycoordinate) ?? 0) : (\(Data((Float(readeract.Ycoordinate) ?? 0).bytes).hexEncodedString()))\n" +
-                                "Location\nLat:\(readeract.LatitudeStr) : (\(Data((Float(readeract.LatitudeStr) ?? 0).bytes).hexEncodedString()))\nLong:\(readeract.LongitudeStr) : (\(Data((Float(readeract.LongitudeStr) ?? 0).bytes).hexEncodedString())) "
+                                "Floor: \(readerconfig.floor == 0 ? "G/F" : "\(readerconfig.floor)/F")" +
+                            ": (\(Data(Array(Int16(readerconfig.floor).bytes)).hexEncodedString()))\n" +
+                                "Hazard\n\(HazardStrArray[HazardSelected])\(HazardSelected != 4 ? readerconfig.Seq < 10 ? "0\(readerconfig.Seq)" : "\(readerconfig.Seq)" : "")\(HazardSelected == 0 ? "Num of Steps: \(Steps)" : "")" +
+                                ": (\(Data([UInt8(HazardSelected)]).hexEncodedString()), \(Data(Int16(readerconfig.Seq).bytes).hexEncodedString()), \(Data([UInt8(Steps)]).hexEncodedString()))\n" +
+                                "Place\n\(RoomSelected == 0 ? "Room" : RoomSelected == 1 ? "Restroom" : "Aisle")\(readerconfig.RoomSeq)" + ": (\(Data([UInt8(RoomSelected)]).hexEncodedString()), \(Data(Int16(readerconfig.RoomSeq).bytes).hexEncodedString()))\n" +
+                                "Indoor\nX:\(Float(readerconfig.Xcoordinate) ?? 0) : (\(Data((Float(readerconfig.Xcoordinate) ?? 0).bytes).hexEncodedString()))\nY: \(Float(readerconfig.Ycoordinate) ?? 0) : (\(Data((Float(readerconfig.Ycoordinate) ?? 0).bytes).hexEncodedString()))\n" +
+                                "Location\nLat:\(readerconfig.LatitudeStr) : (\(Data((Float(readerconfig.LatitudeStr) ?? 0).bytes).hexEncodedString()))\nLong:\(readerconfig.LongitudeStr) : (\(Data((Float(readerconfig.LongitudeStr) ?? 0).bytes).hexEncodedString())) "
                         )
                     }
                     else{
                         AlertStr = String(
                             "Password: \(PasswdStr.hexaData.hexEncodedString())\n" +
-                            "Write Data to: \(readeract.DataCmdinStr[Int(funcSelected)])\n" +
+                            "Write Data to: \(readerconfig.DataCmdinStr[Int(funcSelected)])\n" +
                             "Data: \(WriteByteStr.hexaData.hexEncodedString())\nStartAddress: \(StartAdd)"
                         )
 
@@ -242,27 +242,27 @@ struct ReaderWriteData: View{
                 Text("Floor")
                     .font(.headline)
                 Spacer()
-                Button(action: {readeract.floor -= 1}) {
+                Button(action: {readerconfig.floor -= 1}) {
                     Image(systemName: "minus")
                 }
-                .disabled(readeract.floor < -255)
+                .disabled(readerconfig.floor < -255)
                 .frame(width: 30)
-                TextField("Floor", value: $readeract.floor, formatter: NumberFormatter())
-                    .onReceive(Just(readeract.floor), perform: {_ in
-                        if readeract.floor > 255 {
-                            readeract.floor = 255
+                TextField("Floor", value: $readerconfig.floor, formatter: NumberFormatter())
+                    .onReceive(Just(readerconfig.floor), perform: {_ in
+                        if readerconfig.floor > 255 {
+                            readerconfig.floor = 255
                         }
-                        else if readeract.floor < -255 {
-                            readeract.floor = -255
+                        else if readerconfig.floor < -255 {
+                            readerconfig.floor = -255
                         }
                     })
                     .multilineTextAlignment(.center)
                     .keyboardType(.numbersAndPunctuation)
                     .frame(maxWidth: 50)
-                Button(action: {readeract.floor += 1}) {
+                Button(action: {readerconfig.floor += 1}) {
                     Image(systemName: "plus")
                 }
-                .disabled(readeract.floor > 255)
+                .disabled(readerconfig.floor > 255)
                 .frame(width: 30)
             }
             .frame(width: geometry.size.width - 20)
@@ -286,26 +286,26 @@ struct ReaderWriteData: View{
                     Text("Seq")
                         .font(.headline)
                     Spacer()
-                    Button(action: {readeract.Seq -= 1}) {
+                    Button(action: {readerconfig.Seq -= 1}) {
                         Image(systemName: "minus")
                     }
-                    .disabled(readeract.Seq < 1)
+                    .disabled(readerconfig.Seq < 1)
                     .padding()
                     .frame(width: 30, height: 30)
-//                    Text(readeract.Seq < 10 ? "0\(readeract.Seq)" : "\(readeract.Seq)")
+//                    Text(readerconfig.Seq < 10 ? "0\(readerconfig.Seq)" : "\(readerconfig.Seq)")
 //                        .bold()
 //                        .font(.headline)
 //                        .frame(width: 30)
-                    TextField("Hazard Seq", value: $readeract.Seq, formatter: NumberFormatter())
+                    TextField("Hazard Seq", value: $readerconfig.Seq, formatter: NumberFormatter())
                         .onReceive(Just(Steps), perform: {_ in
-                            if readeract.Seq > 32767 {
-                                readeract.Seq = 32767
+                            if readerconfig.Seq > 32767 {
+                                readerconfig.Seq = 32767
                             }
                         })
                         .multilineTextAlignment(.center)
                         .keyboardType(.numberPad)
                         .frame(width: 50)
-                    Button(action: {readeract.Seq += 1}) {
+                    Button(action: {readerconfig.Seq += 1}) {
                         Image(systemName: "plus")
                     }
                     .padding()
@@ -361,22 +361,22 @@ struct ReaderWriteData: View{
                     Text("Aisle").tag(2)
                 }
                 .pickerStyle(SegmentedPickerStyle())
-                Button(action: {readeract.RoomSeq -= 1}) {
+                Button(action: {readerconfig.RoomSeq -= 1}) {
                     Image(systemName: "minus")
                 }
-                .disabled(Steps < 1)
+                .disabled(readerconfig.RoomSeq < 1)
                 .padding()
                 .frame(width: 30, height: 30)
-                TextField("Room Seq", value: $readeract.RoomSeq, formatter: NumberFormatter())
+                TextField("Room Seq", value: $readerconfig.RoomSeq, formatter: NumberFormatter())
                     .keyboardType(.numberPad)
                     .onReceive(Just(Steps), perform: {_ in
-                        if readeract.RoomSeq > 32767 {
-                            readeract.RoomSeq = 32767
+                        if readerconfig.RoomSeq > 32767 {
+                            readerconfig.RoomSeq = 32767
                         }
                     })
                     .multilineTextAlignment(.center)
                     .frame(width: 50)
-                Button(action: {readeract.RoomSeq += 1}) {
+                Button(action: {readerconfig.RoomSeq += 1}) {
                     Image(systemName: "plus")
                 }
                 .disabled(Steps > 255)
@@ -410,14 +410,14 @@ struct ReaderWriteData: View{
                 Text("Lat:")
                     .font(.headline)
                 Spacer()
-//                Text("\(readeract.Latitude)")
-                TextField("Latitude", text: $readeract.LatitudeStr)
+//                Text("\(readerconfig.Latitude)")
+                TextField("Latitude", text: $readerconfig.LatitudeStr)
                     .keyboardType(.numbersAndPunctuation)
-                    .onReceive(Just(readeract.LatitudeStr), perform: { newValue in
+                    .onReceive(Just(readerconfig.LatitudeStr), perform: { newValue in
                         let filtered = newValue.filter { "0123456789.-".contains($0) }
                         if filtered != newValue {
                             let float : Float = Float(filtered) ?? 00
-                            readeract.LatitudeStr = String(float)
+                            readerconfig.LatitudeStr = String(float)
                         }
                     })
                     .multilineTextAlignment(.center)
@@ -429,14 +429,14 @@ struct ReaderWriteData: View{
                 Text("Long:")
                     .font(.headline)
                 Spacer()
-//                Text("\(readeract.Longitude)")
-                TextField("Longitude", text: $readeract.LongitudeStr)
+//                Text("\(readerconfig.Longitude)")
+                TextField("Longitude", text: $readerconfig.LongitudeStr)
                     .keyboardType(.numbersAndPunctuation)
-                    .onReceive(Just(readeract.LongitudeStr), perform: { newValue in
+                    .onReceive(Just(readerconfig.LongitudeStr), perform: { newValue in
                         let filtered = newValue.filter { "0123456789.-".contains($0) }
                         if filtered != newValue {
                             let float : Float = Float(filtered) ?? 00
-                            readeract.LongitudeStr = String(float)
+                            readerconfig.LongitudeStr = String(float)
                         }
                     })
                     .multilineTextAlignment(.center)
@@ -452,13 +452,13 @@ struct ReaderWriteData: View{
                 Text("X:")
                     .font(.headline)
                 Spacer()
-                TextField("X Coordinate", text: $readeract.Xcoordinate)
+                TextField("X Coordinate", text: $readerconfig.Xcoordinate)
                     .keyboardType(.numbersAndPunctuation)
-                    .onReceive(Just(readeract.Xcoordinate), perform: { newValue in
+                    .onReceive(Just(readerconfig.Xcoordinate), perform: { newValue in
                         let filtered = newValue.filter { "0123456789.-".contains($0) }
                         if filtered != newValue {
                             let float : Float = Float(filtered) ?? 00
-                            readeract.Xcoordinate = String(float)
+                            readerconfig.Xcoordinate = String(float)
                         }
                     })
                     .multilineTextAlignment(.center)
@@ -470,13 +470,13 @@ struct ReaderWriteData: View{
                 Text("Y:")
                     .font(.headline)
                 Spacer()
-                TextField("Y Coordinate", text: $readeract.Ycoordinate)
+                TextField("Y Coordinate", text: $readerconfig.Ycoordinate)
                     .keyboardType(.numbersAndPunctuation)
-                    .onReceive(Just(readeract.Ycoordinate), perform: { newValue in
+                    .onReceive(Just(readerconfig.Ycoordinate), perform: { newValue in
                         let filtered = newValue.filter { "0123456789.-".contains($0) }
                         if filtered != newValue {
                             let float : Float = Float(filtered) ?? 00
-                            readeract.Ycoordinate = String(float)
+                            readerconfig.Ycoordinate = String(float)
                         }
                     })
                     .multilineTextAlignment(.center)
@@ -505,26 +505,26 @@ struct ReaderWriteData: View{
     func Match_ButtAct(){
         var CmdState : Int = 0
         var counter : Int = 0
-        let EPC : [UInt8] = Array(reader.Tags[readeract.EPC_Selected].EPC)
+        let EPC : [UInt8] = Array(readerconfig.Tags[readerconfig.EPC_Selected].EPC)
         let cmd_Match : [UInt8] = reader.cmd_EPC_match(setEPC_mode: 0x00, EPC: EPC)
         let cmd_umMatch : [UInt8] = reader.cmd_EPC_match(setEPC_mode: 0x01, EPC: [])
         let cmd_getMatched : [UInt8] = [0xA0, 0x03, 0xFE, 0x86]
         //        ble.cmd2reader(cmd: cmd_Match)
         //        reader.Btye_Recorder(defined: 1, byte: cmd_Match)
         Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){ timer in
-            if CmdState == 0 && readeract.MatchState == 0{ // Send Match Cmd
+            if CmdState == 0 && readerconfig.MatchState == 0{ // Send Match Cmd
                 ble.cmd2reader(cmd: cmd_Match)
                 reader.Btye_Recorder(defined: 1, byte: cmd_Match)
-                readeract.MatchState = 1
+                readerconfig.MatchState = 1
                 CmdState = 1
             }
-            else if CmdState == 0 && readeract.MatchState == 2 { // Send UnMatch Cmd
+            else if CmdState == 0 && readerconfig.MatchState == 2 { // Send UnMatch Cmd
                 ble.cmd2reader(cmd: cmd_umMatch)
                 reader.Btye_Recorder(defined: 1, byte: cmd_umMatch)
-                readeract.MatchState = 3
+                readerconfig.MatchState = 3
                 CmdState = 1
             }
-            else if CmdState == 1 && (readeract.MatchState == 1 || readeract.MatchState == 3) { // Matching or UmMactching for waiting feedback
+            else if CmdState == 1 && (readerconfig.MatchState == 1 || readerconfig.MatchState == 3) { // Matching or UmMactching for waiting feedback
                 if ble.ValueUpated_2A68{
                     let feedback = ble.reader2BLE()
                     reader.Btye_Recorder(defined: 2, byte: feedback)
@@ -534,11 +534,11 @@ struct ReaderWriteData: View{
                                 let ErrorStr = reader.reader_error_code(code: feedback[4])
                                 FeedbackStr.append(ErrorStr)
                                 CmdState = 4
-                                if readeract.MatchState == 1 {
-                                    readeract.MatchState = 0
+                                if readerconfig.MatchState == 1 {
+                                    readerconfig.MatchState = 0
                                 }
-                                else if readeract.MatchState == 3{
-                                    readeract.MatchState = 2
+                                else if readerconfig.MatchState == 3{
+                                    readerconfig.MatchState = 2
                                 }
                             }
                             else{
@@ -549,33 +549,33 @@ struct ReaderWriteData: View{
                     ble.ValueUpated_2A68 = false
                 }
             }
-            else if CmdState == 2 && (readeract.MatchState == 1 || readeract.MatchState == 3) { // verify mactching result
+            else if CmdState == 2 && (readerconfig.MatchState == 1 || readerconfig.MatchState == 3) { // verify mactching result
                 ble.cmd2reader(cmd: cmd_getMatched)
                 reader.Btye_Recorder(defined: 1, byte: cmd_getMatched)
                 CmdState = 3
             }
-            else if CmdState == 3 && (readeract.MatchState == 1 || readeract.MatchState == 3) {
+            else if CmdState == 3 && (readerconfig.MatchState == 1 || readerconfig.MatchState == 3) {
                 if ble.ValueUpated_2A68{
                     let feedback = ble.reader2BLE()
                     reader.Btye_Recorder(defined: 2, byte: feedback)
                     if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x86{
                         if feedback[4] == 0 {
-                            if readeract.MatchState == 1 {
+                            if readerconfig.MatchState == 1 {
                                 //                                FeedbackStr.append("Matching Complete")
                             }
                             else {
                                 FeedbackStr.append("Unmatching EPC Fail")
                             }
-                            readeract.MatchState = 2
+                            readerconfig.MatchState = 2
                         }
                         else {
-                            if readeract.MatchState == 1 {
+                            if readerconfig.MatchState == 1 {
                                 FeedbackStr.append("Matching EPC Fail")
                             }
                             else {
                                 //                                FeedbackStr.append("Unmatching Complete")
                             }
-                            readeract.MatchState = 0
+                            readerconfig.MatchState = 0
                         }
                         CmdState = 4
                     }
@@ -584,9 +584,9 @@ struct ReaderWriteData: View{
             }
             counter += 1
             if CmdState > 3 || counter > 30 {
-                if counter > 25 && readeract.MatchState == 1{
+                if counter > 25 && readerconfig.MatchState == 1{
                     FeedbackStr.append("Matching EPC isn't Complete")
-                    readeract.MatchState = 0
+                    readerconfig.MatchState = 0
                 }
                 timer.invalidate()
             }
@@ -597,10 +597,10 @@ struct ReaderWriteData: View{
         self.location.start()
         var counter : Int = 0
         Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
-            readeract.Latitude = Float(self.location.lastLocation?.coordinate.latitude ?? 00)
-            readeract.Longitude = Float(self.location.lastLocation?.coordinate.longitude ?? 00)
-            readeract.LatitudeStr = String(Float(self.location.lastLocation?.coordinate.latitude ?? 00))
-            readeract.LongitudeStr = String(Float(self.location.lastLocation?.coordinate.longitude ?? 00))
+            readerconfig.Latitude = Float(self.location.lastLocation?.coordinate.latitude ?? 00)
+            readerconfig.Longitude = Float(self.location.lastLocation?.coordinate.longitude ?? 00)
+            readerconfig.LatitudeStr = String(Float(self.location.lastLocation?.coordinate.latitude ?? 00))
+            readerconfig.LongitudeStr = String(Float(self.location.lastLocation?.coordinate.longitude ?? 00))
             counter += 1
             if location.LocationIsUpdate || counter > 10 {
                 self.location.stop()
@@ -616,15 +616,15 @@ struct ReaderWriteData: View{
         var cmd = [UInt8]()
         let PasswdBytes : [UInt8] = [UInt8](PasswdStr.hexaData)
         if funcSelected == 4{
-//            let Hazard : [UInt8] = [UInt8(HazardSelected)] + Array(Int16(readeract.Seq).bytes) + [UInt8(Steps)]
-            let Information : [UInt8] = [UInt8(HazardSelected)] + Array(Int16(readeract.Seq).bytes) + [UInt8(Steps)] + [UInt8(RoomSelected)] + Array(Int16(readeract.RoomSeq).bytes)
+//            let Hazard : [UInt8] = [UInt8(HazardSelected)] + Array(Int16(readerconfig.Seq).bytes) + [UInt8(Steps)]
+            let Information : [UInt8] = [UInt8(HazardSelected)] + Array(Int16(readerconfig.Seq).bytes) + [UInt8(Steps)] + [UInt8(RoomSelected)] + Array(Int16(readerconfig.RoomSeq).bytes)
 //            let Infor : [UInt8] = Hazard + Information
-            let Coordinate : [UInt8] = (Float(readeract.Xcoordinate) ?? 0).bytes + (Float(readeract.Ycoordinate) ?? 0).bytes + (Float(readeract.LatitudeStr) ?? 0).bytes  + (Float(readeract.LongitudeStr) ?? 0).bytes
-            let Data : [UInt8] = [0x4E,0x56] + Array(Int16(readeract.floor).bytes) + Information + Coordinate + [0xEC]
+            let Coordinate : [UInt8] = (Float(readerconfig.Xcoordinate) ?? 0).bytes + (Float(readerconfig.Ycoordinate) ?? 0).bytes + (Float(readerconfig.LatitudeStr) ?? 0).bytes  + (Float(readerconfig.LongitudeStr) ?? 0).bytes
+            let Data : [UInt8] = [0x4E,0x56] + Array(Int16(readerconfig.floor).bytes) + Information + Coordinate + [0xEC]
             cmd = reader.cmd_data_write(passwd: PasswdBytes, data_block: UInt8(1), data_start: UInt8(2), data: Data)
         }
         else{
-            cmd = reader.cmd_data_write(passwd: PasswdBytes, data_block: readeract.DataCmdinByte[Int(funcSelected)], data_start: UInt8(StartAdd), data: [UInt8](WriteByteStr.hexaData))
+            cmd = reader.cmd_data_write(passwd: PasswdBytes, data_block: readerconfig.DataCmdinByte[Int(funcSelected)], data_start: UInt8(StartAdd), data: [UInt8](WriteByteStr.hexaData))
         }
         Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){timer in
             if !flag {

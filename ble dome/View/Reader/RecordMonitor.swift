@@ -14,9 +14,9 @@ struct RecordMonitor: View {
         //        GeometryReader{ geometry in
         ZStack{
             VStack{
-                if !reader.BytesRecord.isEmpty {
-                    ForEach (0..<reader.BytesRecord.count, id: \.self){ index in
-                        let record = reader.BytesRecord[reader.BytesRecord.count - 1 - index ]
+                if !BytesRecord.isEmpty {
+                    ForEach (0..<BytesRecord.count, id: \.self){ index in
+                        let record = BytesRecord[BytesRecord.count - 1 - index ]
                         let byteStr = Data(record.Byte).hexEncodedString()
                         HStack{
                             Text("\(record.Time):")
