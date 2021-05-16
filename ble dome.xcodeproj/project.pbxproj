@@ -14,7 +14,6 @@
 		95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */; };
 		9552406625CA9AB100EA1011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406325CA9AB100EA1011 /* ContentView.swift */; };
 		9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552407525CC54B100EA1011 /* PeripheralDetail.swift */; };
-		9564DE9E264E338C00B7BBC3 /* csv2var.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9564DE9D264E338C00B7BBC3 /* csv2var.swift */; };
 		9564DEA2264E356500B7BBC3 /* 22.211006,113.55492.csv in Resources */ = {isa = PBXBuildFile; fileRef = 9564DEA1264E356500B7BBC3 /* 22.211006,113.55492.csv */; };
 		9564DEA5264EE74200B7BBC3 /* AlertPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9564DEA4264EE74200B7BBC3 /* AlertPicker.swift */; };
 		95687E9026444F1000C9116D /* ReaderSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E8F26444F1000C9116D /* ReaderSetting.swift */; };
@@ -22,6 +21,7 @@
 		95687E94264450B300C9116D /* RecordMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E93264450B300C9116D /* RecordMonitor.swift */; };
 		95687E96264450E600C9116D /* ReadTagsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E95264450E600C9116D /* ReadTagsData.swift */; };
 		95687E98264464FC00C9116D /* ReaderWriteData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E97264464FC00C9116D /* ReaderWriteData.swift */; };
+		95764B3B2651682500A1516A /* RoutineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95764B3A2651682500A1516A /* RoutineTest.swift */; };
 		9580C65F262574B8008EA64D /* readerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9580C65E262574B8008EA64D /* readerConfig.swift */; };
 		95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */; };
 		95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368B825BF2F700026EC88 /* Assets.xcassets */; };
@@ -40,7 +40,6 @@
 		95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEScannerV2.swift; sourceTree = "<group>"; };
 		9552406325CA9AB100EA1011 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9552407525CC54B100EA1011 /* PeripheralDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralDetail.swift; sourceTree = "<group>"; };
-		9564DE9D264E338C00B7BBC3 /* csv2var.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = csv2var.swift; sourceTree = "<group>"; };
 		9564DEA1264E356500B7BBC3 /* 22.211006,113.55492.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "22.211006,113.55492.csv"; sourceTree = "<group>"; };
 		9564DEA4264EE74200B7BBC3 /* AlertPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertPicker.swift; sourceTree = "<group>"; };
 		95687E8F26444F1000C9116D /* ReaderSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSetting.swift; sourceTree = "<group>"; };
@@ -48,6 +47,7 @@
 		95687E93264450B300C9116D /* RecordMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMonitor.swift; sourceTree = "<group>"; };
 		95687E95264450E600C9116D /* ReadTagsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadTagsData.swift; sourceTree = "<group>"; };
 		95687E97264464FC00C9116D /* ReaderWriteData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderWriteData.swift; sourceTree = "<group>"; };
+		95764B3A2651682500A1516A /* RoutineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineTest.swift; sourceTree = "<group>"; };
 		9580C65E262574B8008EA64D /* readerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readerConfig.swift; sourceTree = "<group>"; };
 		95B368B125BF2F6D0026EC88 /* ble dome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ble dome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ble_domeApp.swift; sourceTree = "<group>"; };
@@ -115,6 +115,7 @@
 			children = (
 				9528A17525D0560B00B51649 /* ReaderTab.swift */,
 				95687E8F26444F1000C9116D /* ReaderSetting.swift */,
+				95764B3A2651682500A1516A /* RoutineTest.swift */,
 				95687E9126444FEB00C9116D /* ReaderInventory.swift */,
 				95687E95264450E600C9116D /* ReadTagsData.swift */,
 				95687E93264450B300C9116D /* RecordMonitor.swift */,
@@ -149,7 +150,6 @@
 				9580C65E262574B8008EA64D /* readerConfig.swift */,
 				95E7D8822648203B00F2379E /* Node.swift */,
 				95E7D88026481ECE00F2379E /* PathFinding.swift */,
-				9564DE9D264E338C00B7BBC3 /* csv2var.swift */,
 				9564DEA0264E350B00B7BBC3 /* NodeCSV */,
 				9552407025CAC66800EA1011 /* View */,
 				95B368B825BF2F700026EC88 /* Assets.xcassets */,
@@ -248,13 +248,13 @@
 				95687E9226444FEB00C9116D /* ReaderInventory.swift in Sources */,
 				95687E94264450B300C9116D /* RecordMonitor.swift in Sources */,
 				95687E96264450E600C9116D /* ReadTagsData.swift in Sources */,
-				9564DE9E264E338C00B7BBC3 /* csv2var.swift in Sources */,
 				9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */,
 				95492EB825E3DEF900ECE3FF /* reader_cmd.swift in Sources */,
 				95E7D88126481ECE00F2379E /* PathFinding.swift in Sources */,
 				95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */,
 				95687E98264464FC00C9116D /* ReaderWriteData.swift in Sources */,
 				95DF4D91263D65E40022EC92 /* location.swift in Sources */,
+				95764B3B2651682500A1516A /* RoutineTest.swift in Sources */,
 				95E7D888264A5EE900F2379E /* NavMain.swift in Sources */,
 				9564DEA5264EE74200B7BBC3 /* AlertPicker.swift in Sources */,
 				9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */,

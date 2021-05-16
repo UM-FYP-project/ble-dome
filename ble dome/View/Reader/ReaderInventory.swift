@@ -123,7 +123,7 @@ struct ReaderInventory: View{
                     Button(action: {
                         let cmd : [UInt8] = reader.cmd_clear_inventory_buffer()
                         ble.cmd2reader(cmd: cmd)
-                        reader.Btye_Recorder(defined: 1, byte: cmd)
+                        reader.Byte_Recorder(defined: 1, byte: cmd)
                         readerconfig.tagsCount = 0
                         readerconfig.Tags.removeAll()
                         readerconfig.TagsData.removeAll()
@@ -177,7 +177,7 @@ struct ReaderInventory: View{
                                     Text("RSSI:\(tag.RSSI)")
                                 }
                                 if NavTag != nil {
-                                    Text("Floor: \(NavTag!.Floor)/F\tHazard: \(NavTag!.HazardStr)\tInformation: \((NavTag!.InformationStr))")
+                                    Text("Floor: \(NavTag!.Floor)/F\t\tHazard: \(NavTag!.HazardStr)\t\tInformation: \((NavTag!.InformationStr))")
                                 }
                             }
                         }
@@ -197,13 +197,13 @@ struct ReaderInventory: View{
             if !flag || counter > 5{
                 counter = 0
                 ble.cmd2reader(cmd: cmd)
-                reader.Btye_Recorder(defined: 1, byte: cmd)
+                reader.Byte_Recorder(defined: 1, byte: cmd)
                 flag = true
             }
             while (flag && LoopCount < 50) {
                 if ble.ValueUpated_2A68{
                     let feedback = ble.reader2BLE()
-                    reader.Btye_Recorder(defined: 2, byte: feedback)
+                    reader.Byte_Recorder(defined: 2, byte: feedback)
                     if feedback[0] == 0xA0 && feedback[2] == 0xFE{
                         if feedback[3] == 0x80 && cmd[3] == 0x80{
                             let funcFeedback = reader.feedback_Inventory(feedback: feedback)
@@ -246,7 +246,7 @@ struct ReaderInventory: View{
             let cmd : [UInt8] = reader.cmd_get_inventory_buffer()
             if !flag{
                 ble.cmd2reader(cmd: cmd)
-                reader.Btye_Recorder(defined: 1, byte: cmd)
+                reader.Byte_Recorder(defined: 1, byte: cmd)
                 flag = true
             }
             if ble.ValueUpated_2A68{

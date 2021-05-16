@@ -94,6 +94,7 @@ struct BLEConnect_button: View {
                     }
                     else if peripheral.State == 2{
                         ble.disconnect(peripheral: peripheral.Peripheral)
+                        rememberConntion.removeObject(forKey:"PreviousName")
                         ble.scan_devices()
                     }
                 }

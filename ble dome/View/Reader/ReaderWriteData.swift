@@ -280,8 +280,7 @@ struct ReaderWriteData: View{
                 .pickerStyle(SegmentedPickerStyle())
             }
             .frame(width: geometry.size.width - 20)
-            Cooradintion
-            if HazardSelected != 4{
+//            if HazardSelected != 4{
                 HStack{
                     Text("Seq")
                         .font(.headline)
@@ -342,10 +341,11 @@ struct ReaderWriteData: View{
                         .frame(width: 30, height: 30)
                     }
                 }
-                .frame(width: geometry.size.width - 20)
+                .frame(width: geometry.size.width - 20, height: 30)
                 Divider()
-            }
+//            }
             RoomView
+            Cooradintion
             ErrorList
             Spacer()
         }
@@ -510,24 +510,24 @@ struct ReaderWriteData: View{
         let cmd_umMatch : [UInt8] = reader.cmd_EPC_match(setEPC_mode: 0x01, EPC: [])
         let cmd_getMatched : [UInt8] = [0xA0, 0x03, 0xFE, 0x86]
         //        ble.cmd2reader(cmd: cmd_Match)
-        //        reader.Btye_Recorder(defined: 1, byte: cmd_Match)
+        //        reader.Byte_Recorder(defined: 1, byte: cmd_Match)
         Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){ timer in
             if CmdState == 0 && readerconfig.MatchState == 0{ // Send Match Cmd
                 ble.cmd2reader(cmd: cmd_Match)
-                reader.Btye_Recorder(defined: 1, byte: cmd_Match)
+                reader.Byte_Recorder(defined: 1, byte: cmd_Match)
                 readerconfig.MatchState = 1
                 CmdState = 1
             }
             else if CmdState == 0 && readerconfig.MatchState == 2 { // Send UnMatch Cmd
                 ble.cmd2reader(cmd: cmd_umMatch)
-                reader.Btye_Recorder(defined: 1, byte: cmd_umMatch)
+                reader.Byte_Recorder(defined: 1, byte: cmd_umMatch)
                 readerconfig.MatchState = 3
                 CmdState = 1
             }
             else if CmdState == 1 && (readerconfig.MatchState == 1 || readerconfig.MatchState == 3) { // Matching or UmMactching for waiting feedback
                 if ble.ValueUpated_2A68{
                     let feedback = ble.reader2BLE()
-                    reader.Btye_Recorder(defined: 2, byte: feedback)
+                    reader.Byte_Recorder(defined: 2, byte: feedback)
                     if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x85{
                         if feedback[1] == 0x04 {
                             if feedback[4] != 0x10{
@@ -551,13 +551,13 @@ struct ReaderWriteData: View{
             }
             else if CmdState == 2 && (readerconfig.MatchState == 1 || readerconfig.MatchState == 3) { // verify mactching result
                 ble.cmd2reader(cmd: cmd_getMatched)
-                reader.Btye_Recorder(defined: 1, byte: cmd_getMatched)
+                reader.Byte_Recorder(defined: 1, byte: cmd_getMatched)
                 CmdState = 3
             }
             else if CmdState == 3 && (readerconfig.MatchState == 1 || readerconfig.MatchState == 3) {
                 if ble.ValueUpated_2A68{
                     let feedback = ble.reader2BLE()
-                    reader.Btye_Recorder(defined: 2, byte: feedback)
+                    reader.Byte_Recorder(defined: 2, byte: feedback)
                     if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x86{
                         if feedback[4] == 0 {
                             if readerconfig.MatchState == 1 {
@@ -629,7 +629,7 @@ struct ReaderWriteData: View{
         Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){timer in
             if !flag {
                 ble.cmd2reader(cmd: cmd)
-                reader.Btye_Recorder(defined: 1, byte: cmd)
+                reader.Byte_Recorder(defined: 1, byte: cmd)
                 flag = true
             }
             if ble.ValueUpated_2A68{

@@ -11,6 +11,17 @@ struct NavButton : Identifiable{
     let Text : String
 }
 
+struct NavChar {
+    let Floor : Int
+    let Information : [UInt8]
+    var InformationStr : String {
+        let InformationStrArray : [String] = ["Room","Restroom","Aisle"]
+        let SeqInt : Int = Int(Data(Array(Information[1...2])).withUnsafeBytes({$0.load(as: UInt16.self)}).bigEndian)
+        let Str : String = "\(Floor == 0 ? "G/F" : "\(Floor)/F") \t|\t" + InformationStrArray[Int(Information[0])] + "\(SeqInt)"
+        return Str
+    }
+}
+
 import SwiftUI
 import CoreBluetooth
 
@@ -18,8 +29,7 @@ struct NavMain: View {
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader:Reader
     @EnvironmentObject var path : PathFinding
-    @State var Floor : Int? = nil
-    @State var InformationStr : String = ""
+    @State var CurrentLocationStr : String = ""
     @State var geoPos : GeoPos? = nil
     @State var AlertState : Bool = false
     @State var ButtonPressedNum : Int = 0
@@ -43,7 +53,7 @@ struct NavMain: View {
                     .font(.title3)
                 Spacer()
                 VStack{
-                    Text("\(InformationStr)")
+                    Text("\(CurrentLocationStr)")
                         .font(.title3)
                         .frame(height: 40)
                         .frame(maxWidth: 300)
@@ -86,9 +96,14 @@ struct NavMain: View {
         }
         .frame(maxWidth: geometry.size.width)
         .onAppear(perform: {
-            geoPos = GeoPos(Floor: 2, Lag: Float(22.211006), Long: Float(113.55492))
-            let fileName = String(geoPos!.Lag) + "," + String(geoPos!.Long)
-            path.CSV2Dict(fileName: fileName)
+            getPosFromBLE()
+//            geoPos = GeoPos(Floor: 2, Lag: Float(22.211006), Long: Float(113.55492))
+//            let fileName = String(geoPos!.Lag) + "," + String(geoPos!.Long)
+//            path.CSV2Dict(fileName: fileName)
+            
+//            Timer.scheduledTimer(withTimeInterval: 1, repeats: true){_ in
+//                getPosFromBLE()
+//            }
         })
         .alert(isPresented: $AlertState){
             switch ButtonPressedNum {
@@ -129,38 +144,22 @@ struct NavMain: View {
     }
     
     func getPosFromBLE(){
-        Timer.scheduledTimer(withTimeInterval: 10, repeats: true){timer in
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: true){timer in
             let Serivce : CBUUID = CBUUID(string: "2A68")
             let Char : CBUUID = CBUUID(string: "5677")
             var Pos = [UInt8]()
             Pos = ble.BLEReadValue(Serivce: Serivce, Characteristic: Char)
             if !Pos.isEmpty{
                 if Pos.count > 11 {
-                    let floor = Data(Array(Pos[0...1])).withUnsafeBytes({$0.load(as: Int.self)}).bigEndian
-                    Floor = floor
-                    InformationStr = "\(Pos[2] == 0 ? "Room" : Pos[2] == 1 ? "Restroom" : "Aisle")" +
-                        "\(Data(Array(Pos[3...4])).withUnsafeBytes({$0.load(as: Int.self)}))"
-                    geoPos = GeoPos(Floor: floor, Lag: Data(Array(Pos[5...8])).withUnsafeBytes({$0.load(as: Float.self)}), Long: Data(Array(Pos[9...12])).withUnsafeBytes({$0.load(as: Float.self)}))
+                    let Floor = Int(Data(Array(Pos[0...1])).withUnsafeBytes({$0.load(as: UInt16.self)}).bigEndian)
+                    let Information : NavChar = NavChar(Floor: Floor, Information: Array(Pos[2...4]))
+
+                    CurrentLocationStr = Information.InformationStr
+                    geoPos = GeoPos(Floor: Floor, Lag: Data(Array(Pos[5...8])).withUnsafeBytes({$0.load(as: Float.self)}), Long: Data(Array(Pos[9...12])).withUnsafeBytes({$0.load(as: Float.self)}))
                     let fileName = String(geoPos!.Lag) + "," + String(geoPos!.Long)
                     path.CSV2Dict(fileName: fileName)
                 }
             }
-//            if !ble.peripherals.isEmpty{
-//                if !ble.Peripheral_characteristics.isEmpty{
-//                    if let CharIndex = ble.Peripheral_characteristics.firstIndex(where: {$0.Services_UUID == Serivce && $0.Characteristic_UUID == Char}){
-//                        Pos = ble.Peripheral_characteristics[CharIndex].value
-//                        if Pos.count > 11 {
-//                            let floor = Data(Array(Pos[0...1])).withUnsafeBytes({$0.load(as: Int.self)}).bigEndian
-//                            Floor = floor
-//                            InformationStr = "\(Pos[2] == 0 ? "Room" : Pos[2] == 1 ? "Restroom" : "Aisle")" +
-//                                "\(Data(Array(Pos[3...4])).withUnsafeBytes({$0.load(as: Int.self)}))"
-//                            geoPos = GeoPos(Floor: floor, Lag: Data(Array(Pos[5...8])).withUnsafeBytes({$0.load(as: Float.self)}), Long: Data(Array(Pos[9...12])).withUnsafeBytes({$0.load(as: Float.self)}))
-//                            let fileName = String(geoPos!.Lag) + "," + String(geoPos!.Long)
-//                            path.CSV2Dict(fileName: fileName)
-//                        }
-//                    }
-//                }
-//            }
         }
     }
 }

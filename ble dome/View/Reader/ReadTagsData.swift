@@ -37,14 +37,6 @@ struct ReadTagsData: View {
                     Text("Start Address:")
                         .font(.headline)
                     Spacer()
-                    //                        Text("\(readerconfig.DataByte[readerconfig.DataStart_Selected])bit")
-                    //                            .font(.headline)
-                    //                            .frame(width: 60, height: 30)
-                    //                            .background(Color.gray.opacity(0.15))
-                    //                            .cornerRadius(10)
-                    //                            .onTapGesture {
-                    //                                readerconfig.DataStart_picker = true
-                    //                            }
                     Button(action: {self.readerconfig.DataStart -= 1}) {
                         Image(systemName: "minus")
                     }
@@ -156,10 +148,10 @@ struct ReadTagsData: View {
                                     Text("RSSI:\(TagData.RSSI)")
                                 }
                                 if NavTag != nil {
-                                    Text("Floor: \(NavTag!.Floor)/F\tHazard: \(NavTag!.HazardStr)\nInformation: \((NavTag!.InformationStr))")
-                                    Text("X:\(NavTag!.Xcoordinate!)\t\tY:\(NavTag!.Ycoordinate!)")
-                                    if NavTag!.Latitude != nil && NavTag!.Longitude != nil {
-                                        Text("Lag:\(NavTag!.Latitude!)\t\tLong:\(NavTag!.Longitude!)")
+                                    Text("Floor: \(NavTag!.Floor)/F\t\tHazard: \(NavTag!.HazardStr)\n\t\tInformation: \((NavTag!.InformationStr))")
+                                    Text("X:\(NavTag!.X!)\t\tY:\(NavTag!.Y!)")
+                                    if NavTag!.Lat != nil && NavTag!.Long != nil {
+                                        Text("Lag:\(NavTag!.Lat!)\t\tLong:\(NavTag!.Long!)")
                                     }
                                 }
                             }
@@ -181,7 +173,7 @@ struct ReadTagsData: View {
         Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true){timer in
             if !flag {
                 ble.cmd2reader(cmd: cmd)
-                reader.Btye_Recorder(defined: 1, byte: cmd)
+                reader.Byte_Recorder(defined: 1, byte: cmd)
                 flag = true
             }
             if ble.ValueUpated_2A68{

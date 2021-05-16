@@ -50,7 +50,7 @@ struct ReaderSetting: View {
 //                        //                            var feedback = [UInt8]()
 //                        cmdtransitor(cmd: cmd)
 //                        //                            ble.cmd2reader(cmd: cmd)
-//                        //                            reader.Btye_Recorder(defined: 1, byte: cmd)
+//                        //                            reader.Byte_Recorder(defined: 1, byte: cmd)
 //                    }) {
 //                        Text("Set")
 //                            .foregroundColor(.blue)
@@ -135,13 +135,13 @@ struct ReaderSetting: View {
         Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
             if !flag{
                 ble.cmd2reader(cmd: cmd)
-                reader.Btye_Recorder(defined: 1, byte: cmd)
+                reader.Byte_Recorder(defined: 1, byte: cmd)
                 flag = true
             }
             if ble.ValueUpated_2A68{
-                print("ValueUpated_2A68")
+//                print("ValueUpated_2A68")
                 let feedback = ble.reader2BLE()
-                reader.Btye_Recorder(defined: 2, byte: feedback)
+                reader.Byte_Recorder(defined: 2, byte: feedback)
                 if feedback[0] == 0xA0 && feedback[2] == 0xFE {
                     if feedback[3] == 0x70 || feedback[3] == 0x71 || feedback[3] == 0x76{
                         let Error = reader.reader_error_code(code: feedback[Int(feedback[1])])
@@ -149,16 +149,18 @@ struct ReaderSetting: View {
                             ErrorStr.removeAll()
                         }
                         ErrorStr.append(feedback[3] == 0x70 ? "Reset:" + Error : feedback[3] == 0x71 ? "SetBaudrate:" + Error : "SetPower:" + Error)
+                        readState = true
                     }
                     else if feedback[3] == 0x77 {
                         Outpower_feedback = reader.feedback_get_output_power(feedback: feedback)
+                        readState = true
                     }
-                    readState = true
+//                    readState = true
                 }
                 ble.ValueUpated_2A68 = false
             }
             counter += 1
-            if counter > 20 || readState{
+            if counter > 30 || readState{
                 timer.invalidate()
             }
         }

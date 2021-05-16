@@ -43,22 +43,39 @@ struct tagData: Identifiable{
     
 }
 
-struct NavTag{
+struct NavTag: Identifiable{
+    var id : Int
+    let CRC : [UInt8]
     let Floor : Int
     let Hazard : [UInt8]
-    let HazardStr : String
     let Information : [UInt8]
-    let InformationStr : String
-    let Xcoordinate : Float?
-    let Ycoordinate : Float?
-    let Latitude : Float?
-    let Longitude : Float?
+    var X : Float?
+    var Y : Float?
+    var Lat : Float?
+    var Long : Float?
+    
+    var HazardStr : String {
+        let HazardStrArray : [String] = ["Stairs","Entrance","Elevator","Crossroad","Straight"]
+        let SeqInt : Int = Int(Data(Array(Hazard[1...2])).withUnsafeBytes({$0.load(as: UInt16.self)}).bigEndian)
+        let AddtionalStr : String = "\(Hazard[0] == 0 ? "\tStep:\(Int(Hazard[3]))" : Hazard[3] > 0 ? "| \(Int(Hazard[3]))" : "")"
+        let Str : String = HazardStrArray[Int(Hazard[0])] + "\(SeqInt)" + AddtionalStr
+        return Str
+    }
+    
+    var InformationStr : String {
+        let InformationStrArray : [String] = ["Room","Restroom","Aisle"]
+        let SeqInt : Int = Int(Data(Array(Information[1...2])).withUnsafeBytes({$0.load(as: UInt16.self)}).bigEndian)
+        let Str : String = InformationStrArray[Int(Information[0])] + "\(SeqInt)"
+        return Str
+    }
 }
+
+
 
 var BytesRecord = [byteRecord]()
 //var Tags = [tag]()
 //var TagsData = [tagData]()
-var NavTags = [NavTag]()
+//var NavTags = [NavTag]()
 
 class Reader: NSObject, ObservableObject{
 //    @Published var Tags = [tag]()
@@ -271,99 +288,110 @@ class Reader: NSObject, ObservableObject{
         var Error_String : String = ""
         var handled : UInt8 = 0
         if feedback[1] != 4 {
-            for var index in 0..<feedback.count {
-                if feedback[index] == 0xA0 && feedback[index + 2] == 0xFE {
-//                    let feedbackRow : [UInt8] = Array(feedback[index...(Int(feedback[index + 1]) + 1 + index)])
-                    let toIndex : Int = feedback.count - index - 1 > Int(feedback[index + 1]) ? (Int(feedback[index + 1]) + 1 + index) : feedback.count - 1
-                    let feedbackRow : [UInt8] = Array(feedback[index...toIndex])
-                    Btye_Recorder(defined: 2, byte: feedbackRow)
-                    //print("\(feedback2D.count)| BufferLen:\(Int(feedback[index + 1]) + 2) | \(Data(feedbackof2D).hexEncodedString())")
-                    if feedbackRow[3] == 0x90 && (Int(feedbackRow[1]) + 2 == feedbackRow.count){
-                        handled = 0x90
-                        let EPClen = feedbackRow[6]
-                        let PC : [UInt8] = [feedbackRow[7], feedbackRow[8]]
-                        let EPC : [UInt8] = Array(feedbackRow[9...Int(EPClen) + 4])
-                        let CRC : [UInt8] = [feedbackRow[Int(EPClen) + 5], feedbackRow[Int(EPClen) + 6]]
-                        let RSSI = feedbackRow[(Int(EPClen) + 7)]
-                        if TagsArr.filter({$0.EPC == EPC}).count < 1 {
-                            let Tag = tag(id: TagsArr.count, EPClen: EPClen, PC: PC, EPC: EPC, CRC: CRC, RSSI: Int(RSSI) - 130)
-                            TagsArr.append(Tag)
-//                            print(Tag)
-                        }
-                        else {
-                            if let i = TagsArr.firstIndex(where: {$0.EPC == EPC}){
-                                TagsArr[i].RSSI = Int(RSSI) - 130
-                                TagsArr[i].CRC = CRC
-                            }
-                        }
-                    }
-                    else if feedbackRow[3] == 0x81 && feedbackRow[1] + 2 == feedbackRow.count{
-                        handled = 0x81
-                        let totalData_len = feedbackRow[6]
-//                        print("totalData_len: \(totalData_len)")
-                        let ReadData_len = feedbackRow[(Int(feedbackRow[1]) - 2)]
-//                        print("ReadData_len: \(ReadData_len)")
-                        let EPClen = totalData_len - ReadData_len
-//                        print("EPClen: \(EPClen)")
-                        let PC : [UInt8] = [feedbackRow[7], feedbackRow[8]]
-//                        print("PC: \(PC)")
-                        let EPC : [UInt8] = Array(feedbackRow[9...Int(EPClen) + 4])
-//                        print("EPC: \(EPC)")
-                        let CRC : [UInt8] = [feedbackRow[Int(EPClen) + 5], feedbackRow[Int(EPClen) + 6]]
-//                        print("CRC: \(CRC)")
-                        let DataBL : [UInt8] = Array(feedbackRow[Int(EPClen) + 7...Int(totalData_len) + 6])
-//                        print("Data: \(Data)")
-                        if let i = Tags.firstIndex(where: {$0.EPC == EPC}){
-                            let RSSI = TagsArr[i].RSSI
-                            if TagsDataArr.filter({$0.EPC == EPC && $0.DataBL == DataBL}).count < 1{
-                                let TagData = tagData(id: TagsArr[i].id, PC: PC, CRC: CRC, EPC: EPC, RSSI: RSSI, DataLen: ReadData_len, DataBL: DataBL)
-                                TagsDataArr.append(TagData)
-                            }
-                            else {
-                                if let j = TagsData.firstIndex(where: {$0.CRC == CRC && $0.DataBL == DataBL}){
-                                    TagsDataArr[j].RSSI = RSSI
-                                }
-                            }
-                        }
-                        else{
-                            if TagsData.filter({$0.CRC == CRC && $0.DataBL == DataBL}).count < 1{
-                                let TagData = tagData(id: TagsDataArr.count, PC: PC, CRC: CRC, EPC: EPC, RSSI: 0, DataLen: ReadData_len, DataBL: DataBL)
-                                TagsDataArr.append(TagData)
-                            }
-                        }
-                    }
-                    else if feedbackRow[3] == 0x89 && feedbackRow[1] > 8 && feedbackRow[1] + 2 == feedbackRow.count{
-                        let PC : [UInt8] = [feedbackRow[5], feedbackRow[6]]
-                        let Len  = feedbackRow[1] + 1
-                        let RSSI = feedbackRow[Int(Len) - 1]
-                        let EPC : [UInt8] = Array(feedbackRow[7...Int(Len) - 2])
-                        if PC != [00,00] && EPC != [00,00,00]{
+            for var index in 0..<feedback.count -  1 {
+//                print("index :\(index)")
+                if feedback.count - index > 6 {
+                    if feedback[index] == 0xA0 && feedback[index + 2] == 0xFE {
+    //                    let feedbackRow : [UInt8] = Array(feedback[index...(Int(feedback[index + 1]) + 1 + index)])
+                        let toIndex : Int = feedback.count - index - 1 > Int(feedback[index + 1]) ? (Int(feedback[index + 1]) + 1 + index) : feedback.count - 1
+//                        print("toIndex :\(toIndex)")
+                        let feedbackRow : [UInt8] = Array(feedback[index...toIndex])
+                        Byte_Recorder(defined: 2, byte: feedbackRow)
+                        //print("\(feedback2D.count)| BufferLen:\(Int(feedback[index + 1]) + 2) | \(Data(feedbackof2D).hexEncodedString())")
+                        if feedbackRow[3] == 0x90 && (Int(feedbackRow[1]) + 2 == feedbackRow.count){
+                            handled = 0x90
+                            let EPClen = feedbackRow[6]
+                            let PC : [UInt8] = [feedbackRow[7], feedbackRow[8]]
+                            let EPC : [UInt8] = Array(feedbackRow[9...Int(EPClen) + 4])
+                            let CRC : [UInt8] = [feedbackRow[Int(EPClen) + 5], feedbackRow[Int(EPClen) + 6]]
+                            let RSSI = feedbackRow[(Int(EPClen) + 7)]
                             if TagsArr.filter({$0.EPC == EPC}).count < 1 {
-                                let Tag = tag(id: Tags.count, EPClen: Len - 4, PC: PC, EPC: EPC, CRC: [00,00], RSSI: Int(RSSI) - 130)
+                                let Tag = tag(id: TagsArr.count, EPClen: EPClen, PC: PC, EPC: EPC, CRC: CRC, RSSI: Int(RSSI) - 130)
                                 TagsArr.append(Tag)
+    //                            print(Tag)
                             }
                             else {
-                                if let i = Tags.firstIndex(where: {$0.EPC == EPC}){
+                                if let i = TagsArr.firstIndex(where: {$0.EPC == EPC}){
                                     TagsArr[i].RSSI = Int(RSSI) - 130
+                                    TagsArr[i].CRC = CRC
                                 }
                             }
                         }
+                        else if feedbackRow[3] == 0x81 && feedbackRow[1] + 2 == feedbackRow.count{
+                            handled = 0x81
+                            let totalData_len = feedbackRow[6]
+//                            print("totalData_len: \(totalData_len)")
+                            let ReadData_len = feedbackRow[(Int(feedbackRow[1]) - 2)]
+//                            print("ReadData_len: \(ReadData_len)")
+                            let EPClen = totalData_len - ReadData_len
+//                            print("EPClen: \(EPClen)")
+                            let PC : [UInt8] = [feedbackRow[7], feedbackRow[8]]
+//                            print("PC: \(PC)")
+                            let EPC : [UInt8] = Array(feedbackRow[9...Int(EPClen) + 4])
+//                            print("EPC: \(EPC)")
+                            let CRC : [UInt8] = [feedbackRow[Int(EPClen) + 5], feedbackRow[Int(EPClen) + 6]]
+//                            print("CRC: \(CRC)")
+                            let DataBL : [UInt8] = Array(feedbackRow[Int(EPClen) + 7...Int(totalData_len) + 6])
+//                            print("Data: \(Data(DataBL).hexEncodedString())")
+                            if !TagsArr.isEmpty{
+                                if let i = TagsArr.firstIndex(where: {$0.EPC == EPC}){
+                                    let RSSI = TagsArr[i].RSSI
+                                    if TagsDataArr.filter({$0.EPC == EPC && $0.DataBL == DataBL}).count < 1{
+                                        let TagData = tagData(id: TagsArr[i].id, PC: PC, CRC: CRC, EPC: EPC, RSSI: RSSI, DataLen: ReadData_len, DataBL: DataBL)
+                                        TagsDataArr.append(TagData)
+                                    }
+                                    else {
+                                        if let j = TagsDataArr.firstIndex(where: {$0.CRC == CRC && $0.DataBL == DataBL}){
+                                            TagsDataArr[j].RSSI = RSSI
+                                        }
+                                    }
+                                }
+                            }
+                            else{
+                                if TagsDataArr.filter({$0.CRC == CRC && $0.DataBL == DataBL}).count < 1{
+                                    let TagData = tagData(id: TagsDataArr.count, PC: PC, CRC: CRC, EPC: EPC, RSSI: 0, DataLen: ReadData_len, DataBL: DataBL)
+                                    TagsDataArr.append(TagData)
+                                }
+                            }
+                        }
+                        else if feedbackRow[3] == 0x89 && feedbackRow[1] > 8 && feedbackRow[1] + 2 == feedbackRow.count{
+                            let PC : [UInt8] = [feedbackRow[5], feedbackRow[6]]
+                            let Len  = feedbackRow[1] + 1
+                            let RSSI = feedbackRow[Int(Len) - 1]
+                            let EPC : [UInt8] = Array(feedbackRow[7...Int(Len) - 2])
+                            if PC != [00,00] && EPC != [00,00,00]{
+                                if TagsArr.filter({$0.EPC == EPC}).count < 1 {
+                                    let Tag = tag(id: Tags.count, EPClen: Len - 4, PC: PC, EPC: EPC, CRC: [00,00], RSSI: Int(RSSI) - 130)
+                                    TagsArr.append(Tag)
+                                }
+                                else {
+                                    if let i = Tags.firstIndex(where: {$0.EPC == EPC}){
+                                        TagsArr[i].RSSI = Int(RSSI) - 130
+                                    }
+                                }
+                            }
+                        }
+                        index += Int(feedbackRow[1]) + 1
                     }
-                    index += (Int(feedback[index + 1]) + 1)
                 }
             }
             if (handled == 0x90 || handled == 0x89){
-                TagsArr.sort{($0.RSSI >= $1.RSSI)}
-//                EPCstr.removeAll()
-                for index in 0..<Tags.count{
-                    TagsArr[index].id = index
-//                    EPCstr.append(Data(Tags[index].EPC).hexEncodedString())
+                if !TagsArr.isEmpty {
+                    TagsArr.sort{($0.RSSI >= $1.RSSI)}
+                    //                EPCstr.removeAll()
+                    for index in 0..<TagsArr.count{
+                        TagsArr[index].id = index
+                        //                    EPCstr.append(Data(Tags[index].EPC).hexEncodedString())
+                    }
                 }
             }
             if handled == 0x81{
-                TagsArr.sort{($0.RSSI >= $1.RSSI)}
-                for index in 0..<TagsData.count{
-                    TagsArr[index].id = index
+                if !TagsDataArr.isEmpty {
+                    TagsDataArr.sort{($0.RSSI >= $1.RSSI)}
+                    for index in 0..<TagsDataArr.count{
+                        TagsDataArr[index].id = index
+                    }
+
                 }
             }
             return ("nil", TagsArr, TagsDataArr)
@@ -387,7 +415,7 @@ class Reader: NSObject, ObservableObject{
 ////                    let feedbackRow : [UInt8] = Array(feedback[index...(Int(feedback[index + 1]) + 1 + index)])
 //                    let toIndex : Int = feedback.count - index - 1 > Int(feedback[index + 1]) ? (Int(feedback[index + 1]) + 1 + index) : feedback.count - 1
 //                    let feedbackRow : [UInt8] = Array(feedback[index...toIndex])
-//                    Btye_Recorder(defined: 2, byte: feedbackRow)
+//                    Byte_Recorder(defined: 2, byte: feedbackRow)
 //                    //print("\(feedback2D.count)| BufferLen:\(Int(feedback[index + 1]) + 2) | \(Data(feedbackof2D).hexEncodedString())")
 //                    if feedbackRow[3] == 0x90 && (Int(feedbackRow[1]) + 2 == feedbackRow.count){
 //                        handled = 0x90
@@ -488,7 +516,7 @@ class Reader: NSObject, ObservableObject{
 //    }
 
 
-    func Btye_Recorder(defined: Int, byte:[UInt8]){
+    func Byte_Recorder(defined: Int, byte:[UInt8]){
         if BytesRecord.count > 500 {
             BytesRecord.removeAll()
         }
@@ -512,23 +540,8 @@ class Reader: NSObject, ObservableObject{
             if EPC[0] == 0x4E && EPC[1] == 0x56{
                 let Floor : Int = Int(Int16(bigEndian: Data(Array(EPC[2...3])).withUnsafeBytes{$0.load(as: Int16.self)}))
                 let Hazard : [UInt8] = Array(EPC[4...7])
-                var HazardStr : String = ""
-                    switch EPC[4] {
-                    case 1:
-                        HazardStr = "Entrance"
-                    case 2:
-                        HazardStr = "Elevator"
-                    case 3:
-                        HazardStr = "Crossroad"
-                    case 4:
-                        HazardStr = "Straight"
-                    default:
-                        HazardStr = "Stairs"
-                    }
-                HazardStr += "\(Int(Int16(bigEndian: Data(Array(EPC[5...6])).withUnsafeBytes{$0.load(as: Int16.self)}))) \(Int(EPC[7]))"
                 let Information : [UInt8] = Array(EPC[8...10])
-                let InformationStr = "\(EPC[8] == 0 ? "Room" : EPC[8] == 1 ? "Restroom" : "Aisle")" + "\(Int(Int16(bigEndian: Data(Array(EPC[9...10])).withUnsafeBytes{$0.load(as: Int16.self)})))"
-                navtag = NavTag(Floor: Floor, Hazard: Hazard, HazardStr: HazardStr, Information: Information, InformationStr: InformationStr, Xcoordinate: nil, Ycoordinate: nil, Latitude: nil, Longitude: nil)
+                navtag = NavTag(id: Tag!.id, CRC: Tag!.CRC, Floor: Floor, Hazard: Hazard, Information: Information, X: nil, Y: nil, Lat: nil, Long: nil)
                 return navtag
             }
         }
@@ -540,22 +553,7 @@ class Reader: NSObject, ObservableObject{
                 if DataBL[Int(Len) - 1] == 0xEC{
                     let Floor : Int = Int(Int16(bigEndian: Data(Array(EPC[2...3])).withUnsafeBytes{$0.load(as: Int16.self)}))
                     let Hazard : [UInt8] = Array(EPC[4...7])
-                    var HazardStr : String = ""
-                        switch EPC[4] {
-                        case 1:
-                            HazardStr = "Entrance"
-                        case 2:
-                            HazardStr = "Elevator"
-                        case 3:
-                            HazardStr = "Crossroad"
-                        case 4:
-                            HazardStr = "Straight"
-                        default:
-                            HazardStr = "Stairs"
-                        }
                     let Information : [UInt8] = Array(EPC[8...10])
-                    let InformationStr = "\(EPC[8] == 0 ? "Room" : EPC[8] == 1 ? "Restroom" : "Aisle")" + "\(Int(Int16(bigEndian: Data(Array(EPC[9...10])).withUnsafeBytes{$0.load(as: Int16.self)})))"
-                    HazardStr += "\(Int(Int16(bigEndian: Data(Array(EPC[5...6])).withUnsafeBytes{$0.load(as: Int16.self)}))) \(Int(EPC[7]))"
                     var X : Float = 0
                     var Y : Float = 0
                     var Lat : Float = 0
@@ -572,7 +570,7 @@ class Reader: NSObject, ObservableObject{
                         Lat = Data(Array(DataBL[7...10])).withUnsafeBytes{$0.load(as: Float.self)}
                         Long = Data(Array(DataBL[11...14])).withUnsafeBytes{$0.load(as: Float.self)}
                     }
-                    navtag = NavTag(Floor: Floor, Hazard: Hazard, HazardStr: HazardStr, Information: Information, InformationStr: InformationStr, Xcoordinate: X, Ycoordinate: Y, Latitude: Lat, Longitude: Long)
+                    navtag = NavTag(id: TagData!.id, CRC: TagData!.CRC, Floor: Floor, Hazard: Hazard, Information: Information, X: X, Y: Y, Lat: Lat, Long: Long)
                     return navtag
                 }
             }
@@ -589,8 +587,8 @@ extension Dictionary where Value: Equatable {
 
 extension BLE{
     func cmd2reader(cmd:[UInt8]) {
-        let reader_serivce : CBUUID = CBUUID(string: "0x2A68")
-        let reader_write_char : CBUUID = CBUUID(string: "0x7269")
+        let reader_serivce : CBUUID = CBUUID(string: "2A68")
+        let reader_write_char : CBUUID = CBUUID(string: "7269")
         let connected_state = 2
         let CmdData : Data = Data(cmd)
         print("*****Send Cmd to Reader*****")
@@ -599,7 +597,7 @@ extension BLE{
                 writeValue(value: CmdData, characteristic: Peripheral_characteristics[char_index].Characteristic, peripheral: peripherals[peripheral_index].Peripheral)
             }
         }
-//        Reader().Btye_Recorder(defined: 1, byte: cmd)
+//        Reader().Byte_Recorder(defined: 1, byte: cmd)
     }
     func reader2BLE() -> [UInt8]{
         let reader_serivce : CBUUID = CBUUID(string: "2A68")
@@ -636,6 +634,7 @@ extension BLE{
         }
         return []
     }
+    
 }
 
 

@@ -344,8 +344,6 @@ extension Data {
             .joined(separator: ",")
             .uppercased()
     }
-    
-    
 }
 
 extension StringProtocol {

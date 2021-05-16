@@ -14,6 +14,7 @@ struct DetailTabView: View {
     @EnvironmentObject var reader : Reader
     @EnvironmentObject var readerconfig : ReaderConfig
     @EnvironmentObject var location : LocationManager
+    @EnvironmentObject var path : PathFinding
 //    @Binding var Enable : Bool
     var peripheral : Peripheral
     var body: some View {
@@ -23,7 +24,7 @@ struct DetailTabView: View {
                 TabView() {
                     if peripheral.Service.contains("2A68"){
                         GeometryReader{ geom in
-                            ReaderTab(geometry: geom)
+                            ReaderTab(geometry: geometry)
                                 .environmentObject(reader)
                                 .environmentObject(readerconfig)
                                 .environmentObject(location)
@@ -41,6 +42,16 @@ struct DetailTabView: View {
                                 Text("Vibration")
                                     .tag(1)
                             }
+                        RoutineTest(geometry: geometry)
+                            .environmentObject(reader)
+                            .environmentObject(path)
+                            .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
+                            .tabItem {
+                                Image("scanner")
+                                Text("Routine Test")
+                                    .tag(2)
+                            }
+                        
                     }
                     //                    NavigationView{
                     PeripheralDetail(peripheral: peripheral)
@@ -49,7 +60,7 @@ struct DetailTabView: View {
                         .tabItem {
                             Image(systemName: "list.dash")
                             Text("Detail")
-                                .tag(2)
+                                .tag(3)
                         }
                 }
                 .disabled(readerconfig.SelectedBaudrate_picker || readerconfig.SelectedPower_picker ||  readerconfig.DataBlock_picker || readerconfig.EPC_picker)
@@ -72,4 +83,5 @@ struct DetailTabView: View {
         }
     }
 }
+
 

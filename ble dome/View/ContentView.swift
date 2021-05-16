@@ -44,6 +44,7 @@ struct ContentView: View {
                                                 .environmentObject(reader)
                                                 .environmentObject(readerconfig)
                                                 .environmentObject(location)
+                                                .environmentObject(path)
                                                 .disabled(ble.isBluetoothON && isScanner_trigged)
                                                 .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
                                                 .navigationBarItems(trailing:
@@ -140,16 +141,16 @@ struct ContentView: View {
                     }
                 }
                 else {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         if !isScanner_trigged{
                             notConnectedAlert_trigged = true
                         }
                     }
                 }
             }
-            else{
-                notConnectedAlert_trigged = false
-            }
+//            else{
+//                notConnectedAlert_trigged = false
+//            }
         }
 
     }
@@ -158,7 +159,7 @@ struct ContentView: View {
         Timer.scheduledTimer(withTimeInterval: 5, repeats: true){_ in
             let Serivce : CBUUID = CBUUID(string: "2A68")
             let Char : CBUUID = CBUUID(string: "4676")
-            let data : UInt8 = Scanner_longpressed ? 1 : 0
+            let data : UInt8 = path.isNaving ? 2 : Scanner_longpressed ? 1 : 0
             ble.BLEWrtieValue(Serivce: Serivce, Characteristic: Char, ByteData: [data])
 //            if !ble.peripherals.isEmpty{
 //                if !ble.Peripheral_characteristics.isEmpty{
