@@ -149,9 +149,9 @@ struct ReadTagsData: View {
                                 }
                                 if NavTag != nil {
                                     Text("Floor: \(NavTag!.Floor)/F\t\tHazard: \(NavTag!.HazardStr)\n\t\tInformation: \((NavTag!.InformationStr))")
-                                    Text("X:\(NavTag!.X!)\t\tY:\(NavTag!.Y!)")
-                                    if NavTag!.Lat != nil && NavTag!.Long != nil {
-                                        Text("Lag:\(NavTag!.Lat!)\t\tLong:\(NavTag!.Long!)")
+                                    Text("X:\(NavTag!.XY[0])\t\tY:\(NavTag!.XY[1])")
+                                    if !NavTag!.geoPos.isEmpty {
+                                        Text("Lag:\(NavTag!.geoPos[0])\t\tLong:\(NavTag!.geoPos[1])")
                                     }
                                 }
                             }
@@ -178,11 +178,13 @@ struct ReadTagsData: View {
             }
             if ble.ValueUpated_2A68{
                 let feedback = ble.reader2BLE()
-                if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x81{
-                    let funcfeeback = reader.feedback2Tags(feedback: feedback, Tags : readerconfig.Tags, TagsData : readerconfig.TagsData)
-                    ErrorStr = funcfeeback.0
-                    readerconfig.TagsData = funcfeeback.2
-                    completed = true
+                if !feedback.isEmpty{
+                    if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x81{
+                        let funcfeeback = reader.feedback2Tags(feedback: feedback, Tags : readerconfig.Tags, TagsData : readerconfig.TagsData)
+                        ErrorStr = funcfeeback.0
+                        readerconfig.TagsData = funcfeeback.2
+                        completed = true
+                    }
                 }
                 ble.ValueUpated_2A68 = false
             }

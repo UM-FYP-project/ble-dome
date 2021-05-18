@@ -141,21 +141,24 @@ struct ReaderSetting: View {
             if ble.ValueUpated_2A68{
 //                print("ValueUpated_2A68")
                 let feedback = ble.reader2BLE()
-                reader.Byte_Recorder(defined: 2, byte: feedback)
-                if feedback[0] == 0xA0 && feedback[2] == 0xFE {
-                    if feedback[3] == 0x70 || feedback[3] == 0x71 || feedback[3] == 0x76{
-                        let Error = reader.reader_error_code(code: feedback[Int(feedback[1])])
-                        if ErrorStr.count > 5 {
-                            ErrorStr.removeAll()
+//                reader.Byte_Recorder(defined: 2, byte: feedback)
+                if !feedback.isEmpty{
+                    if feedback[0] == 0xA0 && feedback[2] == 0xFE {
+                        reader.Byte_Recorder(defined: 2, byte: feedback)
+                        if feedback[3] == 0x70 || feedback[3] == 0x71 || feedback[3] == 0x76{
+                            let Error = reader.reader_error_code(code: feedback[Int(feedback[1])])
+                            if ErrorStr.count > 5 {
+                                ErrorStr.removeAll()
+                            }
+                            ErrorStr.append(feedback[3] == 0x70 ? "Reset:" + Error : feedback[3] == 0x71 ? "SetBaudrate:" + Error : "SetPower:" + Error)
+                            readState = true
                         }
-                        ErrorStr.append(feedback[3] == 0x70 ? "Reset:" + Error : feedback[3] == 0x71 ? "SetBaudrate:" + Error : "SetPower:" + Error)
-                        readState = true
+                        else if feedback[3] == 0x77 {
+                            Outpower_feedback = reader.feedback_get_output_power(feedback: feedback)
+                            readState = true
+                        }
+    //                    readState = true
                     }
-                    else if feedback[3] == 0x77 {
-                        Outpower_feedback = reader.feedback_get_output_power(feedback: feedback)
-                        readState = true
-                    }
-//                    readState = true
                 }
                 ble.ValueUpated_2A68 = false
             }

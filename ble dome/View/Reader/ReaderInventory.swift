@@ -203,24 +203,26 @@ struct ReaderInventory: View{
             while (flag && LoopCount < 50) {
                 if ble.ValueUpated_2A68{
                     let feedback = ble.reader2BLE()
-                    reader.Byte_Recorder(defined: 2, byte: feedback)
-                    if feedback[0] == 0xA0 && feedback[2] == 0xFE{
-                        if feedback[3] == 0x80 && cmd[3] == 0x80{
-                            let funcFeedback = reader.feedback_Inventory(feedback: feedback)
-                            readerconfig.tagsCount = funcFeedback.0
-                            ErrorString = funcFeedback.1
-                            flag = false
-                        }
-                        if feedback[3] == 0x89 && cmd[3] == 0x89{
-                            let funcfeeback = reader.feedback2Tags(feedback: feedback, Tags : readerconfig.Tags, TagsData : readerconfig.TagsData)
-                            ErrorString = funcfeeback.0
-                            readerconfig.Tags = funcfeeback.1
-                            if !readerconfig.Tags.isEmpty{
-                                for tag in readerconfig.Tags{
-                                    readerconfig.EPCstr.append(tag.EPCStr)
-                                }
+                    if !feedback.isEmpty{
+                        if feedback[0] == 0xA0 && feedback[2] == 0xFE{
+                            reader.Byte_Recorder(defined: 2, byte: feedback)
+                            if feedback[3] == 0x80 && cmd[3] == 0x80{
+                                let funcFeedback = reader.feedback_Inventory(feedback: feedback)
+                                readerconfig.tagsCount = funcFeedback.0
+                                ErrorString = funcFeedback.1
+                                flag = false
                             }
-                            flag = false
+                            if feedback[3] == 0x89 && cmd[3] == 0x89{
+                                let funcfeeback = reader.feedback2Tags(feedback: feedback, Tags : readerconfig.Tags, TagsData : readerconfig.TagsData)
+                                ErrorString = funcfeeback.0
+                                readerconfig.Tags = funcfeeback.1
+                                if !readerconfig.Tags.isEmpty{
+                                    for tag in readerconfig.Tags{
+                                        readerconfig.EPCstr.append(tag.EPCStr)
+                                    }
+                                }
+                                flag = false
+                            }
                         }
                     }
                     ble.ValueUpated_2A68 = false
@@ -251,16 +253,18 @@ struct ReaderInventory: View{
             }
             if ble.ValueUpated_2A68{
                 let feedback = ble.reader2BLE()
-                if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x90{
-                    let funcfeeback = reader.feedback2Tags(feedback: feedback, Tags : readerconfig.Tags, TagsData : readerconfig.TagsData)
-                    ErrorString = funcfeeback.0
-                    readerconfig.Tags = funcfeeback.1
-                    if !readerconfig.Tags.isEmpty{
-                        for tag in readerconfig.Tags{
-                            readerconfig.EPCstr.append(tag.EPCStr)
+                if !feedback.isEmpty{
+                    if feedback[0] == 0xA0 && feedback[2] == 0xFE && feedback[3] == 0x90{
+                        let funcfeeback = reader.feedback2Tags(feedback: feedback, Tags : readerconfig.Tags, TagsData : readerconfig.TagsData)
+                        ErrorString = funcfeeback.0
+                        readerconfig.Tags = funcfeeback.1
+                        if !readerconfig.Tags.isEmpty{
+                            for tag in readerconfig.Tags{
+                                readerconfig.EPCstr.append(tag.EPCStr)
+                            }
                         }
+                        completed = true
                     }
-                    completed = true
                 }
                 ble.ValueUpated_2A68 = false
             }

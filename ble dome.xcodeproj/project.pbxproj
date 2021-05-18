@@ -14,6 +14,9 @@
 		95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */; };
 		9552406625CA9AB100EA1011 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552406325CA9AB100EA1011 /* ContentView.swift */; };
 		9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9552407525CC54B100EA1011 /* PeripheralDetail.swift */; };
+		9563293B2652D2B3005FE61D /* ProgressAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9563293A2652D2B3005FE61D /* ProgressAlert.swift */; };
+		9563293D2652D9EA005FE61D /* DirectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9563293C2652D9EA005FE61D /* DirectionView.swift */; };
+		9563293F2654017A005FE61D /* RoomPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9563293E2654017A005FE61D /* RoomPicker.swift */; };
 		9564DEA2264E356500B7BBC3 /* 22.211006,113.55492.csv in Resources */ = {isa = PBXBuildFile; fileRef = 9564DEA1264E356500B7BBC3 /* 22.211006,113.55492.csv */; };
 		9564DEA5264EE74200B7BBC3 /* AlertPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9564DEA4264EE74200B7BBC3 /* AlertPicker.swift */; };
 		95687E9026444F1000C9116D /* ReaderSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E8F26444F1000C9116D /* ReaderSetting.swift */; };
@@ -40,6 +43,9 @@
 		95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEScannerV2.swift; sourceTree = "<group>"; };
 		9552406325CA9AB100EA1011 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9552407525CC54B100EA1011 /* PeripheralDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralDetail.swift; sourceTree = "<group>"; };
+		9563293A2652D2B3005FE61D /* ProgressAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressAlert.swift; sourceTree = "<group>"; };
+		9563293C2652D9EA005FE61D /* DirectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionView.swift; sourceTree = "<group>"; };
+		9563293E2654017A005FE61D /* RoomPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomPicker.swift; sourceTree = "<group>"; };
 		9564DEA1264E356500B7BBC3 /* 22.211006,113.55492.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "22.211006,113.55492.csv"; sourceTree = "<group>"; };
 		9564DEA4264EE74200B7BBC3 /* AlertPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertPicker.swift; sourceTree = "<group>"; };
 		95687E8F26444F1000C9116D /* ReaderSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSetting.swift; sourceTree = "<group>"; };
@@ -85,6 +91,7 @@
 			children = (
 				9552406325CA9AB100EA1011 /* ContentView.swift */,
 				9564DEA4264EE74200B7BBC3 /* AlertPicker.swift */,
+				9563293A2652D2B3005FE61D /* ProgressAlert.swift */,
 				95E7D886264A5ED400F2379E /* Nav */,
 				9552407125CAC67400EA1011 /* BLE */,
 				9528A16A25D03DA500B51649 /* DetailTabView.swift */,
@@ -170,7 +177,9 @@
 		95E7D886264A5ED400F2379E /* Nav */ = {
 			isa = PBXGroup;
 			children = (
+				9563293E2654017A005FE61D /* RoomPicker.swift */,
 				95E7D887264A5EE900F2379E /* NavMain.swift */,
+				9563293C2652D9EA005FE61D /* DirectionView.swift */,
 			);
 			path = Nav;
 			sourceTree = "<group>";
@@ -248,17 +257,20 @@
 				95687E9226444FEB00C9116D /* ReaderInventory.swift in Sources */,
 				95687E94264450B300C9116D /* RecordMonitor.swift in Sources */,
 				95687E96264450E600C9116D /* ReadTagsData.swift in Sources */,
+				9563293B2652D2B3005FE61D /* ProgressAlert.swift in Sources */,
 				9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */,
 				95492EB825E3DEF900ECE3FF /* reader_cmd.swift in Sources */,
 				95E7D88126481ECE00F2379E /* PathFinding.swift in Sources */,
 				95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */,
 				95687E98264464FC00C9116D /* ReaderWriteData.swift in Sources */,
+				9563293D2652D9EA005FE61D /* DirectionView.swift in Sources */,
 				95DF4D91263D65E40022EC92 /* location.swift in Sources */,
 				95764B3B2651682500A1516A /* RoutineTest.swift in Sources */,
 				95E7D888264A5EE900F2379E /* NavMain.swift in Sources */,
 				9564DEA5264EE74200B7BBC3 /* AlertPicker.swift in Sources */,
 				9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */,
 				9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */,
+				9563293F2654017A005FE61D /* RoomPicker.swift in Sources */,
 				95E7D8832648203B00F2379E /* Node.swift in Sources */,
 				9580C65F262574B8008EA64D /* readerConfig.swift in Sources */,
 				95687E9026444F1000C9116D /* ReaderSetting.swift in Sources */,

@@ -31,7 +31,8 @@ struct BLEScanner_Alert: View {
                     .font(.title3)
                     .foregroundColor(.blue)
             }
-            .padding()
+//            .padding()
+            .frame(width: geometry.size.width - 60, height: 50)
         }
         .background(RoundedRectangle(cornerRadius: 20)
                         .foregroundColor(Color(UIColor.systemGray6)).shadow(radius: 1))
@@ -50,18 +51,20 @@ struct BLEScanner_Alert: View {
                 ScrollView{
                     ForEach(0..<ble.peripherals.count, id: \.self) { index in
                         let peripheral = ble.peripherals[index]
-                        HStack{
-                            VStack(alignment: .leading){
-                                Text(peripheral.name)
-                                    .bold()
-                                Text("Rssi: \(peripheral.rssi)")
-                            }
-                            Spacer()
-                            BLEConnect_button(name: peripheral.name)
-                                .frame(alignment: .trailing)
-                        }
-                        .padding()
-                        .frame(height: 50)
+//                        HStack{
+//                            VStack(alignment: .leading){
+//                                Text(peripheral.name)
+//                                    .bold()
+//                                Text("Rssi: \(peripheral.rssi)")
+//                            }
+//                            Spacer()
+//                            BLEConnect_button(name: peripheral.name)
+//                                .frame(alignment: .trailing)
+//                        }
+                        ConnectButton(peripheral: peripheral)
+                            .environmentObject(ble)
+                            .padding()
+                            .frame(height: 50)
                         Divider()
                     }
                 }
@@ -69,12 +72,73 @@ struct BLEScanner_Alert: View {
                                 .foregroundColor(Color(UIColor.systemGray5)).shadow(radius: 1))
             }
             else {
-                Text("\nPlease Turn On  Device")
+                Text("Please Turn On  Device")
 //                    .font(.title2)
                     .bold()
+                    .frame(height: 60)
             }
         }
         .frame(maxWidth: geometry.size.width - 100)
+    }
+}
+
+struct ConnectButton: View {
+    @EnvironmentObject var ble:BLE
+    let peripheral : Peripheral
+    var body : some View {
+        Button(action: {
+            if peripheral.State == 0 && ble.peripherals.filter({$0.State != 0}).count < 1 {
+                ble.connect(peripheral: peripheral.Peripheral)
+            }
+            else if peripheral.State == 1{
+                ble.cancelConnection(peripheral: peripheral.Peripheral)
+            }
+            else if peripheral.State == 2{
+                ble.disconnect(peripheral: peripheral.Peripheral)
+                rememberConntion.removeObject(forKey:"PreviousName")
+                ble.scan_devices()
+            }
+        }){
+            HStack{
+                VStack(alignment: .leading){
+                    Text(peripheral.name)
+                        .foregroundColor(Color(UIColor.label))
+                        .bold()
+//                    Text("Rssi: \(peripheral.rssi)")
+//                        .foregroundColor(Color(UIColor.label))
+                }
+                Spacer()
+                ButtonStr
+            }
+        }
+    }
+    
+    var ButtonStr : some View{
+        VStack{
+            if peripheral.State == 0{
+                Text("Connect")
+                    .font(.title2)
+                    .foregroundColor(ble.peripherals.filter({$0.State != 0}).count < 1 ? .blue : Color(UIColor.lightGray))
+                    .multilineTextAlignment(.trailing)
+            }
+            else if peripheral.State == 1{
+                Text("Connecting")
+                    .font(.title2)
+                    .foregroundColor(.blue)
+                    .multilineTextAlignment(.trailing)
+            }
+            else if peripheral.State == 2{
+                Text("Disconnect")
+                    .font(.title2)
+                    .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                    .multilineTextAlignment(.trailing)
+            }
+            else {
+                Text("Disconnecting")
+                    .font(.title2)
+                    .multilineTextAlignment(.trailing)
+            }
+        }
     }
 }
 
@@ -132,10 +196,10 @@ struct BLEConnect_button: View {
     }
 }
 
-//struct BLEScanner_Alert_Previews: PreviewProvider {
-//    static var previews: some View {
-//        GeometryReader{ geometry in
-//            BLEScanner_Alert(Enable: .constant(true), geometry: geometry).environmentObject(BLE())
-//        }
-//    }
-//}
+struct BLEScanner_Alert_Previews: PreviewProvider {
+    static var previews: some View {
+        GeometryReader{ geometry in
+            BLEScanner_Alert(Enable: .constant(true), geometry: geometry).environmentObject(BLE())
+        }
+    }
+}

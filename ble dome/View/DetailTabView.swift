@@ -63,8 +63,8 @@ struct DetailTabView: View {
                                 .tag(3)
                         }
                 }
-                .disabled(readerconfig.SelectedBaudrate_picker || readerconfig.SelectedPower_picker ||  readerconfig.DataBlock_picker || readerconfig.EPC_picker)
-                .overlay(readerconfig.SelectedBaudrate_picker || readerconfig.SelectedPower_picker || readerconfig.DataBlock_picker ||  readerconfig.EPC_picker ? Color.black.opacity(0.3).ignoresSafeArea(): nil)
+                .disabled(readerconfig.SelectedBaudrate_picker || readerconfig.SelectedPower_picker ||  readerconfig.DataBlock_picker || readerconfig.EPC_picker || path.geoPicker)
+                .overlay(readerconfig.SelectedBaudrate_picker || readerconfig.SelectedPower_picker || readerconfig.DataBlock_picker ||  readerconfig.EPC_picker || path.geoPicker ? Color.black.opacity(0.3).ignoresSafeArea(): nil)
                 if readerconfig.SelectedBaudrate_picker{
                     AlertPicker(picker: readerconfig.BaudrateCmdinStr,title: "Select Baudrate", label: "Baudrate", geometry: geometry, Selected: $readerconfig.SelectedBaudrate, enable: $readerconfig.SelectedBaudrate_picker)
                 }
@@ -76,6 +76,10 @@ struct DetailTabView: View {
                 }
                 if readerconfig.EPC_picker{
                     AlertPicker(picker: readerconfig.EPCstr, title: "Select Tag EPC", label: "EPC Matching", geometry: geometry, Selected: $readerconfig.EPC_Selected, enable: $readerconfig.EPC_picker)
+                }
+                if path.geoPicker{
+                    AlertPicker(picker: path.ExistedStr, title: "Select Nav Map", label: "Map", geometry: geometry, Selected: $path.geoSelected, enable: $path.geoPicker)
+                    
                 }
             }
 //            .navigationTitle("Reader Setting")

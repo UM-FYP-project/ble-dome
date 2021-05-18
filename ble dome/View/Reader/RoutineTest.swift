@@ -6,34 +6,163 @@
 //
 
 import SwiftUI
-
-//struct RoutineTest: View {
-//    var body: some View {
-//        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-//    }
-//}
+import Combine
 
 struct RoutineTest: View {
     var geometry : GeometryProxy
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader : Reader
     @EnvironmentObject var path : PathFinding
-    @State var trigger : Bool = false
-    @State var Selected : Int = 0
+    @State var Routintrigger : Bool = false
+    @State var Navtrigger : Bool = false
+    @State var ViewSelected : Int = 1
+    @State var ListSelected : Int = 0
+    @State var StartNode : Int = 0
+    @State var EndNode : Int = 0
+    @State var ShortestPath = [Node]()
+    @State var ArrowDrg : Float = 0
     var body: some View {
+        ZStack{
+            VStack{
+                Spacer()
+                    .frame(height : 30)
+                Picker(selection: $ViewSelected, label: Text("Reader Picker")) {
+                    Text("Routine").tag(0)
+                    Text("Navigation").tag(1)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .frame(width: geometry.size.width - 20)
+                if ViewSelected == 0 {
+                    RoutineView
+                }
+                else {
+                    NavigationView
+                }
+            }
+            .frame(width: geometry.size.width - 20)
+        }
+        .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+    }
+    
+    var NavigationView: some View {
+        VStack{
+            Text("Navigation")
+                .font(.headline)
+            .frame(height: 30)
+            Divider()
+            HStack{
+                Text("Map")
+                    .font(.headline)
+                Spacer()
+                Text("\(!path.ExistedList.isEmpty ? path.ExistedList[path.geoSelected].PosStr : "")")
+                    .font(.headline)
+                    .frame(width: 150, height: 30)
+                    .background(Color.gray.opacity(0.15))
+                    .cornerRadius(10)
+                    .onTapGesture {
+                        path.geoPicker = true
+                    }
+            }
+            Divider()
+            HStack{
+                Button(action: {
+                    ShortestPath = path.getPath(Pos: path.ExistedList[path.geoSelected], from: StartNode, to: EndNode).1
+                }) {
+                    Text("Get Path")
+                        .font(.headline)
+                }
+                Spacer()
+                Text("Start")
+                Spacer()
+                TextField("Start Node", value: $StartNode, formatter: NumberFormatter())
+                    .onReceive(Just(StartNode), perform: {_ in
+                        if StartNode < 0 {
+                            self.StartNode = 0
+                        }
+                    })
+                    .multilineTextAlignment(.center)
+                    .keyboardType(.numberPad)
+                    .frame(maxWidth: 75)
+                    .frame(height: 30)
+                    .background(Color.gray.opacity(0.15))
+                    .cornerRadius(10)
+                Divider()
+                Text("End")
+                Spacer()
+                TextField("End Node", value: $EndNode, formatter: NumberFormatter())
+                    .onReceive(Just(EndNode), perform: {_ in
+                        if EndNode < 0 {
+                            self.EndNode = 0
+                        }
+                    })
+                    .multilineTextAlignment(.center)
+                    .keyboardType(.numberPad)
+                    .frame(maxWidth: 75)
+                    .frame(height: 30)
+                    .background(Color.gray.opacity(0.15))
+                    .cornerRadius(10)
+            }
+            .frame(height: 30)
+            Divider()
+            HStack{
+                Text("Path:")
+                    .font(.headline)
+                Spacer()
+                if !ShortestPath.isEmpty{
+                    ForEach (0..<ShortestPath.count){ index in
+                        Text("[\(ShortestPath[index].id)]\(index != ShortestPath.count - 1 ? "->" : "")")
+                    }
+                }
+            }
+            .frame(maxHeight: 60)
+            Divider()
+            Direction
+            Spacer()
+        }
+    }
+    
+    var Direction: some View{
+        VStack{
+            Button(action: {
+                Navtrigger.toggle()
+                path.isNaving.toggle()
+                if Navtrigger{
+//                    EnableRoutine()
+                }
+            }) {
+                Text("\(Navtrigger ? "Navigation Stop" : "Navigation Start")")
+                    .bold()
+                    .frame(width: 300, height: 30)
+            }
+            .frame(height: 30)
+            Divider()
+            Spacer()
+            if Navtrigger {
+                Image(systemName: "location.north.line.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .rotationEffect(.degrees(Double(ArrowDrg)))
+                    .foregroundColor(Color(UIColor.systemTeal))
+                    .frame(width: geometry.size.width - 100, height: geometry.size.width - 100)
+            }
+            Spacer()
+        }
+    }
+    
+    var RoutineView: some View {
         VStack{
             HStack{
                 Text("Routine")
                     .font(.headline)
                 Spacer()
                 Button(action: {
-                        trigger.toggle()
+                    Routintrigger.toggle()
                         path.isNaving.toggle()
-                    if trigger{
+                    if Routintrigger{
                         EnableRoutine()
                     }
                 }) {
-                    Text("\(trigger ? "Stop" : "Start")")
+                    Text("\(Routintrigger ? "Stop" : "Start")")
                         .bold()
                 }
             }
@@ -47,7 +176,7 @@ struct RoutineTest: View {
             }
             .frame(height: 30)
             Divider()
-            Picker(selection: $Selected, label: Text("Tags")) {
+            Picker(selection: $ListSelected, label: Text("Tags")) {
                 Text("Tags").tag(0)
                 Text("TagsData").tag(1)
                 Text("NavTags").tag(2)
@@ -55,24 +184,18 @@ struct RoutineTest: View {
             .pickerStyle(SegmentedPickerStyle())
             .frame(width: geometry.size.width - 20)
             Divider()
-            if Selected == 0 {
+            if ListSelected == 0 {
                 TagsList
             }
-            else if Selected == 1 {
+            else if ListSelected == 1 {
                 TagsDataList
             }
-            else if Selected == 2 {
+            else if ListSelected == 2 {
                 NavTagsList
             }
-//            ScrollView{
-//                TagsList
-//                Divider()
-//                TagsDataList
-//                Divider()
-//            }
             Spacer()
+            
         }
-        .frame(width: geometry.size.width - 20)
     }
     
     var TagsList: some View {
@@ -89,7 +212,7 @@ struct RoutineTest: View {
                     let PCstr = Data(tag.PC).hexEncodedString()
                     let EPCstr = tag.EPCStr
                     let CRCstr = Data(tag.CRC).hexEncodedString()
-                    let NavTag : NavTag? = reader.TagtoNav(Tag:tag, TagData: nil)
+//                    let NavTag : NavTag? = reader.TagtoNav(Tag:tag, TagData: nil)
                     HStack{
                         Text("\(tag.id + 1)")
                             .frame(width: 15)
@@ -103,17 +226,10 @@ struct RoutineTest: View {
                                 Text("Len:\(Int(tag.EPClen))")
                                 Text("RSSI:\(tag.RSSI)")
                             }
-                            if NavTag != nil {
-                                Text("Floor: \(NavTag!.Floor)/F\t\tHazard: \(NavTag!.HazardStr)\t\tInformation: \((NavTag!.InformationStr))")
-                            }
                         }
                         
                     }
-//                    Divider()
-                    //                    }
-                    //                }
                 }
-//                .frame(width: geometry.size.width - 20)
             }
         }
     }
@@ -126,14 +242,10 @@ struct RoutineTest: View {
             Divider()
             if !path.TagsData.isEmpty {
                 List(path.TagsData) { TagData in
-                    //                ScrollView {
-                    //                    ForEach (0..<path.TagsData.count, id: \.self){ index in
-                    //                        let TagData = path.TagsData[index]
                     let PCstr = Data(TagData.PC).hexEncodedString()
                     let CRCstr = Data(TagData.CRC).hexEncodedString()
                     let EPCStr = Array(TagData.DataBL[0...11]) == TagData.EPC ? "" : Data(TagData.EPC).hexEncodedString() + "\n"
                     let Datastr = Data(TagData.DataBL).hexEncodedString()
-                    let NavTag : NavTag? = reader.TagtoNav(Tag:nil, TagData: TagData)
                     HStack{
                         Text("\(TagData.id + 1)")
                             .frame(width: 20)
@@ -147,19 +259,8 @@ struct RoutineTest: View {
                                 Text("Len:\(Int(TagData.DataLen))")
                                 Text("RSSI:\(TagData.RSSI)")
                             }
-                            if NavTag != nil {
-                                Text("Floor: \(NavTag!.Floor)/F\t\tHazard: \(NavTag!.HazardStr)\n\t\tInformation: \((NavTag!.InformationStr))")
-                                Text("X:\(NavTag!.X!)\t\tY:\(NavTag!.Y!)")
-                                if NavTag!.Lat != nil && NavTag!.Long != nil {
-                                    Text("Lag:\(NavTag!.Lat!)\t\tLong:\(NavTag!.Long!)")
-                                }
-                            }
                         }
                     }
-//                    Divider()
-                    //                    }
-                    //                }
-                    //                .frame(width: geometry.size.width - 20)
                 }
             }
         }
@@ -179,15 +280,37 @@ struct RoutineTest: View {
                         Divider()
                         VStack(alignment: .leading){
                             Text("Floor: \(navtag.Floor)/F\t\tHazard: \(navtag.HazardStr)\n\t\tInformation: \((navtag.InformationStr))")
-                            if navtag.X != nil && navtag.Y != nil {
-                                Text("X:\(navtag.X!)\t\tY:\(navtag.Y!)")
+                            if !navtag.XY.isEmpty {
+                                Text("X:\(navtag.XY[0])\t\tY:\(navtag.XY[1])")
                             }
-                            if navtag.Lat != nil && navtag.Long != nil {
-                                Text("Lag:\(navtag.Lat!)\t\tLong:\(navtag.Long!)")
+                            if !navtag.geoPos.isEmpty {
+                                Text("Lag:\(navtag.geoPos[0])\t\tLong:\(navtag.geoPos[1])")
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    func EnableNav(){
+        path.FlagSendCmd = true
+        path.RoutineFlow = 0
+        path.Tags = []
+        path.TagsData = []
+        path.tagsCount = 0
+        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
+            if ble.peripherals.filter({$0.State == 2}).count < 1 {
+                Navtrigger = false
+                path.isNaving = false
+            }
+            getFeedBeck()
+            let foo = path.PathDirection(NavTags: NavTags, ShortestPath: ShortestPath)
+            ShortestPath = foo.0
+            ArrowDrg = foo.1 ?? 0
+            if !Navtrigger || !path.isNaving || ShortestPath.isEmpty{
+                Navtrigger = false
+                timer.invalidate()
             }
         }
     }
@@ -200,11 +323,12 @@ struct RoutineTest: View {
         path.tagsCount = 0
         Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
             if ble.peripherals.filter({$0.State == 2}).count < 1 {
-                trigger = false
+                Routintrigger = false
                 path.isNaving = false
             }
             getFeedBeck()
-            if !trigger || !path.isNaving{
+            if !Routintrigger || !path.isNaving{
+                Routintrigger = false
                 timer.invalidate()
             }
         }
@@ -224,7 +348,6 @@ struct RoutineTest: View {
         }
     }
     
-    
     func FeedBackAction(Feedbcak : [UInt8]){
         if !Feedbcak.isEmpty {
             switch Feedbcak[3] {
@@ -238,15 +361,6 @@ struct RoutineTest: View {
 //                    path.RoutineFlow += 1
                     if funcFeeback.0 == "nil"{
                         path.Tags = funcFeeback.1
-                    if !path.Tags.isEmpty{
-                        for tag in path.Tags {
-                            guard let navtag = reader.TagtoNav(Tag: tag, TagData: nil) else { return }
-                            if NavTags.filter({$0.CRC == navtag.CRC}).count < 1{
-                                NavTags.append(navtag)
-                            }
-//                            NavTags.append(navtag)
-                        }
-                    }
                 }
             case 0x81:
                     let funcFeeback = reader.feedback2Tags(feedback: Feedbcak, Tags: path.Tags, TagsData: path.TagsData)
@@ -256,28 +370,24 @@ struct RoutineTest: View {
                     if !path.TagsData.isEmpty{
                         for tagdata in path.TagsData {
                             guard let navtag = reader.TagtoNav(Tag: nil, TagData: tagdata) else { return }
-                            if !NavTags.isEmpty{
-                                for index in 0..<NavTags.count{
-                                    let Navtag = NavTags[index]
-                                    if Navtag.CRC == navtag.CRC{
-                                        NavTags[index].X = navtag.X
-                                        NavTags[index].Y = navtag.Y
-                                        NavTags[index].Lat = navtag.Lat
-                                        NavTags[index].Long = navtag.Long
-                                    }
-                                }
+                            if NavTags.filter({$0.CRC == navtag.CRC}).count < 1{
+                                NavTags.append(navtag)
                             }
+                        }
+                        NavTags.sort{($0.RSSI >= $1.RSSI)}
+                        for index in 0..<NavTags.count{
+                            NavTags[index].id = index
                         }
                     }
             case 0x93:
                     reader.Byte_Recorder(defined: 2, byte: Feedbcak)
-                if path.Tags.count > 20 {
+                if path.Tags.count > 5 {
                     path.Tags.removeAll()
                 }
-                if path.TagsData.count > 20 {
+                if path.TagsData.count > 5 {
                     path.TagsData.removeAll()
                 }
-                if NavTags.count > 20 {
+                if NavTags.count > 5 {
                     NavTags.removeAll()
                 }
                     path.tagsCount = 0
@@ -288,8 +398,14 @@ struct RoutineTest: View {
     }
 }
 
-//struct RoutineTest_Previews: PreviewProvider {
-//    static var previews: some View {
+struct RoutineTest_Previews: PreviewProvider {
+    static var previews: some View {
+        GeometryReader { geometry in
+            RoutineTest(geometry: geometry)
+                .environmentObject(BLE())
+                .environmentObject(Reader())
+                .environmentObject(PathFinding())
+        }
 //        RoutineTest()
-//    }
-//}
+    }
+}

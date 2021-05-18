@@ -10,15 +10,17 @@ import GameplayKit
 
 struct GeoPos: Hashable{
     let Floor : Int
-    let Lag : Float
-    let Long : Float
+    let geoPos : [Float]
+    
+    var PosStr : String {
+        return "\(Floor == 0 ? "G/F" : "\(Floor)/F") | \(geoPos[0]) : \(geoPos[1]) )"
+    }
 }
 
-struct Node: Identifiable, Hashable {
+struct Node: Identifiable, Hashable{
     let id : Int
-    let Floor : Int
-    let X : Float
-    let Y : Float
+    var Floor : Int
+    let XY : [Float]
     let Hazard : [UInt8]
     let Information : [UInt8]
     let Neighbors : [Int]
@@ -38,7 +40,6 @@ struct Node: Identifiable, Hashable {
         return Str
     }
 }
-
 var MapDict = [GeoPos : GKGraph]()
 var NodesDict = [GeoPos : [Node]]()
 var GKNodeDict = [GeoPos : [GKGraphNode]]()
@@ -51,6 +52,10 @@ class PathFinding : ObservableObject {
     @Published var tagsCount :  Int = 0
     @Published var Tags = [tag]()
     @Published var TagsData = [tagData]()
+    @Published var ExistedList = [GeoPos]()
+    @Published var ExistedStr = [String]()
+    @Published var geoPicker : Bool = false
+    @Published var geoSelected : Int = 0
     
     func readDataFromCSV(fileName:String, fileType: String)-> String!{
         guard let filepath = Bundle.main.path(forResource: fileName, ofType: fileType)
@@ -90,38 +95,33 @@ class PathFinding : ObservableObject {
         var data = readDataFromCSV(fileName: fileName, fileType: "csv")
         let HazardStrArray : [String] = ["Stairs","Entrance","Elevator","Crossroad","Straight"]
         let InformationStrArray : [String] = ["Room","Restroom","Aisle"]
-        if data != nil{
-            data = cleanRows(file: data!)
-            let csvRows = csv(data: data!)
-            for index in 1..<csvRows.count{
-                let csvRow = csvRows[index]
-                if csvRow[11] == ""{
-                    break
-                }
-                else{
-                    let id : Int = Int(csvRow[0])!
-                    let Floor : Int = Int(csvRow[1])!
-                    let X : Float = Float(csvRow[7])!
-                    let Y : Float = Float(csvRow[8])!
-                    let Lag : Float = Float(csvRow[9])!
-                    let Long : Float = Float(csvRow[10])!
-                    let Hazard : UInt8 = UInt8(HazardStrArray.map({$0.uppercased()}).firstIndex(of: csvRow[2].uppercased())!)
-                    let HazardSeq : [UInt8] = Int16(csvRow[3])!.bytes
-                    let Addtional : UInt8 = UInt8(csvRow[4])!
-                    let HazardArr : [UInt8] = [Hazard] + HazardSeq + [Addtional]
-                    let Information : UInt8 = UInt8(InformationStrArray.map({$0.uppercased()}).firstIndex(of: csvRow[5].uppercased())!)
-                    let InformationSeq : [UInt8] = Int16(csvRow[6])!.bytes
-                    let InformationArr : [UInt8] = [Information] + InformationSeq
-                    let Neighbors : [Int] = csvRow[11].components(separatedBy: ";").compactMap{Int($0)}
-                    let node = Node(id: id, Floor: Floor, X: X, Y: Y, Hazard: HazardArr, Information: InformationArr, Neighbors: Neighbors)
-                    let geo = GeoPos(Floor: Floor, Lag: Lag, Long: Long)
-                    Nodes.append(node)
-                    if !Pos.contains(geo) {
-                        Pos.append(geo)
-                    }
+        data = cleanRows(file: data!)
+        let csvRows = csv(data: data!)
+        for index in 1..<csvRows.count{
+            let csvRow = csvRows[index]
+            if csvRow[11] == ""{
+                break
+            }
+            else{
+                let id : Int = Int(csvRow[0])!
+                let Floor : Int = Int(csvRow[1])!
+                let XY : [Float] = [Float(csvRow[7])!,Float(csvRow[8])!]
+                let geoPos : [Float] = [Float(csvRow[9])!,Float(csvRow[10])!]
+                let Hazard : UInt8 = UInt8(HazardStrArray.map({$0.uppercased()}).firstIndex(of: csvRow[2].uppercased())!)
+                let HazardSeq : [UInt8] = Int16(csvRow[3])!.bytes
+                let Addtional : UInt8 = UInt8(csvRow[4])!
+                let HazardArr : [UInt8] = [Hazard] + HazardSeq + [Addtional]
+                let Information : UInt8 = UInt8(InformationStrArray.map({$0.uppercased()}).firstIndex(of: csvRow[5].uppercased())!)
+                let InformationSeq : [UInt8] = Int16(csvRow[6])!.bytes
+                let InformationArr : [UInt8] = [Information] + InformationSeq
+                let Neighbors : [Int] = csvRow[11].components(separatedBy: ";").compactMap{Int($0)}
+                let node = Node(id: id, Floor: Floor, XY: XY, Hazard: HazardArr, Information: InformationArr, Neighbors: Neighbors)
+                let geo = GeoPos(Floor: Floor, geoPos: geoPos)
+                Nodes.append(node)
+                if !Pos.contains(geo) {
+                    Pos.append(geo)
                 }
             }
-
         }
         if !(Nodes.isEmpty) && !(Pos.isEmpty){
             for pos in Pos {
@@ -142,7 +142,7 @@ class PathFinding : ObservableObject {
             let Grid = GKGraph()
             var GridNodes = [GKGraphNode]()
             for node in Nodes{
-                GridNodes.append(GKGraphNode2D(point: vector_float2(node.X, node.Y)))
+                GridNodes.append(GKGraphNode2D(point: vector_float2(node.XY[0], node.XY[1])))
             }
             Grid.add(GridNodes)
             for node in Nodes{
@@ -154,32 +154,34 @@ class PathFinding : ObservableObject {
                     GridNodes[node.id].addConnections(to: connection, bidirectional: true)
                 }
             }
+            ExistedList.append(Pos)
+            ExistedStr.append(Pos.PosStr)
             MapDict[Pos] = Grid
             GKNodeDict[Pos] = GridNodes
         }
     }
     
-    func getPath(Pos: GeoPos, from: Int, to: Int) -> ([GKGraphNode2D], [Int]){
+    func getPath(Pos: GeoPos, from: Int, to: Int) -> ([GKGraphNode2D], [Node]){
         var path = [GKGraphNode2D]()
-        var pathID = [Int]()
-        if MapDict[Pos] != nil && GKNodeDict[Pos] != nil{
+        var NodesPath = [Node]()
+        if MapDict[Pos] != nil && GKNodeDict[Pos] != nil {
             path = MapDict[Pos]!.findPath(from: GKNodeDict[Pos]![from], to: GKNodeDict[Pos]![to]) as! [GKGraphNode2D]
             let pathPoints: [vector_float2] = path.map{$0.position}
             if NodesDict[Pos] != nil{
                 for point in pathPoints{
                     for node in NodesDict[Pos]!{
-                        if node.X == point.x && node.Y == point.y {
-                            pathID.append(node.id)
+                        if node.XY[0] == point.x && node.XY[1] == point.y {
+                            NodesPath.append(node)
                         }
                     }
                 }
             }
-            return (path, pathID)
+            return (path, NodesPath)
         }
         return ([], [])
     }
     
-    func FindNode(Pos: GeoPos, to Item: String) -> [Int]{
+    func FindNodes(Pos: GeoPos, to Item: String) -> [Int]{
         var Indexs = [Int]()
         let Nodes : [Node] = NodesDict[Pos] ?? []
         if !Nodes.isEmpty{
@@ -196,7 +198,7 @@ class PathFinding : ObservableObject {
         return []
     }
     //
-    func FindClosedNode(Pos: GeoPos, from: Int ,to Items: [Int]) -> Int? {
+    func FindNearest(Pos: GeoPos, from: Int ,to Items: [Int]) -> Int? {
         var Cost : Float = 1000000
         var ClosedNode : Int?
         let Grip : [GKGraphNode] = GKNodeDict[Pos] ?? []
@@ -217,129 +219,65 @@ class PathFinding : ObservableObject {
         return nil
     }
     
-//    func ScanRoutine() {
-////        var FlagSendCmd : Bool = false
-////        var tagsCount : Int = 0
-////        var RoutineFlow : Int = 0
-//        var ble = BLE()
-//        let cmd : [[UInt8]] = [
-//            Reader().cmd_inventory(inventory_speed: 0xFF),
-//            Reader().cmd_get_inventory_buffer(),
-//            Reader().cmd_data_read(data_block: UInt8(1), data_start: UInt8(8), data_len: UInt8(16)),
-//            Reader().cmd_clear_inventory_buffer()
-//        ]
-//        switch RoutineFlow {
-//        case 0:
-//            print("Scan Tags Routine Begin")
-//            RoutineFlow = 1
-////            FlagSendCmd = true
-//        case 1,2:
-//            if !FlagSendCmd{
-//                print("SendCmd : \(Data(cmd[0]).hexEncodedString())")
-//                ble.cmd2reader(cmd: cmd[0])
-//                Reader().Byte_Recorder(defined: 1, byte: cmd[0])
-//                FlagSendCmd = true
-//            }
-//        case 3,4:
-//            if tagsCount > 0{
-//                if !FlagSendCmd{
-//                    print("SendCmd : \(Data(cmd[1]).hexEncodedString())")
-//                    BLE().cmd2reader(cmd: cmd[1])
-//                    Reader().Byte_Recorder(defined: 1, byte: cmd[1])
-//                    FlagSendCmd = true
-//                }
-//            }
-//            else {
-//                RoutineFlow = 7
-//            }
-//        case 5,6:
-//            if tagsCount > 0{
-//                if !FlagSendCmd{
-//                    print("SendCmd : \(Data(cmd[2]).hexEncodedString())")
-//                    ble.cmd2reader(cmd: cmd[2])
-//                    Reader().Byte_Recorder(defined: 1, byte: cmd[2])
-//                    FlagSendCmd = true
-//                }
-//            }
-//            else {
-//                RoutineFlow = 7
-//            }
-//        case 7:
-//            if !FlagSendCmd{
-//                print("SendCmd : \(Data(cmd[3]).hexEncodedString())")
-//                ble.cmd2reader(cmd: cmd[3])
-//                Reader().Byte_Recorder(defined: 1, byte: cmd[3])
-//                FlagSendCmd = true
-//            }
-//        case 8:
-//            print("Scan Tags Routine Completed")
-//            RoutineFlow = 0
-//        default:
-//            RoutineFlow = 0
-//        }
-//        if ble.ValueUpated_2A68{
-//            let feedback = ble.reader2BLE()
-//            if feedback[0] == 0xA0 && feedback[2] == 0xFE{
-//                if ((feedback[3] == 0x80 && RoutineFlow == 1 || RoutineFlow == 2) || (feedback[3] == 0x90 && RoutineFlow == 3 || RoutineFlow == 4) || (feedback[3] == 0x81 && RoutineFlow == 5 || RoutineFlow == 6) || (feedback[3] == 0x93 && RoutineFlow == 7)) {
-//                    if feedback[3] == 0x80 || feedback[3] == 0x93{
-//                        Reader().Byte_Recorder(defined: 2, byte: feedback)
-//                    }
-//                    FeedBackAction (Feedbcak: feedback, tagsCount: &tagsCount, Tags: &Tags, TagsData: &TagsData)
-//                    RoutineFlow += 1
-//                    FlagSendCmd = false
-//                }
-//            }
-//            BLE().ValueUpated_2A68 = false
-//        }
-//    }
+    func PathEstimate(Path ShortestPath: [Node]) -> Int?{
+    //    let Nodes : [Node] = NodesDict[Pos] ?? []
+    //    var Direction = [Int]() // 0 : Forward, 1 : Backward, 2 : Leftward,,  3 : Rightward,
+        var Distance : Double = 0
+        if !ShortestPath.isEmpty{
+            for index in 0..<ShortestPath.count - 1{
+                let InterceptX : Float = ShortestPath[index + 1].XY[0] - ShortestPath[index].XY[0]
+                let InterceptY : Float = ShortestPath[index + 1].XY[1] - ShortestPath[index].XY[1]
+                Distance = Double(sqrt(pow(InterceptX, 2) + pow(InterceptY, 2)))
+            }
+            return Int(ceil(Distance * 0.85))
+        }
+        return nil
+    }
     
-//    func FeedBackAction(Feedbcak : [UInt8], tagsCount : inout Int, Tags : inout [tag], TagsData : inout [tagData]){
-//        if !Feedbcak.isEmpty {
-//            switch Feedbcak[3] {
-//            case 0x80:
-//                let funcFeeback = Reader().feedback_Inventory(feedback: Feedbcak)
-//                tagsCount = funcFeeback.0
-//            case 0x90:
-//            let funcFeeback = Reader().feedback2Tags(feedback: Feedbcak, Tags: Tags, TagsData: TagsData)
-//                if funcFeeback.0 != "nil"{
-//                    Tags = funcFeeback.1
-//                }
-//                if !Tags.isEmpty{
-//                    for tag in Tags {
-//                        guard let navtag = Reader().TagtoNav(Tag: tag, TagData: nil) else { return }
-//                        NavTags.append(navtag)
-//                    }
-//                }
-//            case 0x81:
-//                let funcFeeback = Reader().feedback2Tags(feedback: Feedbcak, Tags: Tags, TagsData: TagsData)
-//                if funcFeeback.0 != "nil"{
-//                    TagsData = funcFeeback.2
-//                }
-//                if !TagsData.isEmpty{
-//                    for tagdata in TagsData {
-//                        guard let navtag = Reader().TagtoNav(Tag: nil, TagData: tagdata) else { return }
-//                        if !NavTags.isEmpty{
-//                            for index in 0..<NavTags.count{
-//                                let Navtag = NavTags[index]
-//                                if Navtag.id == navtag.id{
-//                                    NavTags[index].X = navtag.X
-//                                    NavTags[index].Y = navtag.Y
-//                                    NavTags[index].Lat = navtag.Lat
-//                                    NavTags[index].Long = navtag.Long
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            case 0x93:
-//                NavTags.removeAll()
-//                tagsCount = 0
-//            default:
-//                break
-//            }
-//        }
-//    }
-    
+    func PathDirection(NavTags: [NavTag], ShortestPath: [Node]) -> ([Node], Float?){
+        var Direction : Float? // 0 : Forward, 1 : Backward, 2 : Leftward,,  3 : Rightward,
+        if !NavTags.isEmpty && !ShortestPath.isEmpty {
+            let currentTag = NavTags.max(by: {$0.RSSI < $1.RSSI})
+            var FacingTag : NavTag?
+            if NavTags.count > 1{
+                var UpdatedPath = [Node]()
+                if currentTag != nil {
+                    let InterceptX : Float = currentTag!.XY[0] - ShortestPath[0].XY[0]
+                    let InterceptY : Float = currentTag!.XY[1] - ShortestPath[0].XY[1]
+                    let Distance = Double(sqrt(pow(InterceptX, 2) + pow(InterceptY, 2)))
+                    if Distance > abs(3){
+                        let Pos = GeoPos(Floor: currentTag!.Floor, geoPos: currentTag!.geoPos)
+                        let Nodes : [Node] = NodesDict[Pos] ?? []
+                        if !Nodes.isEmpty {
+                            let Start = Nodes.firstIndex(where: {$0.Floor == currentTag!.Floor && $0.XY == currentTag!.XY})
+    //                        print(ShortestPath[ShortestPath.count - 1].id)
+                            let NewPath = getPath(Pos: Pos, from: Nodes[Start!].id, to: ShortestPath[ShortestPath.count - 1].id).1
+                            return (NewPath, nil)
+                        }
+                    }
+                    else{
+                        FacingTag = NavTags[NavTags.firstIndex(where: {$0.CRC == currentTag!.CRC})! + 1]
+                        UpdatedPath = ShortestPath.filter({$0.XY != currentTag!.XY})
+                    }
+                }
+                if FacingTag != nil {
+                    let FacingCart = [Float(currentTag!.XY[0] - FacingTag!.XY[0]), Float(currentTag!.XY[1] - FacingTag!.XY[1])]
+        //            let FacingPolar = FacingCart.conver
+                    let FacingPolar = [Float(sqrt(pow(FacingCart[0],2) + pow(FacingCart[1],2))), atan2(FacingCart[0], FacingCart[1]) * 180 / Float.pi]
+                    let TargetCart = [Float(currentTag!.XY[0] - UpdatedPath[0].XY[0]), Float(currentTag!.XY[1] - UpdatedPath[0].XY[1])]
+                    let TargetPolar = [Float(sqrt(pow(TargetCart[0],2) + pow(TargetCart[1],2))), atan2(TargetCart[0], TargetCart[1]) * 180 / Float.pi]
+                    let DirectionPolar = [FacingPolar[0] - TargetPolar[0], FacingPolar[1] - TargetPolar[1]]
+                    Direction = DirectionPolar[1]
+                    print("Direction: \(DirectionPolar) | \(DirectionPolar[1] == 180 || DirectionPolar[1] == -180 ? "Turn Back" : DirectionPolar[1] < 0 ? "Turn Left" : DirectionPolar[1] > 0 ? "Turn Right" : "Go Stright") | \(Direction!)")
+                    if Direction == 180 || Direction == -180 {
+                        UpdatedPath = ShortestPath
+                    }
+                    return (UpdatedPath, Direction)
+                }
+            }
+        }
+        return (ShortestPath, nil)
+    }
 }
 
 

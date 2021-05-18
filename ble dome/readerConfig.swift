@@ -12,7 +12,16 @@ class ReaderConfig: ObservableObject{
     @Published var Tags = [tag]()
     @Published var TagsData = [tagData]()
     @Published var EPCstr = [String]()
-    
+    @Published var isNavorSet : UInt8 = 0 {
+        willSet{
+//            print(isNavorSet)
+            
+            if newValue != isNavorSet{
+                isNavorSetUpdate = true
+            }
+        }
+    }
+    @Published var isNavorSetUpdate : Bool = false
     @Published var isInventory = false // Reader Inverntorying or not
     @Published var RealtimeInventory_Toggle = false // Reader Inverntorying in Realtime or not
     @Published var MatchState : Int = 0// 0: Match, 1: Matching, 2: Matched, 3: UnMactching
