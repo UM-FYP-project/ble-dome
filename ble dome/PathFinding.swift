@@ -13,7 +13,7 @@ struct GeoPos: Hashable{
     let geoPos : [Float]
     
     var PosStr : String {
-        return "\(Floor == 0 ? "G/F" : "\(Floor)/F") | \(geoPos[0]) : \(geoPos[1]) )"
+        return "\(Floor == 0 ? "G/F" : "\(Floor)/F") | \(geoPos[0]) : \(geoPos[1])"
     }
 }
 

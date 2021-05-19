@@ -101,7 +101,7 @@ struct NavMain: View {
                             .frame(width: BLSize, height: BLSize)
                             .padding()
                             .background(RoundedRectangle(cornerRadius: 10)
-                                            .foregroundColor(Color.white.opacity(0.3)).shadow(radius: 3))
+                                            .foregroundColor(Color.white.opacity(0.15)).shadow(radius: 3))
                         }
                     }
                 }
@@ -196,7 +196,23 @@ struct NavMain: View {
             }
         }
         else{
-            
+            let Nodes = NodesDict[geoPos!] ?? []
+            if !Nodes.isEmpty && CurrentLocation != nil{
+                let NearIndexs = path.FindNodes(Pos: geoPos!, to: "Entrance")
+                let FiletedIndexs = NearIndexs.filter({Nodes[$0].InformationStr != CurrentLocation!.InformationStr})
+                if !FiletedIndexs.isEmpty{
+                    let FiletedNodes = FiletedIndexs.map({Nodes[$0]})
+                    RoomList.removeAll()
+                    for node in FiletedNodes{
+                        RoomList.append(node.InformationStr)
+                    }
+                }
+                else {
+                    PressNum += 10
+                    print(PressNum)
+                    AlertState.toggle()
+                }
+            }
         }
     }
     
@@ -221,14 +237,6 @@ struct NavMain: View {
                             let fileName = String(geoPos!.geoPos[0]) + "," + String(geoPos!.geoPos[1])
                             path.CSV2Dict(fileName: fileName)
                             Nodes = NodesDict[geoPos!] ?? []
-                            if !Nodes!.isEmpty && CurrentLocation != nil{
-                                let FiletedNodes =  Nodes!.filter({$0.InformationStr != CurrentLocation!.InformationStr && $0.HazardStr.uppercased().contains(String("Entrance").uppercased())})
-                                RoomList.removeAll()
-                                for node in FiletedNodes{
-                                    RoomList.append(node.InformationStr)
-                                }
-                            }
-                            
                         }
                         geoPosUpdated = false
                     }

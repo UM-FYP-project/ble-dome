@@ -53,7 +53,7 @@ struct ReadTagsData: View {
                             }
                         })
                         .multilineTextAlignment(.center)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.numbersAndPunctuation)
                         .frame(maxWidth: 50)
                     Button(action: {self.readerconfig.DataStart += 1}) {
                         Image(systemName: "plus")
@@ -85,7 +85,7 @@ struct ReadTagsData: View {
                             }
                         })
                         .multilineTextAlignment(.center)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.numbersAndPunctuation)
                         .frame(maxWidth: 50)
                     Button(action: {self.readerconfig.DataLen += 1}) {
                         Image(systemName: "plus")
@@ -148,7 +148,7 @@ struct ReadTagsData: View {
                                     Text("RSSI:\(TagData.RSSI)")
                                 }
                                 if NavTag != nil {
-                                    Text("Floor: \(NavTag!.Floor)/F\t\tHazard: \(NavTag!.HazardStr)\n\t\tInformation: \((NavTag!.InformationStr))")
+                                    Text("Floor: \(NavTag!.Floor)/F\t\tHazard: \(NavTag!.HazardStr)\nInformation: \((NavTag!.InformationStr))")
                                     Text("X:\(NavTag!.XY[0])\t\tY:\(NavTag!.XY[1])")
                                     if !NavTag!.geoPos.isEmpty {
                                         Text("Lag:\(NavTag!.geoPos[0])\t\tLong:\(NavTag!.geoPos[1])")

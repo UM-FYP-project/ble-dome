@@ -25,7 +25,7 @@ struct RoutineTest: View {
         ZStack{
             VStack{
                 Spacer()
-                    .frame(height : 30)
+                    .frame(height : 25)
                 Picker(selection: $ViewSelected, label: Text("Reader Picker")) {
                     Text("Routine").tag(0)
                     Text("Navigation").tag(1)
@@ -56,7 +56,7 @@ struct RoutineTest: View {
                 Spacer()
                 Text("\(!path.ExistedList.isEmpty ? path.ExistedList[path.geoSelected].PosStr : "")")
                     .font(.headline)
-                    .frame(width: 150, height: 30)
+                    .frame(width: 300, height: 30)
                     .background(Color.gray.opacity(0.15))
                     .cornerRadius(10)
                     .onTapGesture {
@@ -67,6 +67,7 @@ struct RoutineTest: View {
             HStack{
                 Button(action: {
                     ShortestPath = path.getPath(Pos: path.ExistedList[path.geoSelected], from: StartNode, to: EndNode).1
+//                    print("\(StartNode) - \(EndNode) | \(ShortestPath)")
                 }) {
                     Text("Get Path")
                         .font(.headline)
@@ -81,7 +82,7 @@ struct RoutineTest: View {
                         }
                     })
                     .multilineTextAlignment(.center)
-                    .keyboardType(.numberPad)
+                    .keyboardType(.numbersAndPunctuation)
                     .frame(maxWidth: 75)
                     .frame(height: 30)
                     .background(Color.gray.opacity(0.15))
@@ -96,7 +97,7 @@ struct RoutineTest: View {
                         }
                     })
                     .multilineTextAlignment(.center)
-                    .keyboardType(.numberPad)
+                    .keyboardType(.numbersAndPunctuation)
                     .frame(maxWidth: 75)
                     .frame(height: 30)
                     .background(Color.gray.opacity(0.15))
@@ -109,10 +110,14 @@ struct RoutineTest: View {
                     .font(.headline)
                 Spacer()
                 if !ShortestPath.isEmpty{
-                    ForEach (0..<ShortestPath.count){ index in
+                    ForEach (0..<ShortestPath.count, id: \.self){ index in
                         Text("[\(ShortestPath[index].id)]\(index != ShortestPath.count - 1 ? "->" : "")")
                     }
                 }
+                else{
+                    Text("No Path")
+                }
+                Spacer()
             }
             .frame(maxHeight: 60)
             Divider()
@@ -128,12 +133,14 @@ struct RoutineTest: View {
                 path.isNaving.toggle()
                 if Navtrigger{
 //                    EnableRoutine()
+                    EnableNav()
                 }
             }) {
                 Text("\(Navtrigger ? "Navigation Stop" : "Navigation Start")")
                     .bold()
                     .frame(width: 300, height: 30)
             }
+            .disabled(ShortestPath.isEmpty)
             .frame(height: 30)
             Divider()
             Spacer()
@@ -276,10 +283,11 @@ struct RoutineTest: View {
                 List(NavTags) { navtag in
                     HStack{
                         Text("\(navtag.id + 1)")
+//                        Text("\(navtag.RSSI)")
                             .frame(width: 20)
                         Divider()
                         VStack(alignment: .leading){
-                            Text("Floor: \(navtag.Floor)/F\t\tHazard: \(navtag.HazardStr)\n\t\tInformation: \((navtag.InformationStr))")
+                            Text("Floor: \(navtag.Floor)/F\t\tHazard: \(navtag.HazardStr)\nInformation: \((navtag.InformationStr))")
                             if !navtag.XY.isEmpty {
                                 Text("X:\(navtag.XY[0])\t\tY:\(navtag.XY[1])")
                             }
@@ -298,6 +306,7 @@ struct RoutineTest: View {
         path.RoutineFlow = 0
         path.Tags = []
         path.TagsData = []
+        NavTags = []
         path.tagsCount = 0
         Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
             if ble.peripherals.filter({$0.State == 2}).count < 1 {
@@ -305,9 +314,9 @@ struct RoutineTest: View {
                 path.isNaving = false
             }
             getFeedBeck()
-            let foo = path.PathDirection(NavTags: NavTags, ShortestPath: ShortestPath)
-            ShortestPath = foo.0
-            ArrowDrg = foo.1 ?? 0
+            let funcFeedback = path.PathDirection(NavTags: NavTags, ShortestPath: ShortestPath)
+            ShortestPath = funcFeedback.0
+            ArrowDrg = funcFeedback.1 ?? 0
             if !Navtrigger || !path.isNaving || ShortestPath.isEmpty{
                 Navtrigger = false
                 timer.invalidate()
@@ -320,6 +329,7 @@ struct RoutineTest: View {
         path.RoutineFlow = 0
         path.Tags = []
         path.TagsData = []
+        NavTags = []
         path.tagsCount = 0
         Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true){timer in
             if ble.peripherals.filter({$0.State == 2}).count < 1 {
@@ -372,6 +382,11 @@ struct RoutineTest: View {
                             guard let navtag = reader.TagtoNav(Tag: nil, TagData: tagdata) else { return }
                             if NavTags.filter({$0.CRC == navtag.CRC}).count < 1{
                                 NavTags.append(navtag)
+                            }
+                            else{
+                                if let index = NavTags.firstIndex(where: {$0.CRC == navtag.CRC}) {
+                                    NavTags[index].RSSI = navtag.RSSI
+                                }
                             }
                         }
                         NavTags.sort{($0.RSSI >= $1.RSSI)}

@@ -8,6 +8,20 @@
 import SwiftUI
 import CoreBluetooth
 
+struct NavigationConfigurator: UIViewControllerRepresentable {
+    var configure: (UINavigationController) -> Void = { _ in }
+
+    func makeUIViewController(context: UIViewControllerRepresentableContext<NavigationConfigurator>) -> UIViewController {
+        UIViewController()
+    }
+    func updateUIViewController(_ uiViewController: UIViewController, context: UIViewControllerRepresentableContext<NavigationConfigurator>) {
+        if let nc = uiViewController.navigationController {
+            self.configure(nc)
+        }
+    }
+
+}
+
 struct ContentView: View {
     @ObservedObject var ble = BLE()
     @ObservedObject var reader = Reader()
@@ -22,82 +36,90 @@ struct ContentView: View {
     @State var Longitude : Float = 0
     var body: some View {
         GeometryReader{ geometry in
-//            ZStack{
-                NavigationView {
-                    VStack{
-                        Spacer()
-                        NavMain(geometry: geometry)
-                            .disabled(ble.isBluetoothON && isScanner_trigged)
-                            .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
-                            .environmentObject(ble)
-                            .environmentObject(reader)
-                            .environmentObject(path)
-                        Spacer()
-                        VStack{
-                            Divider()
-                            HStack(){
-                                VStack{
-                                    ReaderSettingLink
-                                    Image(systemName: "house")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 25, height: 20)
-                                        .padding(.top, 10)
-                                        .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
-                                    Text("Home")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
-                                    
-                                    Spacer()
-                                }
-                                .accessibility(label: Text("Home Tab"))
-                                .accessibilityElement(children: .combine)
-                                .onLongPressGesture(minimumDuration: 2) {
-                                    if let index = ble.peripherals.firstIndex(where: {$0.State == 2}){
-                                        ReaderSet = true
-                                        Conncetedperipheral_index = index
-                                    }
-                                }
-                                .padding(.bottom, 10)
-                            }
-                        }
-                        .background(Color("TabBarColor"))
-                        .frame(width: geometry.size.width, height: geometry.size.height/9.2)
-                    }
-                    .accessibility(hidden: ble.isBluetoothON && isScanner_trigged  ? true : false)
-                    .edgesIgnoringSafeArea(.bottom)
-                    .navigationBarTitle("Main", displayMode: .inline)
-                    .navigationBarItems(trailing:
-                                            Button(action: {isScanner_trigged = true}) {
-                                                Text("Scanner")
-                                            }
-                                            .accessibility(hidden: ble.isBluetoothON && isScanner_trigged  ? true : false)
-                                            .accessibility(hint: Text("Tap to Pop up Bluetooth Scanner"))
-                                            .padding()
-                                            .disabled(!ble.isBluetoothON)
-                    )
-                    
-                }
-                .onAppear(perform: {
-                    BLEConnect()
-                    isNavorSet()
-                })
-                .alert(isPresented: $notConnectedAlert_trigged) {
-                    Alert(
-                        title: Text("Please Connect Device"),
-                        message: Text("Scanner will Pop-up"),
-                        dismissButton: .default(Text("OK"), action: {isScanner_trigged = true})
-                    )
-                }
-                .disabled(ble.isBluetoothON && isScanner_trigged)
-                .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
-                if ble.isBluetoothON && isScanner_trigged{
-                    BLEScanner_Alert(Enable: $isScanner_trigged, geometry: geometry)
-                        .accessibility(hint: Text("Select Device to Connect"))
+            NavigationView {
+                VStack{
+                    Spacer()
+                    NavMain(geometry: geometry)
+                        .disabled(ble.isBluetoothON && isScanner_trigged)
+                        .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
                         .environmentObject(ble)
-                        .accessibilitySortPriority(1)
+                        .environmentObject(reader)
+                        .environmentObject(path)
+                    Spacer()
+                    VStack{
+                        Divider()
+                        HStack(){
+                            VStack{
+                                ReaderSettingLink
+                                Image(systemName: "house")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 25, height: 20)
+                                    .padding(.top, 10)
+                                    .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                                Text("Home")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                                
+                                Spacer()
+                            }
+                            .accessibility(label: Text("Home Tab"))
+                            .accessibilityElement(children: .combine)
+                            .onLongPressGesture(minimumDuration: 2) {
+                                if let index = ble.peripherals.firstIndex(where: {$0.State == 2}){
+                                    ReaderSet = true
+                                    Conncetedperipheral_index = index
+                                }
+                            }
+                            .padding(.bottom, 10)
+                        }
+                    }
+                    .background(Color("TabBarColor"))
+                    .frame(width: geometry.size.width, height: geometry.size.height/9.2)
                 }
-//            }
+                .accessibility(hidden: ble.isBluetoothON && isScanner_trigged  ? true : false)
+                .edgesIgnoringSafeArea(.bottom)
+                .navigationBarTitle("Main", displayMode: .inline)
+                .background(NavigationConfigurator { nc in
+                    if ble.peripherals.filter({$0.State == 2}).count > 0{
+                        nc.navigationBar.barTintColor = UIColor.systemTeal
+                        nc.navigationBar.titleTextAttributes = [.foregroundColor : UIColor.white]
+                    }
+                    else{
+                        nc.navigationBar.barTintColor = UIColor(Color("TabBarColor"))
+                        nc.navigationBar.titleTextAttributes = [.foregroundColor : UIColor.label]
+                    }
+                })
+                .navigationBarItems(trailing:
+                                        Button(action: {isScanner_trigged = true}) {
+                                            Text("Scanner")
+                                        }
+                                        .accessibility(hidden: ble.isBluetoothON && isScanner_trigged  ? true : false)
+                                        .accessibility(hint: Text("Tap to Pop up Bluetooth Scanner"))
+                                        .padding()
+                                        .disabled(!ble.isBluetoothON)
+                )
+                
+            }
+            .onAppear(perform: {
+                BLEConnect()
+                isNavorSet()
+            })
+            .alert(isPresented: $notConnectedAlert_trigged) {
+                Alert(
+                    title: Text("Please Connect Device"),
+                    message: Text("Scanner will Pop-up"),
+                    dismissButton: .default(Text("OK"), action: {isScanner_trigged = true})
+                )
+            }
+            .disabled(ble.isBluetoothON && isScanner_trigged)
+            .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
+            if ble.isBluetoothON && isScanner_trigged{
+                BLEScanner_Alert(Enable: $isScanner_trigged, geometry: geometry)
+                    .accessibility(hint: Text("Select Device to Connect"))
+                    .environmentObject(ble)
+                    .accessibilitySortPriority(1)
+            }
         }
     }
     

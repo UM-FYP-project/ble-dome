@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import Introspect
 
 struct ReaderWriteData: View{
     @EnvironmentObject var ble:BLE
@@ -84,7 +85,7 @@ struct ReaderWriteData: View{
                             case true:
                                 return Alert(
                                     title: Text("Write Data to Tag"),
-                                    message: Text("Please Check the Password")
+                                    message: Text("Please Check the Password").font(.title3)
                                 )
                             }
                         }

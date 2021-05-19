@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Combine
-//import Introspect
+import Introspect
 
 struct ReaderInventory: View{
     @EnvironmentObject var ble:BLE
@@ -59,7 +59,7 @@ struct ReaderInventory: View{
                             }
                         })
                         .multilineTextAlignment(.center)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.numbersAndPunctuation)
                         .frame(maxWidth: 50)
                     Button(action: {self.readerconfig.inventorySpeed += 1}) {
                         Image(systemName: "plus")
@@ -177,7 +177,7 @@ struct ReaderInventory: View{
                                     Text("RSSI:\(tag.RSSI)")
                                 }
                                 if NavTag != nil {
-                                    Text("Floor: \(NavTag!.Floor)/F\t\tHazard: \(NavTag!.HazardStr)\t\tInformation: \((NavTag!.InformationStr))")
+                                    Text("Floor: \(NavTag!.Floor)/F\t\tHazard: \(NavTag!.HazardStr)\nInformation: \((NavTag!.InformationStr))")
                                 }
                             }
                         }
