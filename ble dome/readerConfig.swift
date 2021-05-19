@@ -61,6 +61,6 @@ class ReaderConfig: ObservableObject{
     @Published var LatitudeStr : String = ""
     @Published var LongitudeStr : String = ""
     @Published var floor : Int = 0
-    @Published var Seq : UInt = 0
-    @Published var RoomSeq : UInt = 0
+    @Published var Seq : Int = 0
+    @Published var RoomSeq : Int = 0
 }

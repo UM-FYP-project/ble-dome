@@ -17,7 +17,7 @@ struct BLEScanner_Alert: View {
                 Text("Scanner")
                     .bold()
                     .font(.title2)
-                Text("Scan and Connect Deivce")
+                Text("Scan and Connect Device")
             }
             .padding()
             .clipped()
@@ -61,7 +61,7 @@ struct BLEScanner_Alert: View {
 //                            BLEConnect_button(name: peripheral.name)
 //                                .frame(alignment: .trailing)
 //                        }
-                        ConnectButton(peripheral: peripheral)
+                        ConnectButton(peripheral: peripheral, Enable: $Enable)
                             .environmentObject(ble)
                             .padding()
                             .frame(height: 50)
@@ -84,7 +84,9 @@ struct BLEScanner_Alert: View {
 
 struct ConnectButton: View {
     @EnvironmentObject var ble:BLE
-    let peripheral : Peripheral
+    var peripheral : Peripheral
+    @State var State = ""
+    @Binding var Enable : Bool
     var body : some View {
         Button(action: {
             if peripheral.State == 0 && ble.peripherals.filter({$0.State != 0}).count < 1 {
@@ -104,6 +106,7 @@ struct ConnectButton: View {
                     Text(peripheral.name)
                         .foregroundColor(Color(UIColor.label))
                         .bold()
+                        .accessibility(label: Text("Device \(peripheral.name)"))
 //                    Text("Rssi: \(peripheral.rssi)")
 //                        .foregroundColor(Color(UIColor.label))
                 }
@@ -117,6 +120,7 @@ struct ConnectButton: View {
         VStack{
             if peripheral.State == 0{
                 Text("Connect")
+                    .accessibility(label: Text("Tap to Connect"))
                     .font(.title2)
                     .foregroundColor(ble.peripherals.filter({$0.State != 0}).count < 1 ? .blue : Color(UIColor.lightGray))
                     .multilineTextAlignment(.trailing)
@@ -129,6 +133,7 @@ struct ConnectButton: View {
             }
             else if peripheral.State == 2{
                 Text("Disconnect")
+                    .accessibility(label: Text("Tap to Disconnect"))
                     .font(.title2)
                     .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
                     .multilineTextAlignment(.trailing)
@@ -142,59 +147,59 @@ struct ConnectButton: View {
     }
 }
 
-struct BLEConnect_button: View {
-    @EnvironmentObject var ble:BLE
-    var name : String
-    var body : some View {
-        Button(action: {
-            if name != ""{
-                if let index = ble.peripherals.firstIndex(where: {$0.name == name}){
-                    let peripheral = ble.peripherals[index]
-                    if peripheral.State == 0 && ble.peripherals.filter({$0.State != 0}).count < 1{
-                        ble.connect(peripheral: peripheral.Peripheral)
-                    }
-                    else if peripheral.State == 1{
-                        ble.cancelConnection(peripheral: peripheral.Peripheral)
-                    }
-                    else if peripheral.State == 2{
-                        ble.disconnect(peripheral: peripheral.Peripheral)
-                        rememberConntion.removeObject(forKey:"PreviousName")
-                        ble.scan_devices()
-                    }
-                }
-            }
-        }) {
-            if name != "" {
-                if let index = ble.peripherals.firstIndex(where: {$0.name == name}){
-                    let peripheral = ble.peripherals[index]
-                    if peripheral.State == 0{
-                        Text("Connect")
-                            .font(.title2)
-                            .foregroundColor(ble.peripherals.filter({$0.State != 0}).count < 1 ? .blue : Color(UIColor.lightGray))
-                            .multilineTextAlignment(.trailing)
-                    }
-                    else if peripheral.State == 1{
-                        Text("Connecting")
-                            .font(.title2)
-                            .foregroundColor(.blue)
-                            .multilineTextAlignment(.trailing)
-                    }
-                    else if peripheral.State == 2{
-                        Text("Disconnect")
-                            .font(.title2)
-                            .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
-                            .multilineTextAlignment(.trailing)
-                    }
-                    else {
-                        Text("Disconnecting")
-                            .font(.title2)
-                            .multilineTextAlignment(.trailing)
-                    }
-                }
-            }
-        }
-    }
-}
+//struct BLEConnect_button: View {
+//    @EnvironmentObject var ble:BLE
+//    var name : String
+//    var body : some View {
+//        Button(action: {
+//            if name != ""{
+//                if let index = ble.peripherals.firstIndex(where: {$0.name == name}){
+//                    let peripheral = ble.peripherals[index]
+//                    if peripheral.State == 0 && ble.peripherals.filter({$0.State != 0}).count < 1{
+//                        ble.connect(peripheral: peripheral.Peripheral)
+//                    }
+//                    else if peripheral.State == 1{
+//                        ble.cancelConnection(peripheral: peripheral.Peripheral)
+//                    }
+//                    else if peripheral.State == 2{
+//                        ble.disconnect(peripheral: peripheral.Peripheral)
+//                        rememberConntion.removeObject(forKey:"PreviousName")
+//                        ble.scan_devices()
+//                    }
+//                }
+//            }
+//        }) {
+//            if name != "" {
+//                if let index = ble.peripherals.firstIndex(where: {$0.name == name}){
+//                    let peripheral = ble.peripherals[index]
+//                    if peripheral.State == 0{
+//                        Text("Connect")
+//                            .font(.title2)
+//                            .foregroundColor(ble.peripherals.filter({$0.State != 0}).count < 1 ? .blue : Color(UIColor.lightGray))
+//                            .multilineTextAlignment(.trailing)
+//                    }
+//                    else if peripheral.State == 1{
+//                        Text("Connecting")
+//                            .font(.title2)
+//                            .foregroundColor(.blue)
+//                            .multilineTextAlignment(.trailing)
+//                    }
+//                    else if peripheral.State == 2{
+//                        Text("Disconnect")
+//                            .font(.title2)
+//                            .foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+//                            .multilineTextAlignment(.trailing)
+//                    }
+//                    else {
+//                        Text("Disconnecting")
+//                            .font(.title2)
+//                            .multilineTextAlignment(.trailing)
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
 
 struct BLEScanner_Alert_Previews: PreviewProvider {
     static var previews: some View {

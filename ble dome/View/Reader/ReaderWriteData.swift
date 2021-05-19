@@ -133,7 +133,7 @@ struct ReaderWriteData: View{
                             "Password: \(String(PasswdStr.prefix(8)).hexaData.hexEncodedString())\n" +
                                 "Floor: \(readerconfig.floor == 0 ? "G/F" : "\(readerconfig.floor)/F")" +
                             ": (\(Data(Array(Int16(readerconfig.floor).bytes)).hexEncodedString()))\n" +
-                                "Hazard\n\(HazardStrArray[HazardSelected])\(HazardSelected != 4 ? readerconfig.Seq < 10 ? "0\(readerconfig.Seq)" : "\(readerconfig.Seq)" : "")\(HazardSelected == 0 ? "Num of Steps: \(Steps)" : "")" +
+                                "Hazard\n\(HazardStrArray[HazardSelected])\(readerconfig.Seq < 10 ? "0\(readerconfig.Seq)" : "\(readerconfig.Seq)")\(HazardSelected == 0 ? "Num of Steps: \(Steps)" : "")" +
                                 ": (\(Data([UInt8(HazardSelected)]).hexEncodedString()), \(Data(Int16(readerconfig.Seq).bytes).hexEncodedString()), \(Data([UInt8(Steps)]).hexEncodedString()))\n" +
                                 "Place\n\(RoomSelected == 0 ? "Room" : RoomSelected == 1 ? "Restroom" : "Aisle")\(readerconfig.RoomSeq)" + ": (\(Data([UInt8(RoomSelected)]).hexEncodedString()), \(Data(Int16(readerconfig.RoomSeq).bytes).hexEncodedString()))\n" +
                                 "Indoor\nX:\(Float(readerconfig.Xcoordinate) ?? 0) : (\(Data((Float(readerconfig.Xcoordinate) ?? 0).bytes).hexEncodedString()))\nY: \(Float(readerconfig.Ycoordinate) ?? 0) : (\(Data((Float(readerconfig.Ycoordinate) ?? 0).bytes).hexEncodedString()))\n" +
@@ -207,7 +207,7 @@ struct ReaderWriteData: View{
                             }
                         })
                         .multilineTextAlignment(.center)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.numbersAndPunctuation)
                         .frame(maxWidth: 50)
                     Button(action: {self.StartAdd += 1}) {
                         Image(systemName: "plus")
@@ -296,13 +296,16 @@ struct ReaderWriteData: View{
 //                        .font(.headline)
 //                        .frame(width: 30)
                     TextField("Hazard Seq", value: $readerconfig.Seq, formatter: NumberFormatter())
-                        .onReceive(Just(Steps), perform: {_ in
+                        .onReceive(Just(readerconfig.Seq), perform: {_ in
                             if readerconfig.Seq > 32767 {
                                 readerconfig.Seq = 32767
                             }
+                            else if readerconfig.Seq < 0 {
+                                readerconfig.Seq = 0
+                            }
                         })
                         .multilineTextAlignment(.center)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.numbersAndPunctuation)
                         .frame(width: 50)
                     Button(action: {readerconfig.Seq += 1}) {
                         Image(systemName: "plus")
@@ -330,7 +333,7 @@ struct ReaderWriteData: View{
                                     self.Steps = 0
                                 }
                             })
-                            .keyboardType(.numberPad)
+                            .keyboardType(.numbersAndPunctuation)
                             .multilineTextAlignment(.center)
                             .frame(width: 50)
                         Button(action: {self.Steps += 1}) {
@@ -368,12 +371,15 @@ struct ReaderWriteData: View{
                 .padding()
                 .frame(width: 30, height: 30)
                 TextField("Room Seq", value: $readerconfig.RoomSeq, formatter: NumberFormatter())
-                    .keyboardType(.numberPad)
-                    .onReceive(Just(Steps), perform: {_ in
+                    .onReceive(Just(readerconfig.RoomSeq), perform: {_ in
                         if readerconfig.RoomSeq > 32767 {
                             readerconfig.RoomSeq = 32767
                         }
+                        else if readerconfig.RoomSeq < 0 {
+                            readerconfig.RoomSeq = 0
+                        }
                     })
+                    .keyboardType(.numbersAndPunctuation)
                     .multilineTextAlignment(.center)
                     .frame(width: 50)
                 Button(action: {readerconfig.RoomSeq += 1}) {

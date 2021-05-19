@@ -63,7 +63,7 @@ struct NavMain: View {
                     .font(.title3)
                 Spacer()
                 VStack{
-                    Text("\(CurrentLocation != nil ? "\(CurrentLocation!.Floor == 0 ? "G/F" : "\(CurrentLocation!.Floor)/F")\t|\t\(CurrentLocation!.InformationStr)" : "")")
+                    Text("\(CurrentLocation != nil ? "\(CurrentLocation!.Floor == 0 ? "G/F" : "\(CurrentLocation!.Floor)/F")\t\t|\t\(CurrentLocation!.InformationStr)" : "")")
                         .font(.title3)
                         .frame(height: 40)
                         .frame(maxWidth: 300)
@@ -77,15 +77,17 @@ struct NavMain: View {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 50) {
                     ForEach(NavButtons, id: \.id) { navbutton in
                         Button(action: {
+//                            print("1")
                             if geoPos != nil {
+//                                print("2")
                                 ButtonPressedNum = navbutton.id
-                                navButton(PressNum : ButtonPressedNum)
+                                navButton(PressNum : &ButtonPressedNum)
 //                                if navbutton.id != 1 {
 //                                    AlertState.toggle()
 //                                }
                             }
                             else {
-                                ButtonPressedNum = 10
+                                ButtonPressedNum = 15
                                 AlertState.toggle()
                             }
                         }){
@@ -126,7 +128,13 @@ struct NavMain: View {
                             }
                         )
                 )
-            case 10:
+            case 10,11,12,13,14:
+                let Str = ["Entrance", "Room", "Restroom", "Stair", "Elevator"]
+                return Alert(
+                    title: Text("No \(Str[ButtonPressedNum % 10]) in Nearby")
+//                    message: Text("Press OK")
+                )
+            case 15:
                 return Alert(
                     title: Text("Please Find the Paving Frist")
 //                    message: Text("Press OK")
@@ -140,7 +148,7 @@ struct NavMain: View {
         }
     }
     
-    func navButton(PressNum : Int){
+    func navButton(PressNum : inout Int){
         var toStr : String = ""
         switch PressNum {
         case 0:
@@ -156,18 +164,35 @@ struct NavMain: View {
         }
         if PressNum != 1 {
             if geoPos != nil && CurrentLocation != nil{
+//                print("Pos \(geoPos), CurrentLocation \(CurrentLocation)")
                 guard let Nodes : [Node] = NodesDict[geoPos!] else { return }
-                    let AllNode = path.FindNodes(Pos: geoPos!, to: "Entrance")
-                guard let StartNode = Nodes.firstIndex(where: {$0.XY == CurrentLocation!.XY}) else { return }
-                guard let NearestNode = path.FindNearest(Pos: geoPos!, from: StartNode, to: AllNode) else { return }
-                let shortestPath : [Node] = path.getPath(Pos: geoPos!, from: StartNode, to: NearestNode).1
-                guard let EstimatedTime = path.PathEstimate(Path: shortestPath) else { return }
-                let Hours = EstimatedTime / 3600
-                let Minutes = (EstimatedTime % 3600) / 60
-                let Seconds = (EstimatedTime % 3600) % 60
-                let TimeStr = "\(Hours):\(Minutes):\(Seconds)"
-                AlertStr = "Navigate to Nearest \(toStr)\n" + "Estimated Distance \(ceil(Double(EstimatedTime) / 0.85))" + "Estimated Time: \(TimeStr)\n"
-                AlertState.toggle()
+//                print(Nodes)
+                let AllNode = path.FindNodes(Pos: geoPos!, to: toStr)
+                if !AllNode.isEmpty{
+                    guard let StartNode = Nodes.firstIndex(where: {$0.XY == CurrentLocation!.XY}) else { return }
+                    guard let NearestNode = path.FindNearest(Pos: geoPos!, from: StartNode, to: AllNode) else { return }
+                    let shortestPath : [Node] = path.getPath(Pos: geoPos!, from: StartNode, to: NearestNode).1
+                    if !shortestPath.isEmpty{
+                        guard let EstimatedTime = path.PathEstimate(Path: shortestPath) else { return }
+                        let Hours = EstimatedTime / 3600
+                        let Minutes = (EstimatedTime % 3600) / 60
+                        let Seconds = (EstimatedTime % 3600) % 60
+                        let TimeStr = "\(Hours):\(Minutes):\(Seconds)"
+                        AlertStr = "Navigate to Nearest \(toStr)\n" + "Estimated Distance \(ceil(Double(EstimatedTime) / 0.85))" + "Estimated Time: \(TimeStr)\n"
+                        print(AlertStr)
+                        AlertState.toggle()
+                    }
+                    else {
+                        PressNum += 10
+                        print(PressNum)
+                        AlertState.toggle()
+                    }
+                }
+                else{
+                    PressNum += 10
+                    print(PressNum)
+                    AlertState.toggle()
+                }
             }
         }
         else{
@@ -195,9 +220,10 @@ struct NavMain: View {
                         if Nodes == nil {
                             let fileName = String(geoPos!.geoPos[0]) + "," + String(geoPos!.geoPos[1])
                             path.CSV2Dict(fileName: fileName)
-                            Nodes = NodesDict[geoPos!]!
-                            if Nodes != nil && CurrentLocation != nil{
+                            Nodes = NodesDict[geoPos!] ?? []
+                            if !Nodes!.isEmpty && CurrentLocation != nil{
                                 let FiletedNodes =  Nodes!.filter({$0.InformationStr != CurrentLocation!.InformationStr && $0.HazardStr.uppercased().contains(String("Entrance").uppercased())})
+                                RoomList.removeAll()
                                 for node in FiletedNodes{
                                     RoomList.append(node.InformationStr)
                                 }

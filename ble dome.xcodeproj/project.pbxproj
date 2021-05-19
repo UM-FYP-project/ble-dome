@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4A23C67465F130ABF3A30AA0 /* Pods_ble_dome.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8701DBC935F58CB232845E6B /* Pods_ble_dome.framework */; };
 		9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9528A16A25D03DA500B51649 /* DetailTabView.swift */; };
 		9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9528A17525D0560B00B51649 /* ReaderTab.swift */; };
 		95363B81261CA1B300BF633A /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95363B80261CA1B300BF633A /* MapKit.framework */; };
@@ -17,7 +18,6 @@
 		9563293B2652D2B3005FE61D /* ProgressAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9563293A2652D2B3005FE61D /* ProgressAlert.swift */; };
 		9563293D2652D9EA005FE61D /* DirectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9563293C2652D9EA005FE61D /* DirectionView.swift */; };
 		9563293F2654017A005FE61D /* RoomPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9563293E2654017A005FE61D /* RoomPicker.swift */; };
-		9564DEA2264E356500B7BBC3 /* 22.211006,113.55492.csv in Resources */ = {isa = PBXBuildFile; fileRef = 9564DEA1264E356500B7BBC3 /* 22.211006,113.55492.csv */; };
 		9564DEA5264EE74200B7BBC3 /* AlertPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9564DEA4264EE74200B7BBC3 /* AlertPicker.swift */; };
 		95687E9026444F1000C9116D /* ReaderSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E8F26444F1000C9116D /* ReaderSetting.swift */; };
 		95687E9226444FEB00C9116D /* ReaderInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E9126444FEB00C9116D /* ReaderInventory.swift */; };
@@ -26,6 +26,7 @@
 		95687E98264464FC00C9116D /* ReaderWriteData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E97264464FC00C9116D /* ReaderWriteData.swift */; };
 		95764B3B2651682500A1516A /* RoutineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95764B3A2651682500A1516A /* RoutineTest.swift */; };
 		9580C65F262574B8008EA64D /* readerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9580C65E262574B8008EA64D /* readerConfig.swift */; };
+		959676DC26553F17006A0C82 /* 22.134586,113.545135.csv in Resources */ = {isa = PBXBuildFile; fileRef = 959676DB26553F16006A0C82 /* 22.134586,113.545135.csv */; };
 		95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */; };
 		95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368B825BF2F700026EC88 /* Assets.xcassets */; };
 		95B368BC25BF2F700026EC88 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368BB25BF2F700026EC88 /* Preview Assets.xcassets */; };
@@ -36,6 +37,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7567D9503932C339D1ED8735 /* Pods-ble dome.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ble dome.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ble dome/Pods-ble dome.debug.xcconfig"; sourceTree = "<group>"; };
+		8701DBC935F58CB232845E6B /* Pods_ble_dome.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ble_dome.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9528A16A25D03DA500B51649 /* DetailTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailTabView.swift; sourceTree = "<group>"; };
 		9528A17525D0560B00B51649 /* ReaderTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderTab.swift; sourceTree = "<group>"; };
 		95363B80261CA1B300BF633A /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
@@ -46,7 +49,6 @@
 		9563293A2652D2B3005FE61D /* ProgressAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressAlert.swift; sourceTree = "<group>"; };
 		9563293C2652D9EA005FE61D /* DirectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionView.swift; sourceTree = "<group>"; };
 		9563293E2654017A005FE61D /* RoomPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomPicker.swift; sourceTree = "<group>"; };
-		9564DEA1264E356500B7BBC3 /* 22.211006,113.55492.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "22.211006,113.55492.csv"; sourceTree = "<group>"; };
 		9564DEA4264EE74200B7BBC3 /* AlertPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertPicker.swift; sourceTree = "<group>"; };
 		95687E8F26444F1000C9116D /* ReaderSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderSetting.swift; sourceTree = "<group>"; };
 		95687E9126444FEB00C9116D /* ReaderInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderInventory.swift; sourceTree = "<group>"; };
@@ -55,6 +57,7 @@
 		95687E97264464FC00C9116D /* ReaderWriteData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderWriteData.swift; sourceTree = "<group>"; };
 		95764B3A2651682500A1516A /* RoutineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineTest.swift; sourceTree = "<group>"; };
 		9580C65E262574B8008EA64D /* readerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readerConfig.swift; sourceTree = "<group>"; };
+		959676DB26553F16006A0C82 /* 22.134586,113.545135.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "22.134586,113.545135.csv"; sourceTree = "<group>"; };
 		95B368B125BF2F6D0026EC88 /* ble dome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ble dome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ble_domeApp.swift; sourceTree = "<group>"; };
 		95B368B825BF2F700026EC88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -64,6 +67,7 @@
 		95E7D88026481ECE00F2379E /* PathFinding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathFinding.swift; sourceTree = "<group>"; };
 		95E7D8822648203B00F2379E /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
 		95E7D887264A5EE900F2379E /* NavMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavMain.swift; sourceTree = "<group>"; };
+		FDD0FC6B36EA3E611EB7AD54 /* Pods-ble dome.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ble dome.release.xcconfig"; path = "Pods/Target Support Files/Pods-ble dome/Pods-ble dome.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,16 +76,27 @@
 			buildActionMask = 2147483647;
 			files = (
 				95363B81261CA1B300BF633A /* MapKit.framework in Frameworks */,
+				4A23C67465F130ABF3A30AA0 /* Pods_ble_dome.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4BC01801C12BF16B1114E620 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				7567D9503932C339D1ED8735 /* Pods-ble dome.debug.xcconfig */,
+				FDD0FC6B36EA3E611EB7AD54 /* Pods-ble dome.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		95363B7F261CA1B300BF633A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				95363B80261CA1B300BF633A /* MapKit.framework */,
+				8701DBC935F58CB232845E6B /* Pods_ble_dome.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -112,7 +127,7 @@
 		9564DEA0264E350B00B7BBC3 /* NodeCSV */ = {
 			isa = PBXGroup;
 			children = (
-				9564DEA1264E356500B7BBC3 /* 22.211006,113.55492.csv */,
+				959676DB26553F16006A0C82 /* 22.134586,113.545135.csv */,
 			);
 			path = NodeCSV;
 			sourceTree = "<group>";
@@ -137,6 +152,7 @@
 				95B368B325BF2F6D0026EC88 /* ble dome */,
 				95B368B225BF2F6D0026EC88 /* Products */,
 				95363B7F261CA1B300BF633A /* Frameworks */,
+				4BC01801C12BF16B1114E620 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -191,9 +207,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 95B368C025BF2F700026EC88 /* Build configuration list for PBXNativeTarget "ble dome" */;
 			buildPhases = (
+				6B6E7FDDEF01B14F774EDB13 /* [CP] Check Pods Manifest.lock */,
 				95B368AD25BF2F6D0026EC88 /* Sources */,
 				95B368AE25BF2F6D0026EC88 /* Frameworks */,
 				95B368AF25BF2F6D0026EC88 /* Resources */,
+				7D59A8EC4DECF7D07C561920 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -243,11 +261,50 @@
 			files = (
 				95B368BC25BF2F700026EC88 /* Preview Assets.xcassets in Resources */,
 				95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */,
-				9564DEA2264E356500B7BBC3 /* 22.211006,113.55492.csv in Resources */,
+				959676DC26553F17006A0C82 /* 22.134586,113.545135.csv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		6B6E7FDDEF01B14F774EDB13 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ble dome-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		7D59A8EC4DECF7D07C561920 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-ble dome/Pods-ble dome-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Introspect/Introspect.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Introspect.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ble dome/Pods-ble dome-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		95B368AD25BF2F6D0026EC88 /* Sources */ = {
@@ -400,6 +457,7 @@
 		};
 		95B368C125BF2F700026EC88 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7567D9503932C339D1ED8735 /* Pods-ble dome.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -422,6 +480,7 @@
 		};
 		95B368C225BF2F700026EC88 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FDD0FC6B36EA3E611EB7AD54 /* Pods-ble dome.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

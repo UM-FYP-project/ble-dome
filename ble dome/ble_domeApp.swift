@@ -7,13 +7,14 @@
 
 import SwiftUI
 import CoreBluetooth
+import AVFoundation
 
 @main
 struct ble_domeApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .onAppear(perform: UIApplication.shared.addTapGestureRecognizer)
+//                .onAppear(perform: UIApplication.shared.addTapGestureRecognizer)
         }
     }
     
@@ -47,6 +48,14 @@ struct Peripheral_Service: Identifiable{
     let name : String
     let Services_UUID : CBUUID
     var Services : CBService
+}
+
+func Speech(_ Str : String){
+    let speech = AVSpeechUtterance(string: Str)
+    let voice = AVSpeechSynthesisVoice(language: "en-GB")
+    speech.voice = voice
+    let Synthesis = AVSpeechSynthesizer()
+    Synthesis.speak(speech)
 }
 
 let rememberConntion = UserDefaults.standard
@@ -156,9 +165,13 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         print("\(peripheral.name!) Connected")
+        Speech("Device is Connected")
         peripheral.delegate = self
         peripheral.discoverServices(nil)
-        
+//        let ConnectedSpeech = AVSpeechUtterance(string: "Device Connected")
+//        ConnectedSpeech.voice = AVSpeechSynthesisVoice(language: "en-GB")
+//        let Synthesis = AVSpeechSynthesizer()
+//        Synthesis.speak(ConnectedSpeech)
 //        isConnected = true
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 2
@@ -170,6 +183,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         if error != nil{
             print("\(peripheral.name!) Failed to Connect")
+            Speech("Device is Failed to Connect")
 //            isConnected = false
             if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
                 peripherals[index].State = 0
@@ -181,6 +195,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         print("\(peripheral.name!) Device Disconnected")
+        Speech("Device is Disconnected")
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 0
         }
@@ -372,20 +387,25 @@ extension Int16 {
    }
 }
 
-
 extension UIApplication {
-    func addTapGestureRecognizer() {
-        guard let window = windows.first else { return }
-        let tapGesture = UITapGestureRecognizer(target: window, action: #selector(UIView.endEditing))
-        tapGesture.requiresExclusiveTouchType = false
-        tapGesture.cancelsTouchesInView = false
-        tapGesture.delegate = self
-        window.addGestureRecognizer(tapGesture)
+    func endEditing() {
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 
-extension UIApplication: UIGestureRecognizerDelegate {
-    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return !otherGestureRecognizer.isKind(of: UILongPressGestureRecognizer.self)
-    }
-}
+//extension UIApplication {
+//    func addTapGestureRecognizer() {
+//        guard let window = windows.first else { return }
+//        let tapGesture = UITapGestureRecognizer(target: window, action: #selector(UIView.endEditing))
+//        tapGesture.requiresExclusiveTouchType = false
+//        tapGesture.cancelsTouchesInView = false
+//        tapGesture.delegate = self
+//        window.addGestureRecognizer(tapGesture)
+//    }
+//}
+//
+//extension UIApplication: UIGestureRecognizerDelegate {
+//    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+//        return !otherGestureRecognizer.isKind(of: UILongPressGestureRecognizer.self)
+//    }
+//}

@@ -40,6 +40,8 @@ struct Node: Identifiable, Hashable{
         return Str
     }
 }
+
+
 var MapDict = [GeoPos : GKGraph]()
 var NodesDict = [GeoPos : [Node]]()
 var GKNodeDict = [GeoPos : [GKGraphNode]]()
@@ -92,49 +94,45 @@ class PathFinding : ObservableObject {
     func CSV2Dict(fileName : String){
         var Pos = [GeoPos]()
         var Nodes = [Node]()
-        var data = readDataFromCSV(fileName: fileName, fileType: "csv")
         let HazardStrArray : [String] = ["Stairs","Entrance","Elevator","Crossroad","Straight"]
         let InformationStrArray : [String] = ["Room","Restroom","Aisle"]
-        data = cleanRows(file: data!)
-        let csvRows = csv(data: data!)
-        for index in 1..<csvRows.count{
-            let csvRow = csvRows[index]
-            if csvRow[11] == ""{
-                break
-            }
-            else{
-                let id : Int = Int(csvRow[0])!
-                let Floor : Int = Int(csvRow[1])!
-                let XY : [Float] = [Float(csvRow[7])!,Float(csvRow[8])!]
-                let geoPos : [Float] = [Float(csvRow[9])!,Float(csvRow[10])!]
-                let Hazard : UInt8 = UInt8(HazardStrArray.map({$0.uppercased()}).firstIndex(of: csvRow[2].uppercased())!)
-                let HazardSeq : [UInt8] = Int16(csvRow[3])!.bytes
-                let Addtional : UInt8 = UInt8(csvRow[4])!
-                let HazardArr : [UInt8] = [Hazard] + HazardSeq + [Addtional]
-                let Information : UInt8 = UInt8(InformationStrArray.map({$0.uppercased()}).firstIndex(of: csvRow[5].uppercased())!)
-                let InformationSeq : [UInt8] = Int16(csvRow[6])!.bytes
-                let InformationArr : [UInt8] = [Information] + InformationSeq
-                let Neighbors : [Int] = csvRow[11].components(separatedBy: ";").compactMap{Int($0)}
-                let node = Node(id: id, Floor: Floor, XY: XY, Hazard: HazardArr, Information: InformationArr, Neighbors: Neighbors)
-                let geo = GeoPos(Floor: Floor, geoPos: geoPos)
-                Nodes.append(node)
-                if !Pos.contains(geo) {
-                    Pos.append(geo)
-                }
+        var data = readDataFromCSV(fileName: fileName, fileType: "csv")
+        if data != nil{
+            data = cleanRows(file: data!)
+            let csvRows = csv(data: data!).compactMap({$0}).filter({$0.contains("") == false})
+            for index in 1..<csvRows.count{
+                let csvRow = csvRows[index]
+                    let id : Int = Int(csvRow[0])!
+                    let Floor : Int = Int(csvRow[1])!
+                    let XY : [Float] = [Float(csvRow[7])!,Float(csvRow[8])!]
+                    let geoPos : [Float] = [Float(csvRow[9])!,Float(csvRow[10])!]
+                    let Hazard : UInt8 = UInt8(HazardStrArray.map({$0.uppercased()}).firstIndex(of: csvRow[2].uppercased())!)
+                    let HazardSeq : [UInt8] = Int16(csvRow[3])!.bytes
+                    let Addtional : UInt8 = UInt8(csvRow[4])!
+                    let HazardArr : [UInt8] = [Hazard] + HazardSeq + [Addtional]
+                    let Information : UInt8 = UInt8(InformationStrArray.map({$0.uppercased()}).firstIndex(of: csvRow[5].uppercased())!)
+                    let InformationSeq : [UInt8] = Int16(csvRow[6])!.bytes
+                    let InformationArr : [UInt8] = [Information] + InformationSeq
+                    let Neighbors : [Int] = csvRow[11].components(separatedBy: ";").compactMap{Int($0)}
+                    let node = Node(id: id, Floor: Floor, XY: XY, Hazard: HazardArr, Information: InformationArr, Neighbors: Neighbors)
+                    let geo = GeoPos(Floor: Floor, geoPos: geoPos)
+    //                print("\(id) | Floor: \(Floor)/F |XY: \(XY) | Pos: \(geoPos) | \(HazardArr) | \(InformationArr) | \(Neighbors)")
+                    Nodes.append(node)
+                    if !Pos.contains(geo) {
+                        Pos.append(geo)
+                    }
             }
         }
         if !(Nodes.isEmpty) && !(Pos.isEmpty){
             for pos in Pos {
-                let Floor = pos.Floor
-                let FirstIndex = Nodes.firstIndex(where: {$0.Floor == Floor})
-                let LastIndex = Nodes.lastIndex(where: {$0.Floor == Floor})
-                if FirstIndex != nil && LastIndex != nil {
-                    NodesDict[pos] = Array(Nodes[FirstIndex!...LastIndex!])
-                    NodesToGrid(Pos: pos)
-                }
+                let NewNodes = Nodes.filter({$0.Floor == pos.Floor})
+                NodesDict[pos] = NewNodes
+                NodesToGrid(Pos: pos)
             }
         }
     }
+    
+    
     
     func NodesToGrid(Pos: GeoPos){
         let Nodes : [Node] = NodesDict[Pos] ?? []

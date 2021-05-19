@@ -37,29 +37,7 @@ struct ContentView: View {
                             Divider()
                             HStack(){
                                 VStack{
-                                    if !ble.peripherals.isEmpty && !(ble.peripherals.filter({$0.State == 2}).count < 1){
-                                        NavigationLink(
-                                            destination:
-                                                DetailTabView(peripheral: ble.peripherals[Conncetedperipheral_index])
-                                                .environmentObject(ble)
-                                                .environmentObject(reader)
-                                                .environmentObject(readerconfig)
-                                                .environmentObject(location)
-                                                .environmentObject(path)
-                                                .disabled(ble.isBluetoothON && isScanner_trigged)
-                                                .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
-                                                .navigationBarItems(trailing:
-                                                                        Button(action: {isScanner_trigged = true}) {
-                                                                            Text("Scanner")
-                                                                        }
-                                                                        .padding()
-                                                                        .disabled(!ble.isBluetoothON)
-                                                ),
-                                            isActive: $ReaderSet,
-                                            label: {
-                                                EmptyView()
-                                            })
-                                    }
+                                    ReaderSettingLink
                                     Image(systemName: "house")
                                         .resizable()
                                         .scaledToFit()
@@ -69,8 +47,11 @@ struct ContentView: View {
                                     Text("Home")
                                         .font(.system(size: 12))
                                         .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                                    
                                     Spacer()
                                 }
+                                .accessibility(label: Text("Home Tab"))
+                                .accessibilityElement(children: .combine)
                                 .onLongPressGesture(minimumDuration: 2) {
                                     if let index = ble.peripherals.firstIndex(where: {$0.State == 2}){
                                         ReaderSet = true
@@ -83,15 +64,19 @@ struct ContentView: View {
                         .background(Color("TabBarColor"))
                         .frame(width: geometry.size.width, height: geometry.size.height/9.2)
                     }
+                    .accessibility(hidden: ble.isBluetoothON && isScanner_trigged  ? true : false)
                     .edgesIgnoringSafeArea(.bottom)
                     .navigationBarTitle("Main", displayMode: .inline)
                     .navigationBarItems(trailing:
                                             Button(action: {isScanner_trigged = true}) {
                                                 Text("Scanner")
                                             }
+                                            .accessibility(hidden: ble.isBluetoothON && isScanner_trigged  ? true : false)
+                                            .accessibility(hint: Text("Tap to Pop up Bluetooth Scanner"))
                                             .padding()
                                             .disabled(!ble.isBluetoothON)
                     )
+                    
                 }
                 .onAppear(perform: {
                     BLEConnect()
@@ -99,20 +84,48 @@ struct ContentView: View {
                 })
                 .alert(isPresented: $notConnectedAlert_trigged) {
                     Alert(
-                        title: Text("Please Connect Deivce"),
+                        title: Text("Please Connect Device"),
                         message: Text("Scanner will Pop-up"),
                         dismissButton: .default(Text("OK"), action: {isScanner_trigged = true})
                     )
                 }
                 .disabled(ble.isBluetoothON && isScanner_trigged)
                 .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
-                .accessibilityHidden(ble.isBluetoothON && isScanner_trigged  ? true : false)
                 if ble.isBluetoothON && isScanner_trigged{
                     BLEScanner_Alert(Enable: $isScanner_trigged, geometry: geometry)
+                        .accessibility(hint: Text("Select Device to Connect"))
                         .environmentObject(ble)
                         .accessibilitySortPriority(1)
                 }
 //            }
+        }
+    }
+    
+    var ReaderSettingLink: some View {
+        VStack{
+            if !ble.peripherals.isEmpty && !(ble.peripherals.filter({$0.State == 2}).count < 1){
+                NavigationLink(
+                    destination:
+                        DetailTabView(peripheral: ble.peripherals[Conncetedperipheral_index])
+                        .environmentObject(ble)
+                        .environmentObject(reader)
+                        .environmentObject(readerconfig)
+                        .environmentObject(location)
+                        .environmentObject(path)
+                        .disabled(ble.isBluetoothON && isScanner_trigged)
+                        .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
+                        .navigationBarItems(trailing:
+                                                Button(action: {isScanner_trigged = true}) {
+                                                    Text("Scanner")
+                                                }
+                                                .padding()
+                                                .disabled(!ble.isBluetoothON)
+                        ),
+                    isActive: $ReaderSet,
+                    label: {
+                        EmptyView()
+                    })
+            }
         }
     }
     

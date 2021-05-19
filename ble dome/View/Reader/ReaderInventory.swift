@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+//import Introspect
 
 struct ReaderInventory: View{
     @EnvironmentObject var ble:BLE
@@ -61,7 +62,6 @@ struct ReaderInventory: View{
                         .keyboardType(.numberPad)
                         .frame(maxWidth: 50)
                     Button(action: {self.readerconfig.inventorySpeed += 1}) {
-
                         Image(systemName: "plus")
                     }
                     .disabled(readerconfig.inventorySpeed > 255)
