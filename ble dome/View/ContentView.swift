@@ -28,6 +28,7 @@ struct ContentView: View {
     @ObservedObject var readerconfig = ReaderConfig()
     @ObservedObject var location = LocationManager()
     @ObservedObject var path = PathFinding()
+    @ObservedObject var nav = navValue()
     @State var isScanner_trigged = false
     @State var notConnectedAlert_trigged = true
     @State var Conncetedperipheral_index = 0
@@ -45,37 +46,40 @@ struct ContentView: View {
                         .environmentObject(ble)
                         .environmentObject(reader)
                         .environmentObject(path)
+                        .environmentObject(nav)
                     Spacer()
-                    VStack{
-                        Divider()
-                        HStack(){
-                            VStack{
-                                ReaderSettingLink
-                                Image(systemName: "house")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 25, height: 20)
-                                    .padding(.top, 10)
-                                    .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
-                                Text("Home")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
-                                
-                                Spacer()
-                            }
-                            .accessibility(label: Text("Home Tab"))
-                            .accessibilityElement(children: .combine)
-                            .onLongPressGesture(minimumDuration: 2) {
-                                if let index = ble.peripherals.firstIndex(where: {$0.State == 2}){
-                                    ReaderSet = true
-                                    Conncetedperipheral_index = index
-                                }
-                            }
-                            .padding(.bottom, 10)
-                        }
-                    }
-                    .background(Color("TabBarColor"))
-                    .frame(width: geometry.size.width, height: geometry.size.height/9.2)
+                    HomeTab
+                        .frame(width: geometry.size.width, height: geometry.size.height/9.2)
+//                    VStack{
+//                        Divider()
+//                        HStack(){
+//                            VStack{
+//                                ReaderSettingLink
+//                                Image(systemName: "house")
+//                                    .resizable()
+//                                    .scaledToFit()
+//                                    .frame(width: 25, height: 20)
+//                                    .padding(.top, 10)
+//                                    .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+//                                Text("Home")
+//                                    .font(.system(size: 12))
+//                                    .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+//
+//                                Spacer()
+//                            }
+//                            .accessibility(label: Text("Home Tab"))
+//                            .accessibilityElement(children: .combine)
+//                            .onLongPressGesture(minimumDuration: 2) {
+//                                if let index = ble.peripherals.firstIndex(where: {$0.State == 2}){
+//                                    ReaderSet = true
+//                                    Conncetedperipheral_index = index
+//                                }
+//                            }
+//                            .padding(.bottom, 10)
+//                        }
+//                    }
+//                    .background(Color("TabBarColor"))
+//                    .frame(width: geometry.size.width, height: geometry.size.height/9.2)
                 }
                 .accessibility(hidden: ble.isBluetoothON && isScanner_trigged  ? true : false)
                 .edgesIgnoringSafeArea(.bottom)
@@ -112,15 +116,52 @@ struct ContentView: View {
                     dismissButton: .default(Text("OK"), action: {isScanner_trigged = true})
                 )
             }
-            .disabled(ble.isBluetoothON && isScanner_trigged)
-            .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
+            .disabled(ble.isBluetoothON && isScanner_trigged || nav.RoomPicker_Enable)
+            .overlay(ble.isBluetoothON && isScanner_trigged || nav.RoomPicker_Enable  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
             if ble.isBluetoothON && isScanner_trigged{
                 BLEScanner_Alert(Enable: $isScanner_trigged, geometry: geometry)
                     .accessibility(hint: Text("Select Device to Connect"))
                     .environmentObject(ble)
                     .accessibilitySortPriority(1)
             }
+            if nav.RoomPicker_Enable {
+                RoomPicker(geometry: geometry, geoPos: nav.geoPos!, CurrentLocation: nav.CurrentLocation!, Enable: $nav.RoomPicker_Enable, RoomsList: nav.RoomsList, AlertStr: $nav.AlertStr, AlertState: $nav.AlertState)
+                    .environmentObject(path)
+                    .environmentObject(nav)
+            }
         }
+    }
+    
+    var HomeTab: some View{
+        VStack{
+            Divider()
+            HStack(){
+                VStack{
+                    ReaderSettingLink
+                    Image(systemName: "house")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 25, height: 20)
+                        .padding(.top, 10)
+                        .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                    Text("Home")
+                        .font(.system(size: 12))
+                        .foregroundColor(ble.peripherals.filter({$0.State == 2}).count < 1 ? Color(UIColor.lightGray) : /*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                    
+                    Spacer()
+                }
+                .accessibility(label: Text("Home Tab"))
+                .accessibilityElement(children: .combine)
+                .onLongPressGesture(minimumDuration: 2) {
+                    if let index = ble.peripherals.firstIndex(where: {$0.State == 2}){
+                        ReaderSet = true
+                        Conncetedperipheral_index = index
+                    }
+                }
+                .padding(.bottom, 10)
+            }
+        }
+        .background(Color("TabBarColor"))
     }
     
     var ReaderSettingLink: some View {

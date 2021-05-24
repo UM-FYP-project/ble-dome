@@ -8,14 +8,15 @@
 import SwiftUI
 
 struct RoomPicker: View {
-    @State var Enable : Bool = false
     var geometry : GeometryProxy
-    @State var RoomList = [String]()
-    @State var geoPos : GeoPos?
-    @State var CurrentLocation : NavChar?
-    @State var AlertStr : String = ""
-    @State var AlertState : Bool = false
+    var geoPos : GeoPos
+    var CurrentLocation : NavChar
+    @Binding var Enable : Bool
+    var RoomsList : [Room]
+    @Binding var AlertStr : String
+    @Binding var AlertState : Bool
     @EnvironmentObject var path : PathFinding
+//    @EnvironmentObject var nav : navValue
     var body: some View {
         VStack{
             VStack{
@@ -26,6 +27,8 @@ struct RoomPicker: View {
             }
             .padding()
             .clipped()
+            RoomScrollList
+                .frame(width: geometry.size.width - 100)
             Divider()
             Button(action: {
                 self.Enable = false
@@ -42,20 +45,17 @@ struct RoomPicker: View {
                         .foregroundColor(Color(UIColor.systemGray6)).shadow(radius: 1))
         .frame(maxWidth: geometry.size.width - 60, maxHeight: geometry.size.height - 300)
         .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-
     }
     
     var RoomScrollList : some View {
-        VStack{
             ScrollView{
-                if !RoomList.isEmpty{
-                    ForEach (0..<RoomList.count) { index in
-                        let RoomStr = RoomList[index]
-                        RoomButtom(geometry: geometry, RoomStr: RoomStr)
+                if !RoomsList.isEmpty{
+                    ForEach (0..<RoomsList.count) { index in
+                        let theRoom = RoomsList[index]
+                        RoomButtom(geometry: geometry, theRoom: theRoom, geoPos: geoPos, CurrentLocation: CurrentLocation, AlertStr: $AlertStr, AlertState: $AlertState)
                     }
                 }
             }
-        }
         .background(RoundedRectangle(cornerRadius: 20)
                         .foregroundColor(Color(UIColor.systemGray5)).shadow(radius: 1))
     }
@@ -63,45 +63,46 @@ struct RoomPicker: View {
 
 struct RoomButtom: View {
     var geometry : GeometryProxy
-    var RoomStr : String
-    @State var geoPos : GeoPos?
-    @State var CurrentLocation : NavChar?
-    @State var AlertStr : String = ""
-    @State var AlertState : Bool = false
+    let theRoom: Room
+    let geoPos : GeoPos
+    let CurrentLocation : NavChar
+    @Binding var AlertStr : String
+    @Binding var AlertState : Bool
     @EnvironmentObject var path : PathFinding
+    @EnvironmentObject var nav : navValue
     var body: some View {
         VStack{
             Button(action: {
-                if geoPos != nil && CurrentLocation != nil{
-                    guard let Nodes : [Node] = NodesDict[geoPos!] else { return }
-                        let AllNode = path.FindNodes(Pos: geoPos!, to: "Entrance")
-                    guard let StartNode = Nodes.firstIndex(where: {$0.XY == CurrentLocation!.XY}) else { return }
-                    guard let NearestNode = path.FindNearest(Pos: geoPos!, from: StartNode, to: AllNode) else { return }
-                    let shortestPath : [Node] = path.getPath(Pos: geoPos!, from: StartNode, to: NearestNode).1
-                    guard let EstimatedTime = path.PathEstimate(Path: shortestPath) else { return }
+//                if geoPos != nil && CurrentLocation != nil{
+                if let EstimatedTime = path.PathEstimate(Path: theRoom.Path){
                     let Hours = EstimatedTime / 3600
                     let Minutes = (EstimatedTime % 3600) / 60
                     let Seconds = (EstimatedTime % 3600) % 60
-                    let TimeStr = "\(Hours):\(Minutes):\(Seconds)"
-                    AlertStr = "Navigate to Nearest \(RoomStr)\n" + "Estimated Distance \(ceil(Double(EstimatedTime) / 0.85))" + "Estimated Time: \(TimeStr)\n"
+                    let TimeStr = "\(Hours > 0 ? "\(Hours)H " : "")" + "\(Hours > 0 || Minutes > 0 ? "\(Minutes)M " : "")" + "\(Seconds > 0 ? "\(Seconds)S" : "")"
+                    AlertStr = "Navigate to Nearest \(theRoom.RoomStr)\n" + "Estimated Distance \(ceil(Double(EstimatedTime) / 0.85))" + "Estimated Time: \(TimeStr)\n"
+                    nav.Current_ShortestPath = theRoom.Path
                     AlertState.toggle()
                 }
             }) {
-                Text(RoomStr)
+                Text(theRoom.RoomStr)
                     .foregroundColor(Color(UIColor.label))
                     .bold()
-                    .accessibility(label: Text("RoomStr Tap to Navigate"))
+                    .accessibility(label: Text("\(theRoom.RoomStr) Tap to Navigate"))
+                    .frame(width: geometry.size.width - 100 , height: 40, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
             }
-        }
-    }
-}
-
-struct RoomPicker_Previews: PreviewProvider {
-    static var previews: some View {
-        GeometryReader { geometry in
-            RoomPicker(geometry: geometry)
-                .environmentObject(PathFinding())
+            Divider()
+                .frame(width: geometry.size.width - 100)
         }
         
     }
 }
+
+//struct RoomPicker_Previews: PreviewProvider {
+//    static var previews: some View {
+//        GeometryReader { geometry in
+//            RoomPicker(geometry: geometry)
+//                .environmentObject(PathFinding())
+//        }
+//        
+//    }
+//}

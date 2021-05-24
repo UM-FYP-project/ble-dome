@@ -24,7 +24,7 @@ struct Node: Identifiable, Hashable{
     let Hazard : [UInt8]
     let Information : [UInt8]
     let Neighbors : [Int]
-    
+        
     var HazardStr : String {
         let HazardStrArray : [String] = ["Stairs","Entrance","Elevator","Crossroad","Straight"]
         let SeqInt : Int = Int(Data(Array(Hazard[1...2])).withUnsafeBytes({$0.load(as: UInt16.self)}).bigEndian)
@@ -58,6 +58,7 @@ class PathFinding : ObservableObject {
     @Published var ExistedStr = [String]()
     @Published var geoPicker : Bool = false
     @Published var geoSelected : Int = 0
+    @Published var passedHistory = [NavTag]()
     
     func readDataFromCSV(fileName:String, fileType: String)-> String!{
         guard let filepath = Bundle.main.path(forResource: fileName, ofType: fileType)
@@ -232,50 +233,125 @@ class PathFinding : ObservableObject {
         return nil
     }
     
-    func PathDirection(NavTags: [NavTag], ShortestPath: [Node]) -> ([Node], Float?){
-        var Direction : Float? // 0 : Forward, 1 : Backward, 2 : Leftward,,  3 : Rightward,
-        if !NavTags.isEmpty && !ShortestPath.isEmpty {
-            let currentTag = NavTags.max(by: {$0.RSSI < $1.RSSI})
-            var FacingTag : NavTag?
-            if NavTags.count > 1{
-                var UpdatedPath = [Node]()
-                if currentTag != nil {
-                    let InterceptX : Float = currentTag!.XY[0] - ShortestPath[0].XY[0]
-                    let InterceptY : Float = currentTag!.XY[1] - ShortestPath[0].XY[1]
-                    let Distance = Double(sqrt(pow(InterceptX, 2) + pow(InterceptY, 2)))
-                    if Distance > abs(3){
-                        let Pos = GeoPos(Floor: currentTag!.Floor, geoPos: currentTag!.geoPos)
-                        let Nodes : [Node] = NodesDict[Pos] ?? []
-                        if !Nodes.isEmpty {
-                            let Start = Nodes.firstIndex(where: {$0.Floor == currentTag!.Floor && $0.XY == currentTag!.XY})
-    //                        print(ShortestPath[ShortestPath.count - 1].id)
-                            let NewPath = getPath(Pos: Pos, from: Nodes[Start!].id, to: ShortestPath[ShortestPath.count - 1].id).1
+    func PathDirection(NavTags: inout [NavTag], ShortestPath: [Node]) -> ([Node], Float?){
+        if NavTags.count > 1 && ShortestPath.count > 1 {
+            if let currentTag = NavTags.max(by: {$0.RSSI < $1.RSSI}) {
+                let InterceptX : Float = currentTag.XY[0] - ShortestPath[0].XY[0]
+                let InterceptY : Float = currentTag.XY[1] - ShortestPath[0].XY[1]
+                let Distance = Double(sqrt(pow(InterceptX, 2) + pow(InterceptY, 2)))
+                if Distance > abs(3){
+                    let Pos = GeoPos(Floor: currentTag.Floor, geoPos: currentTag.geoPos)
+                    if let Nodes : [Node] = NodesDict[Pos] {
+                        if let Start = Nodes.firstIndex(where: {$0.Floor == currentTag.Floor && $0.XY == currentTag.XY}) {
+                            let NewPath = getPath(Pos: Pos, from: Nodes[Start].id, to: ShortestPath[ShortestPath.count - 1].id).1
                             return (NewPath, nil)
                         }
                     }
-                    else{
-                        FacingTag = NavTags[NavTags.firstIndex(where: {$0.CRC == currentTag!.CRC})! + 1]
-                        UpdatedPath = ShortestPath.filter({$0.XY != currentTag!.XY})
-                    }
                 }
-                if FacingTag != nil {
-                    let FacingCart = [Float(currentTag!.XY[0] - FacingTag!.XY[0]), Float(currentTag!.XY[1] - FacingTag!.XY[1])]
-        //            let FacingPolar = FacingCart.conver
-                    let FacingPolar = [Float(sqrt(pow(FacingCart[0],2) + pow(FacingCart[1],2))), atan2(FacingCart[0], FacingCart[1]) * 180 / Float.pi]
-                    let TargetCart = [Float(currentTag!.XY[0] - UpdatedPath[0].XY[0]), Float(currentTag!.XY[1] - UpdatedPath[0].XY[1])]
-                    let TargetPolar = [Float(sqrt(pow(TargetCart[0],2) + pow(TargetCart[1],2))), atan2(TargetCart[0], TargetCart[1]) * 180 / Float.pi]
-                    let DirectionPolar = [FacingPolar[0] - TargetPolar[0], FacingPolar[1] - TargetPolar[1]]
-                    Direction = DirectionPolar[1]
-                    print("Direction: \(DirectionPolar) | \(DirectionPolar[1] == 180 || DirectionPolar[1] == -180 ? "Turn Back" : DirectionPolar[1] < 0 ? "Turn Left" : DirectionPolar[1] > 0 ? "Turn Right" : "Go Stright") | \(Direction!)")
-                    if Direction == 180 || Direction == -180 {
-                        UpdatedPath = ShortestPath
+                else {
+                    if let FacingTag = NavTags.filter({ $0.XY != currentTag.XY}).max(by: {$0.RSSI < $1.RSSI}) {
+                        var UpdatedPath = ShortestPath
+                        if let NewStart = ShortestPath.firstIndex(where: {$0.XY == currentTag.XY}) {
+                            UpdatedPath = Array(ShortestPath[(NewStart)...(ShortestPath.count - 1)])
+                        }
+                        UpdatedPath = UpdatedPath.filter({$0.XY != currentTag.XY})
+                        //
+                        
+                        let FacingCart = [Float(currentTag.XY[0] - FacingTag.XY[0]), Float(currentTag.XY[1] - FacingTag.XY[1])]
+                        let FacingPolar = [Float(sqrt(pow(FacingCart[0],2) + pow(FacingCart[1],2))), atan2(FacingCart[0], FacingCart[1]) * 180 / Float.pi]
+                        var TargetCart = [Float]()
+                        if let TargetIndex = UpdatedPath.firstIndex(where: {$0.XY == FacingTag.XY}){
+                            TargetCart = [Float(currentTag.XY[0] - UpdatedPath[TargetIndex].XY[0]), Float(currentTag.XY[1] - UpdatedPath[TargetIndex].XY[1])]
+                        }
+                        else {
+                            TargetCart = [Float(currentTag.XY[0] - UpdatedPath[0].XY[0]), Float(currentTag.XY[1] - UpdatedPath[0].XY[1])]
+                        }
+                        let TargetPolar = [Float(sqrt(pow(TargetCart[0],2) + pow(TargetCart[1],2))), atan2(TargetCart[0], TargetCart[1]) * 180 / Float.pi]
+                        let DirectionPolar = [FacingPolar[0] - TargetPolar[0], FacingPolar[1] - TargetPolar[1]]
+                        let Direction = DirectionPolar[1]
+                        print("Direction: \(DirectionPolar) | \(DirectionPolar[1] == 180 || DirectionPolar[1] == -180 ? "Turn Back" : DirectionPolar[1] < 0 ? "Turn Left" : DirectionPolar[1] > 0 ? "Turn Right" : "Go Stright") | \(Direction)")
+                        if Direction == 180 || Direction == -180 {
+                            UpdatedPath = ShortestPath
+                        }
+//                        NavTags = NavTags.filter({$0.CRC != currentTag.CRC})
+//                        Tags = Tags.filter({$0.CRC != currentTag.CRC})
+//                        TagsData = TagsData.filter({$0.CRC != currentTag.CRC})
+                        NavTags.removeAll()
+                        Tags.removeAll()
+                        TagsData.removeAll()
+                        return (UpdatedPath, Direction)
                     }
-                    return (UpdatedPath, Direction)
                 }
             }
         }
         return (ShortestPath, nil)
     }
+
+    
+//    func PathDirection(NavTags: inout [NavTag], ShortestPath: [Node]) -> ([Node], Float?){
+//        var Direction : Float? // 0 : Forward, 1 : Backward, 2 : Leftward,,  3 : Rightward,
+//        if !NavTags.isEmpty && ShortestPath.count > 1 {
+//            let currentTag = NavTags.max(by: {$0.RSSI < $1.RSSI})
+//            var FacingTag : NavTag?
+//            if NavTags.count > 1 && !ShortestPath.isEmpty{
+//                var UpdatedPath = [Node]()
+//                if currentTag != nil {
+//                    let InterceptX : Float = currentTag!.XY[0] - ShortestPath[0].XY[0]
+//                    let InterceptY : Float = currentTag!.XY[1] - ShortestPath[0].XY[1]
+//                    let Distance = Double(sqrt(pow(InterceptX, 2) + pow(InterceptY, 2)))
+//                    if Distance > abs(3){
+//                        let Pos = GeoPos(Floor: currentTag!.Floor, geoPos: currentTag!.geoPos)
+//                        let Nodes : [Node] = NodesDict[Pos] ?? []
+//                        if !Nodes.isEmpty {
+//                            if let Start = Nodes.firstIndex(where: {$0.Floor == currentTag!.Floor && $0.XY == currentTag!.XY}) {
+//                                let NewPath = getPath(Pos: Pos, from: Nodes[Start].id, to: ShortestPath[ShortestPath.count - 1].id).1
+//                                return (NewPath, nil)
+//                            }
+//                        }
+//                    }
+//                    else{
+//                        FacingTag = NavTags[NavTags.firstIndex(where: {$0.CRC == currentTag!.CRC})! + 1]
+////                        UpdatedPath = ShortestPath
+//                        if let NewStart = ShortestPath.firstIndex(where: {$0.XY == currentTag!.XY}) {
+//    //                        print(NewStart)
+//
+//                            UpdatedPath = Array(ShortestPath[(NewStart)...(ShortestPath.count - 1)])
+//                            UpdatedPath = UpdatedPath.filter({$0.XY != currentTag!.XY})
+//                        }
+//                        else{
+//                            UpdatedPath = ShortestPath.filter({$0.XY != currentTag!.XY})
+//                        }
+//
+//
+//                    }
+//                }
+//                if FacingTag != nil {
+//                    let FacingCart = [Float(currentTag!.XY[0] - FacingTag!.XY[0]), Float(currentTag!.XY[1] - FacingTag!.XY[1])]
+//        //            let FacingPolar = FacingCart.conver
+//                    let FacingPolar = [Float(sqrt(pow(FacingCart[0],2) + pow(FacingCart[1],2))), atan2(FacingCart[0], FacingCart[1]) * 180 / Float.pi]
+//                    var TargetCart = [Float]()
+//                    if let TargetIndex = UpdatedPath.firstIndex(where: {$0.XY == FacingTag!.XY}){
+//                        TargetCart = [Float(currentTag!.XY[0] - UpdatedPath[TargetIndex].XY[0]), Float(currentTag!.XY[1] - UpdatedPath[TargetIndex].XY[1])]
+//                    }
+//                    else {
+//                        TargetCart = [Float(currentTag!.XY[0] - UpdatedPath[0].XY[0]), Float(currentTag!.XY[1] - UpdatedPath[0].XY[1])]
+//                    }
+//                    let TargetPolar = [Float(sqrt(pow(TargetCart[0],2) + pow(TargetCart[1],2))), atan2(TargetCart[0], TargetCart[1]) * 180 / Float.pi]
+//                    let DirectionPolar = [FacingPolar[0] - TargetPolar[0], FacingPolar[1] - TargetPolar[1]]
+//                    Direction = DirectionPolar[1]
+//                    print("Direction: \(DirectionPolar) | \(DirectionPolar[1] == 180 || DirectionPolar[1] == -180 ? "Turn Back" : DirectionPolar[1] < 0 ? "Turn Left" : DirectionPolar[1] > 0 ? "Turn Right" : "Go Stright") | \(Direction!)")
+//                    if Direction == 180 || Direction == -180 {
+//                        UpdatedPath = ShortestPath
+//                    }
+//                    NavTags = NavTags.filter({$0.CRC != currentTag!.CRC})
+//                    Tags = Tags.filter({$0.CRC != currentTag!.CRC})
+//                    TagsData = TagsData.filter({$0.CRC != currentTag!.CRC})
+//                    return (UpdatedPath, Direction)
+//                }
+//            }
+//        }
+//        return (ShortestPath, nil)
+//    }
 }
 
 

@@ -8,41 +8,26 @@
 import SwiftUI
 import CoreBluetooth
 
-struct NavButton : Identifiable{
-    let id : Int
-    let imageStr : String
-    let Text : String
-}
-
-struct NavChar {
-    let Floor : Int
-    let Information : [UInt8]
-    let XY : [Float]
-    var InformationStr : String {
-        let InformationStrArray : [String] = ["Room","Restroom","Aisle"]
-        let SeqInt : Int = Int(Data(Array(Information[1...2])).withUnsafeBytes({$0.load(as: UInt16.self)}).bigEndian)
-        let Str : String = InformationStrArray[Int(Information[0])] + "\(SeqInt)"
-        return Str
-    }
-}
-
 struct NavMain: View {
     @EnvironmentObject var ble:BLE
     @EnvironmentObject var reader:Reader
     @EnvironmentObject var path : PathFinding
-    @State var RoomList = [String]()
-    @State var CurrentLocation : NavChar?
-    @State var geoPosUpdated : Bool = false
-    @State var geoPos : GeoPos? = nil {
-        willSet {
-            if newValue != geoPos {
-                geoPosUpdated = true
-            }
-        }
-    }
-    @State var AlertState : Bool = false
+    @EnvironmentObject var nav : navValue
+    @State var StarNav = false
+//    @State var RoomsList = [Room]()
+//    @State var CurrentLocation : NavChar?
+//    @State var geoPosUpdated : Bool = false
+//    @State var geoPos : GeoPos? = nil {
+//        willSet {
+//            if newValue != geoPos {
+//                geoPosUpdated = true
+//            }
+//        }
+//    }
+//    @State var AlertState : Bool = false
+//    @State var AlertStr : String = ""
     @State var ButtonPressedNum : Int = 0
-    @State var AlertStr : String = ""
+//    @State var ShortestPath = [Node]()
     let NavButtons : [NavButton] = [
         NavButton(id: 0, imageStr: "door", Text: "Entrance"),
         NavButton(id: 1, imageStr: "room", Text: "Room"),
@@ -63,7 +48,7 @@ struct NavMain: View {
                     .font(.title3)
                 Spacer()
                 VStack{
-                    Text("\(CurrentLocation != nil ? "\(CurrentLocation!.Floor == 0 ? "G/F" : "\(CurrentLocation!.Floor)/F")\t\t|\t\(CurrentLocation!.InformationStr)" : "")")
+                    Text("\(nav.CurrentLocation != nil ? "\(nav.CurrentLocation!.Floor == 0 ? "G/F" : "\(nav.CurrentLocation!.Floor)/F")\t\t|\t\(nav.CurrentLocation!.InformationStr)" : "")")
                         .font(.title3)
                         .frame(height: 40)
                         .frame(maxWidth: 300)
@@ -78,17 +63,18 @@ struct NavMain: View {
                     ForEach(NavButtons, id: \.id) { navbutton in
                         Button(action: {
 //                            print("1")
-                            if geoPos != nil {
+                            if nav.geoPos != nil {
 //                                print("2")
                                 ButtonPressedNum = navbutton.id
                                 navButton(PressNum : &ButtonPressedNum)
-//                                if navbutton.id != 1 {
+                                if navbutton.id == 1 {
 //                                    AlertState.toggle()
-//                                }
+                                    nav.RoomPicker_Enable = true
+                                }
                             }
                             else {
                                 ButtonPressedNum = 15
-                                AlertState.toggle()
+                                nav.AlertState.toggle()
                             }
                         }){
                             VStack{
@@ -112,19 +98,19 @@ struct NavMain: View {
         .onAppear(perform: {
             getPosFromBLE()
         })
-        .alert(isPresented: $AlertState){
+        .alert(isPresented: $nav.AlertState){
             switch ButtonPressedNum {
-            case 0,2,3,4:
+            case 0,1,2,3,4:
                 return Alert(
                     title: Text("Navigation"),
-                    message: Text("\(AlertStr)"),
+                    message: Text("\(nav.AlertStr)"),
                     primaryButton:
                         .cancel(),
                     secondaryButton:
                         .default(
                             Text("Start Navigation"),
                             action: {
-//                                WirtetoTag()
+                                StarNav = true
                             }
                         )
                 )
@@ -163,55 +149,94 @@ struct NavMain: View {
             break
         }
         if PressNum != 1 {
-            if geoPos != nil && CurrentLocation != nil{
+            if nav.geoPos != nil && nav.CurrentLocation != nil{
 //                print("Pos \(geoPos), CurrentLocation \(CurrentLocation)")
-                guard let Nodes : [Node] = NodesDict[geoPos!] else { return }
+                let Nodes : [Node] = NodesDict[nav.geoPos!] ?? []
 //                print(Nodes)
-                let AllNode = path.FindNodes(Pos: geoPos!, to: toStr)
-                if !AllNode.isEmpty{
-                    guard let StartNode = Nodes.firstIndex(where: {$0.XY == CurrentLocation!.XY}) else { return }
-                    guard let NearestNode = path.FindNearest(Pos: geoPos!, from: StartNode, to: AllNode) else { return }
-                    let shortestPath : [Node] = path.getPath(Pos: geoPos!, from: StartNode, to: NearestNode).1
-                    if !shortestPath.isEmpty{
-                        guard let EstimatedTime = path.PathEstimate(Path: shortestPath) else { return }
-                        let Hours = EstimatedTime / 3600
-                        let Minutes = (EstimatedTime % 3600) / 60
-                        let Seconds = (EstimatedTime % 3600) % 60
-                        let TimeStr = "\(Hours):\(Minutes):\(Seconds)"
-                        AlertStr = "Navigate to Nearest \(toStr)\n" + "Estimated Distance \(ceil(Double(EstimatedTime) / 0.85))" + "Estimated Time: \(TimeStr)\n"
-                        print(AlertStr)
-                        AlertState.toggle()
+                if !Nodes.isEmpty{
+                    let AllNode = path.FindNodes(Pos: nav.geoPos!, to: toStr)
+                    if !AllNode.isEmpty{
+                        let StartNode = Nodes.firstIndex(where: {$0.XY == nav.CurrentLocation!.XY})
+                        let NearestNode = path.FindNearest(Pos: nav.geoPos!, from: StartNode!, to: AllNode)
+                        let shortestPath : [Node] = path.getPath(Pos: nav.geoPos!, from: StartNode!, to: NearestNode!).1
+                        if !shortestPath.isEmpty{
+                            guard let EstimatedTime = path.PathEstimate(Path: shortestPath) else { return }
+                            let Hours = EstimatedTime / 3600
+                            let Minutes = (EstimatedTime % 3600) / 60
+                            let Seconds = (EstimatedTime % 3600) % 60
+                            let TimeStr = "\(Hours > 0 ? "\(Hours)H " : "")" + "\(Hours > 0 || Minutes > 0 ? "\(Minutes)M " : "")" + "\(Seconds > 0 ? "\(Seconds)S" : "")"
+                            nav.AlertStr = "Navigate to Nearest \(toStr)\n" + "Estimated Distance \(ceil(Double(EstimatedTime) / 0.85))" + "Estimated Time: \(TimeStr)\n"
+    //                        print(nav.AlertStr)
+                            nav.Current_ShortestPath = shortestPath
+                            nav.AlertState.toggle()
+                        }
+                        else {
+                            PressNum += 10
+                            print(PressNum)
+                            nav.AlertState.toggle()
+                        }
                     }
-                    else {
+                    else{
                         PressNum += 10
                         print(PressNum)
-                        AlertState.toggle()
+                        nav.AlertState.toggle()
                     }
-                }
-                else{
-                    PressNum += 10
-                    print(PressNum)
-                    AlertState.toggle()
                 }
             }
         }
         else{
-            let Nodes = NodesDict[geoPos!] ?? []
-            if !Nodes.isEmpty && CurrentLocation != nil{
-                let NearIndexs = path.FindNodes(Pos: geoPos!, to: "Entrance")
-                let FiletedIndexs = NearIndexs.filter({Nodes[$0].InformationStr != CurrentLocation!.InformationStr})
+            let Nodes = NodesDict[nav.geoPos!] ?? []
+            if !Nodes.isEmpty && nav.CurrentLocation != nil{
+                let NearIndexs = path.FindNodes(Pos: nav.geoPos!, to: "Entrance")
+                let FiletedIndexs = NearIndexs.filter({Nodes[$0].InformationStr != nav.CurrentLocation!.InformationStr})
                 if !FiletedIndexs.isEmpty{
+                    nav.RoomsList.removeAll()
                     let FiletedNodes = FiletedIndexs.map({Nodes[$0]})
-                    RoomList.removeAll()
                     for node in FiletedNodes{
-                        RoomList.append(node.InformationStr)
+                        if let StartNode = Nodes.firstIndex(where: {$0.XY == nav.CurrentLocation!.XY}){
+                            let ShortPath = path.getPath(Pos: nav.geoPos!, from: StartNode, to: node.id).1
+                            if !ShortPath.isEmpty{
+                                nav.RoomsList.append(Room(id: nav.RoomsList.count, RoomStr: node.InformationStr, Path: ShortPath))
+                            }
+                        }
+                    }
+//                    print("RoomsList")
+//                    for Room in nav.RoomsList{
+//                        print(Room)
+//                        print("\n")
+//                    }
+                    if !nav.RoomsList.isEmpty{
+                        nav.RoomPicker_Enable = true
+                    }
+                    else{
+                        PressNum += 10
+                        print(PressNum)
+                        nav.AlertState.toggle()
                     }
                 }
                 else {
                     PressNum += 10
                     print(PressNum)
-                    AlertState.toggle()
+                    nav.AlertState.toggle()
                 }
+            }
+        }
+    }
+    
+    var DirectionViewLink: some View {
+        VStack{
+            if !ble.peripherals.isEmpty && !(ble.peripherals.filter({$0.State == 2}).count < 1){
+                NavigationLink(
+                    destination:
+                        DirectionView(geometry: geometry,ShortestPath: $nav.Current_ShortestPath)
+                        .environmentObject(ble)
+                        .environmentObject(reader)
+                        .environmentObject(path)
+                        .disabled(ble.isBluetoothON),
+                    isActive: $StarNav,
+                    label: {
+                        EmptyView()
+                    })
             }
         }
     }
@@ -229,16 +254,16 @@ struct NavMain: View {
                     let Y = Data(Array(Pos[9...12])).withUnsafeBytes({$0.load(as: Float.self)})
                     let Lat : Float = Data(Array(Pos[13...16])).withUnsafeBytes({$0.load(as: Float.self)})
                     let Long : Float = Data(Array(Pos[17...20])).withUnsafeBytes({$0.load(as: Float.self)})
-                    CurrentLocation = NavChar(Floor: Floor, Information: Array(Pos[2...4]), XY: [X, Y])
-                    geoPos = GeoPos(Floor: Floor, geoPos: [Lat, Long])
-                    if geoPosUpdated {
-                        var Nodes = NodesDict[geoPos!]
+                    nav.CurrentLocation = NavChar(Floor: Floor, Information: Array(Pos[2...4]), XY: [X, Y])
+                    nav.geoPos = GeoPos(Floor: Floor, geoPos: [Lat, Long])
+                    if nav.geoPosUpdated {
+                        var Nodes = NodesDict[nav.geoPos!]
                         if Nodes == nil {
-                            let fileName = String(geoPos!.geoPos[0]) + "," + String(geoPos!.geoPos[1])
+                            let fileName = String(nav.geoPos!.geoPos[0]) + "," + String(nav.geoPos!.geoPos[1])
                             path.CSV2Dict(fileName: fileName)
-                            Nodes = NodesDict[geoPos!] ?? []
+                            Nodes = NodesDict[nav.geoPos!] ?? []
                         }
-                        geoPosUpdated = false
+                        nav.geoPosUpdated = false
                     }
 //                    let fileName = String(geoPos!.geoPos[0]) + "," + String(geoPos!.geoPos[1])
 //                    path.CSV2Dict(fileName: fileName)

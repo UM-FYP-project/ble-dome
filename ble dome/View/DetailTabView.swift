@@ -35,7 +35,7 @@ struct DetailTabView: View {
                             Text("Reader")
                                 .tag(0)
                         }
-                        Text("Hello")
+                        MotorTest(geometry: geometry)
                             .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
                             .tabItem {
                                 Image(systemName: "dot.radiowaves.left.and.right")

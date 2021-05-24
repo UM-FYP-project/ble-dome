@@ -72,6 +72,7 @@ struct RoutineTest: View {
                     Text("Get Path")
                         .font(.headline)
                 }
+                .disabled(StartNode == EndNode)
                 Spacer()
                 Text("Start")
                 Spacer()
@@ -119,7 +120,7 @@ struct RoutineTest: View {
                 }
                 Spacer()
             }
-            .frame(maxHeight: 60)
+            .frame(maxHeight: 90)
             Divider()
             Direction
             Spacer()
@@ -314,9 +315,9 @@ struct RoutineTest: View {
                 path.isNaving = false
             }
             getFeedBeck()
-            let funcFeedback = path.PathDirection(NavTags: NavTags, ShortestPath: ShortestPath)
+            let funcFeedback = path.PathDirection(NavTags: &NavTags, ShortestPath: ShortestPath)
             ShortestPath = funcFeedback.0
-            ArrowDrg = funcFeedback.1 ?? 0
+            ArrowDrg = funcFeedback.1 ?? ArrowDrg
             if !Navtrigger || !path.isNaving || ShortestPath.isEmpty{
                 Navtrigger = false
                 timer.invalidate()
@@ -390,6 +391,12 @@ struct RoutineTest: View {
                             }
                         }
                         NavTags.sort{($0.RSSI >= $1.RSSI)}
+//                        if Navtrigger {
+//                            if !path.passedHistory.isEmpty{
+//                                let CRCArr = path.passedHistory.compactMap({$0.CRC})
+//                                NavTags.filter({!CRCArr.contains($0.CRC)})
+//                            }
+//                        }
                         for index in 0..<NavTags.count{
                             NavTags[index].id = index
                         }
@@ -402,7 +409,11 @@ struct RoutineTest: View {
                 if path.TagsData.count > 5 {
                     path.TagsData.removeAll()
                 }
-                if NavTags.count > 5 {
+//                path.Tags.removeAll()
+//                path.TagsData.removeAll()
+                if NavTags.count > 2 {
+//                    path.Tags.removeAll()
+//                    path.TagsData.removeAll()
                     NavTags.removeAll()
                 }
                     path.tagsCount = 0

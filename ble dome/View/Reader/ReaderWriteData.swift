@@ -349,7 +349,7 @@ struct ReaderWriteData: View{
                 Divider()
 //            }
             RoomView
-            Cooradintion
+            Coordintion
             ErrorList
             Spacer()
         }
@@ -395,7 +395,7 @@ struct ReaderWriteData: View{
         .frame(width: geometry.size.width - 20)
     }
     
-    var Cooradintion: some View{
+    var Coordintion: some View{
         VStack(alignment: .center){
             HStack{
                 Text("Location")
@@ -453,7 +453,7 @@ struct ReaderWriteData: View{
             }
             .frame(width: geometry.size.width - 20)
             Divider()
-            Text("Indoor Cooradination")
+            Text("Indoor Coordintion")
                 .font(.headline)
             HStack{
                 Text("X:")

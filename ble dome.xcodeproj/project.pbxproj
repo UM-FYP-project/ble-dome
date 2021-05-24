@@ -10,6 +10,7 @@
 		4A23C67465F130ABF3A30AA0 /* Pods_ble_dome.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8701DBC935F58CB232845E6B /* Pods_ble_dome.framework */; };
 		9528A16B25D03DA500B51649 /* DetailTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9528A16A25D03DA500B51649 /* DetailTabView.swift */; };
 		9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9528A17525D0560B00B51649 /* ReaderTab.swift */; };
+		953316B02658DEC200D1162C /* MotorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 953316AF2658DEC200D1162C /* MotorTest.swift */; };
 		95363B81261CA1B300BF633A /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95363B80261CA1B300BF633A /* MapKit.framework */; };
 		95492EB825E3DEF900ECE3FF /* reader_cmd.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95492EB725E3DEF900ECE3FF /* reader_cmd.swift */; };
 		95492EC32601FB1D00ECE3FF /* BLEScannerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */; };
@@ -24,12 +25,13 @@
 		95687E94264450B300C9116D /* RecordMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E93264450B300C9116D /* RecordMonitor.swift */; };
 		95687E96264450E600C9116D /* ReadTagsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E95264450E600C9116D /* ReadTagsData.swift */; };
 		95687E98264464FC00C9116D /* ReaderWriteData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95687E97264464FC00C9116D /* ReaderWriteData.swift */; };
+		957278A026563466005BC58A /* NavValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9572789F26563465005BC58A /* NavValue.swift */; };
 		95764B3B2651682500A1516A /* RoutineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95764B3A2651682500A1516A /* RoutineTest.swift */; };
 		9580C65F262574B8008EA64D /* readerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9580C65E262574B8008EA64D /* readerConfig.swift */; };
-		959676DC26553F17006A0C82 /* 22.134586,113.545135.csv in Resources */ = {isa = PBXBuildFile; fileRef = 959676DB26553F16006A0C82 /* 22.134586,113.545135.csv */; };
 		95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */; };
 		95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368B825BF2F700026EC88 /* Assets.xcassets */; };
 		95B368BC25BF2F700026EC88 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368BB25BF2F700026EC88 /* Preview Assets.xcassets */; };
+		95CC3B482657A04E0002193E /* 22.134586,113.545135.csv in Resources */ = {isa = PBXBuildFile; fileRef = 95CC3B472657A04E0002193E /* 22.134586,113.545135.csv */; };
 		95DF4D91263D65E40022EC92 /* location.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95DF4D90263D65E40022EC92 /* location.swift */; };
 		95E7D88126481ECE00F2379E /* PathFinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E7D88026481ECE00F2379E /* PathFinding.swift */; };
 		95E7D8832648203B00F2379E /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E7D8822648203B00F2379E /* Node.swift */; };
@@ -41,6 +43,7 @@
 		8701DBC935F58CB232845E6B /* Pods_ble_dome.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ble_dome.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9528A16A25D03DA500B51649 /* DetailTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailTabView.swift; sourceTree = "<group>"; };
 		9528A17525D0560B00B51649 /* ReaderTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderTab.swift; sourceTree = "<group>"; };
+		953316AF2658DEC200D1162C /* MotorTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotorTest.swift; sourceTree = "<group>"; };
 		95363B80261CA1B300BF633A /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		95492EB725E3DEF900ECE3FF /* reader_cmd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = reader_cmd.swift; sourceTree = "<group>"; };
 		95492EC22601FB0400ECE3FF /* BLEScannerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEScannerV2.swift; sourceTree = "<group>"; };
@@ -55,14 +58,15 @@
 		95687E93264450B300C9116D /* RecordMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordMonitor.swift; sourceTree = "<group>"; };
 		95687E95264450E600C9116D /* ReadTagsData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadTagsData.swift; sourceTree = "<group>"; };
 		95687E97264464FC00C9116D /* ReaderWriteData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderWriteData.swift; sourceTree = "<group>"; };
+		9572789F26563465005BC58A /* NavValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavValue.swift; sourceTree = "<group>"; };
 		95764B3A2651682500A1516A /* RoutineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineTest.swift; sourceTree = "<group>"; };
 		9580C65E262574B8008EA64D /* readerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readerConfig.swift; sourceTree = "<group>"; };
-		959676DB26553F16006A0C82 /* 22.134586,113.545135.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "22.134586,113.545135.csv"; sourceTree = "<group>"; };
 		95B368B125BF2F6D0026EC88 /* ble dome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ble dome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ble_domeApp.swift; sourceTree = "<group>"; };
 		95B368B825BF2F700026EC88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		95B368BB25BF2F700026EC88 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		95B368BD25BF2F700026EC88 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		95CC3B472657A04E0002193E /* 22.134586,113.545135.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "22.134586,113.545135.csv"; sourceTree = "<group>"; };
 		95DF4D90263D65E40022EC92 /* location.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = location.swift; sourceTree = "<group>"; };
 		95E7D88026481ECE00F2379E /* PathFinding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathFinding.swift; sourceTree = "<group>"; };
 		95E7D8822648203B00F2379E /* Node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
@@ -127,7 +131,7 @@
 		9564DEA0264E350B00B7BBC3 /* NodeCSV */ = {
 			isa = PBXGroup;
 			children = (
-				959676DB26553F16006A0C82 /* 22.134586,113.545135.csv */,
+				95CC3B472657A04E0002193E /* 22.134586,113.545135.csv */,
 			);
 			path = NodeCSV;
 			sourceTree = "<group>";
@@ -137,6 +141,7 @@
 			children = (
 				9528A17525D0560B00B51649 /* ReaderTab.swift */,
 				95687E8F26444F1000C9116D /* ReaderSetting.swift */,
+				953316AF2658DEC200D1162C /* MotorTest.swift */,
 				95764B3A2651682500A1516A /* RoutineTest.swift */,
 				95687E9126444FEB00C9116D /* ReaderInventory.swift */,
 				95687E95264450E600C9116D /* ReadTagsData.swift */,
@@ -173,6 +178,7 @@
 				9580C65E262574B8008EA64D /* readerConfig.swift */,
 				95E7D8822648203B00F2379E /* Node.swift */,
 				95E7D88026481ECE00F2379E /* PathFinding.swift */,
+				9572789F26563465005BC58A /* NavValue.swift */,
 				9564DEA0264E350B00B7BBC3 /* NodeCSV */,
 				9552407025CAC66800EA1011 /* View */,
 				95B368B825BF2F700026EC88 /* Assets.xcassets */,
@@ -260,8 +266,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				95B368BC25BF2F700026EC88 /* Preview Assets.xcassets in Resources */,
+				95CC3B482657A04E0002193E /* 22.134586,113.545135.csv in Resources */,
 				95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */,
-				959676DC26553F17006A0C82 /* 22.134586,113.545135.csv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -325,10 +331,12 @@
 				95764B3B2651682500A1516A /* RoutineTest.swift in Sources */,
 				95E7D888264A5EE900F2379E /* NavMain.swift in Sources */,
 				9564DEA5264EE74200B7BBC3 /* AlertPicker.swift in Sources */,
+				957278A026563466005BC58A /* NavValue.swift in Sources */,
 				9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */,
 				9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */,
 				9563293F2654017A005FE61D /* RoomPicker.swift in Sources */,
 				95E7D8832648203B00F2379E /* Node.swift in Sources */,
+				953316B02658DEC200D1162C /* MotorTest.swift in Sources */,
 				9580C65F262574B8008EA64D /* readerConfig.swift in Sources */,
 				95687E9026444F1000C9116D /* ReaderSetting.swift in Sources */,
 				95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */,
@@ -474,7 +482,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "hk.hongwal.ble-dome";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -497,7 +505,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "hk.hongwal.ble-dome";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
