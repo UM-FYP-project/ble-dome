@@ -7,7 +7,7 @@
 
 import SwiftUI
 import CoreBluetooth
-import AVFoundation
+
 
 @main
 struct ble_domeApp: App {
@@ -50,13 +50,8 @@ struct Peripheral_Service: Identifiable{
     var Services : CBService
 }
 
-func Speech(_ Str : String){
-    let speech = AVSpeechUtterance(string: Str)
-    let voice = AVSpeechSynthesisVoice(language: "en-GB")
-    speech.voice = voice
-    let Synthesis = AVSpeechSynthesizer()
-    Synthesis.speak(speech)
-}
+
+
 
 let rememberConntion = UserDefaults.standard
 
@@ -165,13 +160,14 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         print("\(peripheral.name!) Connected")
-        Speech("Device is Connected")
+        Speech().Stop()
+        Speech().Say("Device is Connected")
         peripheral.delegate = self
         peripheral.discoverServices(nil)
-//        let ConnectedSpeech = AVSpeechUtterance(string: "Device Connected")
-//        ConnectedSpeech.voice = AVSpeechSynthesisVoice(language: "en-GB")
-//        let Synthesis = AVSpeechSynthesizer()
-//        Synthesis.speak(ConnectedSpeech)
+//        let ConnectedSpeech() = AVSpeech()Utterance(string: "Device Connected")
+//        ConnectedSpeech().voice = AVSpeech()SynthesisVoice(language: "en-GB")
+//        let Synthesis = AVSpeech()Synthesizer()
+//        Synthesis.speak(ConnectedSpeech())
 //        isConnected = true
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 2
@@ -183,7 +179,8 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         if error != nil{
             print("\(peripheral.name!) Failed to Connect")
-            Speech("Device is Failed to Connect")
+            Speech().Stop()
+            Speech().Say("Device is Failed to Connect")
 //            isConnected = false
             if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
                 peripherals[index].State = 0
@@ -195,7 +192,8 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         print("\(peripheral.name!) Device Disconnected")
-        Speech("Device is Disconnected")
+        Speech().Stop()
+        Speech().Say("Device is Disconnected")
         if let index = peripherals.firstIndex(where: {$0.name == peripheral.name}){
             peripherals[index].State = 0
         }

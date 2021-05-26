@@ -69,6 +69,21 @@ struct NavTag: Identifiable{
     }
 }
 
+struct NavTagLog: Identifiable{
+    let id : Int
+    let navtag : NavTag
+    var NodeID : String{
+        let Pos = GeoPos(Floor: navtag.Floor, geoPos: navtag.geoPos)
+        if let Nodes : [Node] = NodesDict[Pos] {
+            if let Index = Nodes.firstIndex(where: {$0.Floor == navtag.Floor && $0.XY == navtag.XY}) {
+                return "\(Index)"
+            }
+        }
+        return ""
+    }
+    let Time: String
+}
+
 
 var BytesRecord = [byteRecord]()
 //var Tags = [tag]()
@@ -280,7 +295,7 @@ class Reader: NSObject, ObservableObject{
         return (tagcount, Error_String)
     }
     
-    func feedback2Tags(feedback:[UInt8], Tags : [tag], TagsData : [tagData]) -> (String, [tag], [tagData]){
+    func feedback2Tags(feedback:[UInt8], Tags : [tag], TagsData : [tagData], Sorted: Bool) -> (String, [tag], [tagData]){
         var TagsArr : [tag] = Tags
         var TagsDataArr : [tagData] = TagsData
         var Error_String : String = ""
@@ -296,7 +311,7 @@ class Reader: NSObject, ObservableObject{
                         let feedbackRow : [UInt8] = Array(feedback[index...toIndex])
                         Byte_Recorder(defined: 2, byte: feedbackRow)
                         //print("\(feedback2D.count)| BufferLen:\(Int(feedback[index + 1]) + 2) | \(Data(feedbackof2D).hexEncodedString())")
-                        if feedbackRow[3] == 0x90 && (Int(feedbackRow[1]) + 2 == feedbackRow.count){
+                        if feedbackRow[3] == 0x90 && (Int(feedbackRow[1]) + 2 == feedbackRow.count) && feedbackRow[1] > 4{
                             handled = 0x90
                             let EPClen = feedbackRow[6]
                             let PC : [UInt8] = [feedbackRow[7], feedbackRow[8]]
@@ -315,7 +330,7 @@ class Reader: NSObject, ObservableObject{
                                 }
                             }
                         }
-                        else if feedbackRow[3] == 0x81 && feedbackRow[1] + 2 == feedbackRow.count{
+                        else if feedbackRow[3] == 0x81 && feedbackRow[1] + 2 == feedbackRow.count && feedbackRow[1] > 4{
                             handled = 0x81
                             let totalData_len = feedbackRow[6]
 //                            print("totalData_len: \(totalData_len)")
@@ -352,7 +367,7 @@ class Reader: NSObject, ObservableObject{
                                 }
                             }
                         }
-                        else if feedbackRow[3] == 0x89 && feedbackRow[1] > 8 && feedbackRow[1] + 2 == feedbackRow.count{
+                        else if feedbackRow[3] == 0x89 && feedbackRow[1] > 8 && feedbackRow[1] + 2 == feedbackRow.count && feedbackRow[1] > 4{
                             let PC : [UInt8] = [feedbackRow[5], feedbackRow[6]]
                             let Len  = feedbackRow[1] + 1
                             let RSSI = feedbackRow[Int(Len) - 1]
@@ -373,23 +388,25 @@ class Reader: NSObject, ObservableObject{
                     }
                 }
             }
-            if (handled == 0x90 || handled == 0x89){
-                if !TagsArr.isEmpty {
-                    TagsArr.sort{($0.RSSI >= $1.RSSI)}
-                    //                EPCstr.removeAll()
-                    for index in 0..<TagsArr.count{
-                        TagsArr[index].id = index
-                        //                    EPCstr.append(Data(Tags[index].EPC).hexEncodedString())
+            if Sorted {
+                if (handled == 0x90 || handled == 0x89){
+                    if !TagsArr.isEmpty {
+                        TagsArr.sort{($0.RSSI >= $1.RSSI)}
+                        //                EPCstr.removeAll()
+                        for index in 0..<TagsArr.count{
+                            TagsArr[index].id = index
+                            //                    EPCstr.append(Data(Tags[index].EPC).hexEncodedString())
+                        }
                     }
                 }
-            }
-            if handled == 0x81{
-                if !TagsDataArr.isEmpty {
-                    TagsDataArr.sort{($0.RSSI >= $1.RSSI)}
-                    for index in 0..<TagsDataArr.count{
-                        TagsDataArr[index].id = index
-                    }
+                if handled == 0x81{
+                    if !TagsDataArr.isEmpty {
+                        TagsDataArr.sort{($0.RSSI >= $1.RSSI)}
+                        for index in 0..<TagsDataArr.count{
+                            TagsDataArr[index].id = index
+                        }
 
+                    }
                 }
             }
             return ("nil", TagsArr, TagsDataArr)

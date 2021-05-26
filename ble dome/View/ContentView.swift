@@ -29,6 +29,7 @@ struct ContentView: View {
     @ObservedObject var location = LocationManager()
     @ObservedObject var path = PathFinding()
     @ObservedObject var nav = navValue()
+    @ObservedObject var speech = Speech()
     @State var isScanner_trigged = false
     @State var notConnectedAlert_trigged = true
     @State var Conncetedperipheral_index = 0
@@ -47,6 +48,7 @@ struct ContentView: View {
                         .environmentObject(reader)
                         .environmentObject(path)
                         .environmentObject(nav)
+                        .environmentObject(speech)
                     Spacer()
                     HomeTab
                         .frame(width: geometry.size.width, height: geometry.size.height/9.2)
@@ -167,6 +169,9 @@ struct ContentView: View {
     var ReaderSettingLink: some View {
         VStack{
             if !ble.peripherals.isEmpty && !(ble.peripherals.filter({$0.State == 2}).count < 1){
+                NavigationLink(destination: EmptyView()) {
+                    EmptyView()
+                }
                 NavigationLink(
                     destination:
                         DetailTabView(peripheral: ble.peripherals[Conncetedperipheral_index])
@@ -175,6 +180,7 @@ struct ContentView: View {
                         .environmentObject(readerconfig)
                         .environmentObject(location)
                         .environmentObject(path)
+                        .environmentObject(speech)
                         .disabled(ble.isBluetoothON && isScanner_trigged)
                         .overlay(ble.isBluetoothON && isScanner_trigged  ? Color.black.opacity(0.3).ignoresSafeArea() : nil)
                         .navigationBarItems(trailing:

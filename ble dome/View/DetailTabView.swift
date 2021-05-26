@@ -15,6 +15,7 @@ struct DetailTabView: View {
     @EnvironmentObject var readerconfig : ReaderConfig
     @EnvironmentObject var location : LocationManager
     @EnvironmentObject var path : PathFinding
+    @EnvironmentObject var speech : Speech
 //    @Binding var Enable : Bool
     var peripheral : Peripheral
     var body: some View {
@@ -45,6 +46,7 @@ struct DetailTabView: View {
                         RoutineTest(geometry: geometry)
                             .environmentObject(reader)
                             .environmentObject(path)
+                            .environmentObject(speech)
                             .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
                             .tabItem {
                                 Image("scanner")

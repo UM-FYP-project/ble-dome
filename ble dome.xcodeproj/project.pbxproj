@@ -28,6 +28,7 @@
 		957278A026563466005BC58A /* NavValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9572789F26563465005BC58A /* NavValue.swift */; };
 		95764B3B2651682500A1516A /* RoutineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95764B3A2651682500A1516A /* RoutineTest.swift */; };
 		9580C65F262574B8008EA64D /* readerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9580C65E262574B8008EA64D /* readerConfig.swift */; };
+		9590BBF5265E45B40015765D /* Speech.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9590BBF4265E45B40015765D /* Speech.swift */; };
 		95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */; };
 		95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368B825BF2F700026EC88 /* Assets.xcassets */; };
 		95B368BC25BF2F700026EC88 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368BB25BF2F700026EC88 /* Preview Assets.xcassets */; };
@@ -61,6 +62,7 @@
 		9572789F26563465005BC58A /* NavValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavValue.swift; sourceTree = "<group>"; };
 		95764B3A2651682500A1516A /* RoutineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineTest.swift; sourceTree = "<group>"; };
 		9580C65E262574B8008EA64D /* readerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readerConfig.swift; sourceTree = "<group>"; };
+		9590BBF4265E45B40015765D /* Speech.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Speech.swift; sourceTree = "<group>"; };
 		95B368B125BF2F6D0026EC88 /* ble dome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ble dome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ble_domeApp.swift; sourceTree = "<group>"; };
 		95B368B825BF2F700026EC88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -175,6 +177,7 @@
 				95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */,
 				95492EB725E3DEF900ECE3FF /* reader_cmd.swift */,
 				95DF4D90263D65E40022EC92 /* location.swift */,
+				9590BBF4265E45B40015765D /* Speech.swift */,
 				9580C65E262574B8008EA64D /* readerConfig.swift */,
 				95E7D8822648203B00F2379E /* Node.swift */,
 				95E7D88026481ECE00F2379E /* PathFinding.swift */,
@@ -336,6 +339,7 @@
 				9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */,
 				9563293F2654017A005FE61D /* RoomPicker.swift in Sources */,
 				95E7D8832648203B00F2379E /* Node.swift in Sources */,
+				9590BBF5265E45B40015765D /* Speech.swift in Sources */,
 				953316B02658DEC200D1162C /* MotorTest.swift in Sources */,
 				9580C65F262574B8008EA64D /* readerConfig.swift in Sources */,
 				95687E9026444F1000C9116D /* ReaderSetting.swift in Sources */,

@@ -47,5 +47,7 @@ class navValue : ObservableObject{
     @Published var RoomsList = [Room]()
     @Published var AlertState : Bool = false
     @Published var AlertStr : String = ""
+    
+    
 }
 
