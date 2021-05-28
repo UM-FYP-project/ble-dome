@@ -50,10 +50,22 @@ struct Peripheral_Service: Identifiable{
     var Services : CBService
 }
 
-
-
+struct BLELog: Identifiable{
+    let id : Int
+    let Time: String
+    let Services_UUID : CBUUID
+    let Characteristic_UUID : CBUUID
+    let valueStr : String
+    let isWrite : Bool
+}
 
 let rememberConntion = UserDefaults.standard
+
+func DeBugPrint(_ item: Any){
+    #if DEBUG
+        print("\(item)")
+    #endif
+}
 
 class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDelegate{
     var centralManager:CBCentralManager!
@@ -64,6 +76,7 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
     @Published var Peripheral_Services = [Peripheral_Service]()
     @Published var ValueUpated_2A68 : Bool = false
     @Published var ValueUpated_5677 : Bool = false
+    @Published var bleLog = [BLELog]()
     //Bluetooth init
     func initBLE(){
         self.centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -291,7 +304,12 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
         guard let value = characteristic.value else {
             return
         }
+        let date = Date()
+        let format = DateFormatter()
+        format.dateFormat = "HH:mm:ss"
+        let timestamp = format.string(from: date)
         print("\(peripheral.name!) : \(characteristic.service.uuid) : \(characteristic.uuid) | \(value.hexEncodedString())")
+        bleLog.append(BLELog(id: bleLog.count, Time: timestamp, Services_UUID: characteristic.service.uuid, Characteristic_UUID: characteristic.uuid, valueStr: value.hexEncodedString(), isWrite: false))
     }
     
     func writeValue(value: Data, characteristic: CBCharacteristic, peripheral: CBPeripheral){
@@ -300,6 +318,11 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             Peripheral_characteristics[index].WritevalueStr = value.hexEncodedString()
         }
         print("\(peripheral.name!) : Serivce: \(characteristic.service.uuid) : Characteristic :\(characteristic.uuid) wrote Value: \(value.hexEncodedString()) ")
+        let date = Date()
+        let format = DateFormatter()
+        format.dateFormat = "HH:mm:ss"
+        let timestamp = format.string(from: date)
+        bleLog.append(BLELog(id: bleLog.count, Time: timestamp, Services_UUID: characteristic.service.uuid, Characteristic_UUID: characteristic.uuid, valueStr: value.hexEncodedString(), isWrite: true))
     }
     
     func writeValue_withoutResponse(value: Data, characteristic: CBCharacteristic, peripheral: CBPeripheral){
@@ -308,6 +331,11 @@ class BLE: NSObject, ObservableObject, CBCentralManagerDelegate, CBPeripheralDel
             Peripheral_characteristics[index].WritevalueStr = value.hexEncodedString()
         }
         print("\(peripheral.name!) : Serivce: \(characteristic.service.uuid) : Characteristic :\(characteristic.uuid) wrote_withoutResponse Value: \(value.hexEncodedString()) ")
+        let date = Date()
+        let format = DateFormatter()
+        format.dateFormat = "HH:mm:ss"
+        let timestamp = format.string(from: date)
+        bleLog.append(BLELog(id: bleLog.count, Time: timestamp, Services_UUID: characteristic.service.uuid, Characteristic_UUID: characteristic.uuid, valueStr: value.hexEncodedString(), isWrite: true))
     }
 
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {

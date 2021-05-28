@@ -9,13 +9,14 @@ import SwiftUI
 import Combine
 
 struct PeripheralDetail: View {
-    @EnvironmentObject var ble:BLE
+    var geometry : GeometryProxy
     var peripheral : Peripheral
+    @EnvironmentObject var ble:BLE
     @State var WriteValueBool : Bool = false
     @State var peripheralForWirte : Peripheral?
     @State var characteristicForWirte : Peripheral_characteristic?
     var body: some View {
-        GeometryReader { geometry in
+//        GeometryReader { geometry in
             ZStack{
                 List {
                     VStack(alignment: .leading){
@@ -46,7 +47,7 @@ struct PeripheralDetail: View {
                     WriteValuetoChar(geometry: geometry, WriteValueBool: $WriteValueBool, peripheral: $peripheralForWirte, characteristic: $characteristicForWirte)
                 }
             }
-        }
+//        }
     }
 }
 

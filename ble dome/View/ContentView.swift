@@ -108,6 +108,7 @@ struct ContentView: View {
                 
             }
             .onAppear(perform: {
+//                speech.initSpeech()
                 BLEConnect()
                 isNavorSet()
             })
@@ -130,6 +131,7 @@ struct ContentView: View {
                 RoomPicker(geometry: geometry, geoPos: nav.geoPos!, CurrentLocation: nav.CurrentLocation!, Enable: $nav.RoomPicker_Enable, RoomsList: nav.RoomsList, AlertStr: $nav.AlertStr, AlertState: $nav.AlertState)
                     .environmentObject(path)
                     .environmentObject(nav)
+                    .accessibilitySortPriority(2)
             }
         }
     }

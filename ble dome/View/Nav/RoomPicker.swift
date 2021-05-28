@@ -16,14 +16,13 @@ struct RoomPicker: View {
     @Binding var AlertStr : String
     @Binding var AlertState : Bool
     @EnvironmentObject var path : PathFinding
-//    @EnvironmentObject var nav : navValue
     var body: some View {
         VStack{
             VStack{
                 Text("Room Selection")
                     .bold()
                     .font(.title2)
-                Text("Navigate to Selected Room")
+//                Text("Navigate to Selected Room")
             }
             .padding()
             .clipped()
@@ -35,6 +34,7 @@ struct RoomPicker: View {
             }) {
                 Text("Close")
                     .font(.title3)
+                    
                     .foregroundColor(.blue)
             }
 //            .padding()
@@ -79,7 +79,8 @@ struct RoomButtom: View {
                     let Minutes = (EstimatedTime % 3600) / 60
                     let Seconds = (EstimatedTime % 3600) % 60
                     let TimeStr = "\(Hours > 0 ? "\(Hours)H " : "")" + "\(Hours > 0 || Minutes > 0 ? "\(Minutes)M " : "")" + "\(Seconds > 0 ? "\(Seconds)S" : "")"
-                    AlertStr = "Navigate to Nearest \(theRoom.RoomStr)\n" + "Estimated Distance \(ceil(Double(EstimatedTime) / 0.85))" + "Estimated Time: \(TimeStr)\n"
+//                    AlertStr = "Navigate to Nearest \(theRoom.RoomStr)\n" + "Estimated Distance \(ceil(Double(EstimatedTime) / 0.85))" + "Estimated Time: \(TimeStr)\n"
+                    AlertStr = "Navigate to \(theRoom.RoomStr)\n" + "Distance \(ceil(Double(EstimatedTime) / 0.85))m"
                     nav.Current_ShortestPath = theRoom.Path
                     AlertState.toggle()
                 }

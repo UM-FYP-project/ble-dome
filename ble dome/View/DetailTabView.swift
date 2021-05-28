@@ -36,32 +36,43 @@ struct DetailTabView: View {
                             Text("Reader")
                                 .tag(0)
                         }
-                        MotorTest(geometry: geometry)
-                            .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
-                            .tabItem {
-                                Image(systemName: "dot.radiowaves.left.and.right")
-                                Text("Vibration")
-                                    .tag(1)
-                            }
+//                        MotorTest(geometry: geometry)
+//                            .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
+//                            .tabItem {
+//                                Image(systemName: "dot.radiowaves.left.and.right")
+//                                Text("Vibration")
+//                                    .tag(1)
+//                            }
                         RoutineTest(geometry: geometry)
                             .environmentObject(reader)
                             .environmentObject(path)
                             .environmentObject(speech)
                             .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
                             .tabItem {
-                                Image("scanner")
-                                Text("Routine Test")
-                                    .tag(2)
+                                Image(systemName:"location.fill")
+                                Text("Navigation Test")
+                                    .tag(1)
                             }
+                        
                         
                     }
                     //                    NavigationView{
-                    PeripheralDetail(peripheral: peripheral)
+                    PeripheralDetail(geometry : geometry, peripheral: peripheral)
                         .environmentObject(ble)
                         .disabled(ble.peripherals.filter({$0.State == 2}).count < 1)
                         .tabItem {
-                            Image(systemName: "list.dash")
-                            Text("Detail")
+//                            Image(systemName: "list.dash")
+                            Image(systemName: "personalhotspot")
+                            Text("BLE Detail")
+                                .tag(2)
+                        }
+                    LoggingView(geometry: geometry)
+                        .environmentObject(reader)
+                        .environmentObject(path)
+                        .environmentObject(ble)
+                        .tabItem {
+                            Image(systemName: "list.bullet.rectangle")
+                            Text("Logging")
                                 .tag(3)
                         }
                 }

@@ -26,7 +26,7 @@ struct ReaderTab: View {
                     Text("Inventory").tag(1)
                     Text("Read").tag(2)
                     Text("Write").tag(3)
-                    Text("Monitor").tag(4)
+//                    Text("Monitor").tag(4)
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .frame(width: geometry.size.width - 20)
@@ -59,12 +59,12 @@ struct ReaderTab: View {
                             .disabled(readerconfig.Tags.isEmpty)
                         }
                     }
-                    else if Selected == 4{
-                        ScrollView {
-                        RecordMonitor(geometry: geometry)
-                            .environmentObject(reader)
-                        }
-                    }
+//                    else if Selected == 4{
+//                        ScrollView {
+//                        RecordMonitor(geometry: geometry)
+//                            .environmentObject(reader)
+//                        }
+//                    }
 //                }
             }
         }

@@ -29,6 +29,8 @@
 		95764B3B2651682500A1516A /* RoutineTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95764B3A2651682500A1516A /* RoutineTest.swift */; };
 		9580C65F262574B8008EA64D /* readerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9580C65E262574B8008EA64D /* readerConfig.swift */; };
 		9590BBF5265E45B40015765D /* Speech.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9590BBF4265E45B40015765D /* Speech.swift */; };
+		9590BBF7265FD7E00015765D /* LoggingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9590BBF6265FD7E00015765D /* LoggingView.swift */; };
+		9590BBF9265FDA880015765D /* NavigationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9590BBF8265FDA880015765D /* NavigationTest.swift */; };
 		95B368B525BF2F6D0026EC88 /* ble_domeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */; };
 		95B368B925BF2F700026EC88 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368B825BF2F700026EC88 /* Assets.xcassets */; };
 		95B368BC25BF2F700026EC88 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95B368BB25BF2F700026EC88 /* Preview Assets.xcassets */; };
@@ -63,6 +65,8 @@
 		95764B3A2651682500A1516A /* RoutineTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutineTest.swift; sourceTree = "<group>"; };
 		9580C65E262574B8008EA64D /* readerConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = readerConfig.swift; sourceTree = "<group>"; };
 		9590BBF4265E45B40015765D /* Speech.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Speech.swift; sourceTree = "<group>"; };
+		9590BBF6265FD7E00015765D /* LoggingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingView.swift; sourceTree = "<group>"; };
+		9590BBF8265FDA880015765D /* NavigationTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTest.swift; sourceTree = "<group>"; };
 		95B368B125BF2F6D0026EC88 /* ble dome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ble dome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		95B368B425BF2F6D0026EC88 /* ble_domeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ble_domeApp.swift; sourceTree = "<group>"; };
 		95B368B825BF2F700026EC88 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -116,6 +120,7 @@
 				95E7D886264A5ED400F2379E /* Nav */,
 				9552407125CAC67400EA1011 /* BLE */,
 				9528A16A25D03DA500B51649 /* DetailTabView.swift */,
+				9590BBF6265FD7E00015765D /* LoggingView.swift */,
 				95687E8E26444EB700C9116D /* Reader */,
 			);
 			path = View;
@@ -205,6 +210,7 @@
 				9563293E2654017A005FE61D /* RoomPicker.swift */,
 				95E7D887264A5EE900F2379E /* NavMain.swift */,
 				9563293C2652D9EA005FE61D /* DirectionView.swift */,
+				9590BBF8265FDA880015765D /* NavigationTest.swift */,
 			);
 			path = Nav;
 			sourceTree = "<group>";
@@ -336,8 +342,10 @@
 				9564DEA5264EE74200B7BBC3 /* AlertPicker.swift in Sources */,
 				957278A026563466005BC58A /* NavValue.swift in Sources */,
 				9552407625CC54B100EA1011 /* PeripheralDetail.swift in Sources */,
+				9590BBF9265FDA880015765D /* NavigationTest.swift in Sources */,
 				9528A17625D0560B00B51649 /* ReaderTab.swift in Sources */,
 				9563293F2654017A005FE61D /* RoomPicker.swift in Sources */,
+				9590BBF7265FD7E00015765D /* LoggingView.swift in Sources */,
 				95E7D8832648203B00F2379E /* Node.swift in Sources */,
 				9590BBF5265E45B40015765D /* Speech.swift in Sources */,
 				953316B02658DEC200D1162C /* MotorTest.swift in Sources */,

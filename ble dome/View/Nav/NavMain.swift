@@ -13,21 +13,9 @@ struct NavMain: View {
     @EnvironmentObject var reader:Reader
     @EnvironmentObject var path : PathFinding
     @EnvironmentObject var nav : navValue
-    @State var StarNav = false
-//    @State var RoomsList = [Room]()
-//    @State var CurrentLocation : NavChar?
-//    @State var geoPosUpdated : Bool = false
-//    @State var geoPos : GeoPos? = nil {
-//        willSet {
-//            if newValue != geoPos {
-//                geoPosUpdated = true
-//            }
-//        }
-//    }
-//    @State var AlertState : Bool = false
-//    @State var AlertStr : String = ""
+    @EnvironmentObject var speech : Speech
+    @State var StartPathFollow = false
     @State var ButtonPressedNum : Int = 0
-//    @State var ShortestPath = [Node]()
     let NavButtons : [NavButton] = [
         NavButton(id: 0, imageStr: "door", Text: "Entrance"),
         NavButton(id: 1, imageStr: "room", Text: "Room"),
@@ -40,21 +28,27 @@ struct NavMain: View {
     var body: some View {
         VStack{
             HStack{
-                Image("pin")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 40)
-                Text("Current\nLocation")
-                    .font(.title3)
+//                DirectionViewLink
+                HStack{
+                    Image("pin")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 40)
+                    Text("Current\nLocation")
+                        .font(.title3)
+                }
+                .accessibility(label: Text("Current Location"))
+                .accessibilityElement(children: .combine)
                 Spacer()
                 VStack{
-                    Text("\(nav.CurrentLocation != nil ? "\(nav.CurrentLocation!.Floor == 0 ? "G/F" : "\(nav.CurrentLocation!.Floor)/F")\t\t|\t\(nav.CurrentLocation!.InformationStr)" : "")")
+                    Text("\(nav.CurrentLocation != nil ? "\(nav.CurrentLocation!.Floor == 0 ? "G/F" : "\(nav.CurrentLocation!.Floor)/F")|\(nav.CurrentLocation!.InformationStr)" : "")")
                         .font(.title3)
                         .frame(height: 40)
                         .frame(maxWidth: 300)
                         .background(Color.gray.opacity(0.15))
                         .cornerRadius(10)
                 }
+                .accessibility(label: Text("\(nav.CurrentLocation != nil ? "On \(nav.CurrentLocation!.Floor) Floor At \(nav.CurrentLocation!.InformationStr)" : "No Data")"))
             }
             .frame(width: geometry.size.width - 20, height: 50, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
             ScrollView{
@@ -92,6 +86,7 @@ struct NavMain: View {
                     }
                 }
                 Spacer()
+                DirectionViewLink
             }
         }
         .frame(maxWidth: geometry.size.width)
@@ -102,17 +97,20 @@ struct NavMain: View {
             switch ButtonPressedNum {
             case 0,1,2,3,4:
                 return Alert(
-                    title: Text("Navigation"),
-                    message: Text("\(nav.AlertStr)"),
+                    title: Text(nav.AlertStr),
+//                    message: Text("\(nav.AlertStr)"),
                     primaryButton:
-                        .cancel(),
-                    secondaryButton:
+//                        .cancel()
                         .default(
                             Text("Start Navigation"),
                             action: {
-                                StarNav = true
+                                StartPathFollow = true
+                                nav.RoomPicker_Enable = false
                             }
                         )
+                    ,
+                    secondaryButton:
+                        .cancel()
                 )
             case 10,11,12,13,14:
                 let Str = ["Entrance", "Room", "Restroom", "Stair", "Elevator"]
@@ -154,7 +152,10 @@ struct NavMain: View {
                 let Nodes : [Node] = NodesDict[nav.geoPos!] ?? []
 //                print(Nodes)
                 if !Nodes.isEmpty{
-                    let AllNode = path.FindNodes(Pos: nav.geoPos!, to: toStr)
+                    var AllNode = path.FindNodes(Pos: nav.geoPos!, to: toStr)
+                    if PressNum == 0 {
+                        AllNode = AllNode.filter({Nodes[$0].InformationStr == nav.CurrentLocation!.InformationStr})
+                    }
                     if !AllNode.isEmpty{
                         let StartNode = Nodes.firstIndex(where: {$0.XY == nav.CurrentLocation!.XY})
                         let NearestNode = path.FindNearest(Pos: nav.geoPos!, from: StartNode!, to: AllNode)
@@ -165,7 +166,8 @@ struct NavMain: View {
                             let Minutes = (EstimatedTime % 3600) / 60
                             let Seconds = (EstimatedTime % 3600) % 60
                             let TimeStr = "\(Hours > 0 ? "\(Hours)H " : "")" + "\(Hours > 0 || Minutes > 0 ? "\(Minutes)M " : "")" + "\(Seconds > 0 ? "\(Seconds)S" : "")"
-                            nav.AlertStr = "Navigate to Nearest \(toStr)\n" + "Estimated Distance \(ceil(Double(EstimatedTime) / 0.85))" + "Estimated Time: \(TimeStr)\n"
+//                            nav.AlertStr = "Navigate to Nearest \(toStr) - \(NearestNode!)\n" + "Estimated Distance \(ceil(Double(EstimatedTime) / 0.85))\n" + "Estimated Time: \(TimeStr)\n"
+                            nav.AlertStr = "Navigate to Nearest \(toStr) - \(NearestNode!)\n" + "Distance \(ceil(Double(EstimatedTime) / 0.85))\n"
     //                        print(nav.AlertStr)
                             nav.Current_ShortestPath = shortestPath
                             nav.AlertState.toggle()
@@ -196,15 +198,13 @@ struct NavMain: View {
                         if let StartNode = Nodes.firstIndex(where: {$0.XY == nav.CurrentLocation!.XY}){
                             let ShortPath = path.getPath(Pos: nav.geoPos!, from: StartNode, to: node.id).1
                             if !ShortPath.isEmpty{
-                                nav.RoomsList.append(Room(id: nav.RoomsList.count, RoomStr: node.InformationStr, Path: ShortPath))
+                                let RoomStr : [String : String] = ["ROOM20071":"Multimedia Room", "ROOM20072":"Exhibition Room", "ROOM20073":"Chemistry Room"]
+                                if let roomstr = RoomStr[node.InformationStr.uppercased()] {
+                                    nav.RoomsList.append(Room(id: nav.RoomsList.count, RoomStr: roomstr, Path: ShortPath))
+                                }
                             }
                         }
                     }
-//                    print("RoomsList")
-//                    for Room in nav.RoomsList{
-//                        print(Room)
-//                        print("\n")
-//                    }
                     if !nav.RoomsList.isEmpty{
                         nav.RoomPicker_Enable = true
                     }
@@ -226,14 +226,17 @@ struct NavMain: View {
     var DirectionViewLink: some View {
         VStack{
             if !ble.peripherals.isEmpty && !(ble.peripherals.filter({$0.State == 2}).count < 1){
+                NavigationLink(destination: EmptyView()) {
+                    EmptyView()
+                }
                 NavigationLink(
                     destination:
                         DirectionView(geometry: geometry,ShortestPath: $nav.Current_ShortestPath)
                         .environmentObject(ble)
                         .environmentObject(reader)
                         .environmentObject(path)
-                        .disabled(ble.isBluetoothON),
-                    isActive: $StarNav,
+                        .environmentObject(speech),
+                    isActive: $StartPathFollow,
                     label: {
                         EmptyView()
                     })
@@ -242,7 +245,7 @@ struct NavMain: View {
     }
     
     func getPosFromBLE(){
-        Timer.scheduledTimer(withTimeInterval: 5, repeats: true){timer in
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: true){timer in
             let Serivce : CBUUID = CBUUID(string: "2A68")
             let Char : CBUUID = CBUUID(string: "5677")
             var Pos = [UInt8]()
@@ -272,6 +275,7 @@ struct NavMain: View {
         }
     }
 }
+
 
 struct NavMain_Previews: PreviewProvider {
     static var previews: some View {

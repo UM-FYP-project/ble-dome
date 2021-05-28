@@ -17,7 +17,7 @@ struct BLEScanner_Alert: View {
                 Text("Scanner")
                     .bold()
                     .font(.title2)
-                Text("Scan and Connect Device")
+//                Text("Scan and Connect Device")
             }
             .padding()
             .clipped()
